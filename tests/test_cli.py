@@ -36,3 +36,23 @@ def test_cli(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
+
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-s", "PublicBody", "--jurisdiction", "eu"]
+    )
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 151
+
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-s", "PublicBody", "--jurisdiction", "fr"]
+    )
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 0
+
+    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    result = runner.invoke(cli, ["-i", in_uri, "-s", "Event", "--date__gte", "2022"])
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 3575

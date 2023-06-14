@@ -3,9 +3,14 @@ import click
 from ftmq.io import smart_read_proxies, smart_write_proxies
 
 from .query import Query
+from .util import parse_unknown_cli_filters
 
 
-@click.command()
+@click.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
 @click.option(
     "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
 )
@@ -20,6 +25,7 @@ from .query import Query
 @click.option(
     "--schema-include-matchable", is_flag=True, default=False, show_default=True
 )
+@click.argument("properties", nargs=-1)
 def cli(
     input_uri: str | None = "-",
     output_uri: str | None = "-",
@@ -27,6 +33,7 @@ def cli(
     schema: tuple[str] | None = (),
     schema_include_descendants: bool | None = False,
     schema_include_matchable: bool | None = False,
+    properties: tuple[str] | None = (),
 ):
     """
     Apply ftmq to a json stream of ftm entities.
@@ -40,6 +47,8 @@ def cli(
             include_descendants=schema_include_descendants,
             include_matchable=schema_include_matchable,
         )
+    for prop, value, op in parse_unknown_cli_filters(properties):
+        q = q.where(prop=prop, value=value, operator=op)
 
     proxies = q.apply_iter(smart_read_proxies(input_uri))
     smart_write_proxies(output_uri, proxies, serialize=True)

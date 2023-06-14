@@ -25,3 +25,19 @@ def test_util_str_enum():
     assert str(enum.a) == "a"
     if sys.version_info >= (3, 11):
         assert isinstance(enum, EnumType)
+
+
+def test_util_unknown_filters():
+    res = (("country", "de", None), ("name", "alice", None))
+    args = ("--country", "de", "--name", "alice")
+    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    args = ("--country=de", "--name=alice")
+    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    args = ("--country", "de", "--name=alice")
+    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    args = ()
+    assert tuple(util.parse_unknown_cli_filters(args)) == ()
+
+    args = ("--country", "de", "--year__gte", "2023")
+    res = (("country", "de", None), ("year", "2023", "gte"))
+    assert tuple(util.parse_unknown_cli_filters(args)) == res
