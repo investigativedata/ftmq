@@ -1,4 +1,3 @@
-from enum import StrEnum
 from typing import TypeVar
 
 from banal import as_bool, ensure_list
@@ -9,7 +8,8 @@ from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE
 
 from .exceptions import ValidationError
-from .util import Value, get_dataset
+from .types import Value
+from .util import StrEnum, make_dataset
 
 
 class BaseFilter:
@@ -52,7 +52,7 @@ class DatasetFilter(BaseFilter):
 
     def get_instance(self, value: str | Dataset) -> Dataset:
         if isinstance(value, str):
-            value = get_dataset(value)
+            value = make_dataset(value)
         return value
 
 
@@ -67,7 +67,7 @@ class SchemaFilter(BaseFilter):
         include_matchable: bool = False,
     ):
         super().__init__(schema)
-        self.values: set[Schema] = set([self.instance])
+        self.values: set[Schema] = {self.instance}
         self.include_descendants = include_descendants
         self.include_matchable = include_matchable
         if self.include_descendants:
@@ -129,9 +129,7 @@ class Operator:
 
 class PropertyFilter(BaseFilter):
     instance: Property = None
-    options = StrEnum(
-        "Properties", [n for n in set([p.name for p in model.properties])]
-    )
+    options = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
     value: Value = None
     operator: Operator = None
 

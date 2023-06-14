@@ -1,21 +1,24 @@
-all: clean install test
-
 install:
-	pip install -e .
-	pip install twine coverage nose moto pytest pytest-cov black flake8 isort bump2version mypy
+	poetry install --with dev
 
-test: # install
-	# mypy ftmq
-	pytest -s --cov=ftmq --cov-report term-missing
+lint:
+	poetry run flake8 ftmq --count --select=E9,F63,F7,F82 --show-source --statistics
+	poetry run flake8 ftmq --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+pre-commit:
+	poetry run pre-commit install
+	poetry run pre-commit run -a
+
+typecheck:
+	poetry run mypy --strict ftmq
+
+test:
+	rm -rf .test
+	poetry run pytest -v --capture=sys --cov=ftmq --cov-report term-missing
+	rm -rf .test
 
 build:
-	python setup.py sdist bdist_wheel
-
-prerelease: test
-	bump2version patch
-
-release: clean build
-	twine upload dist/*
+	poetry run build
 
 clean:
 	rm -fr build/

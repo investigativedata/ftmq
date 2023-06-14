@@ -1,3 +1,5 @@
+[![ftmq on pypi](https://img.shields.io/pypi/v/ftmq)](https://pypi.org/project/ftmq/) [![Python test and package](https://github.com/investigativedata/ftmq/actions/workflows/python.yml/badge.svg)](https://github.com/investigativedata/ftmq/actions/workflows/python.yml) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit) [![Coverage Status](https://coveralls.io/repos/github/investigativedata/ftmq/badge.svg?branch=main)](https://coveralls.io/github/investigativedata/ftmq?branch=main) [![MIT License](https://img.shields.io/pypi/l/ftmq)](./LICENSE)
+
 # ftmq
 
 An attempt towards a followthemoney query dsl.
@@ -11,6 +13,10 @@ It also provides a `Query` class that can be used in other libs to work with
 SQL queries or api queries.
 
 **Minimum Python version: 3.10**
+
+## Installation
+
+    pip install ftmq
 
 ## Usage
 
@@ -113,4 +119,3 @@ ORDER BY date DESC
 <a href="https://www.media-lab.de/en/programs/media-tech-lab">
     <img src="https://raw.githubusercontent.com/media-tech-lab/.github/main/assets/mtl-powered-by.png" width="240" title="Media Tech Lab powered by logo">
 </a>
-
