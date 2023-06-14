@@ -29,7 +29,7 @@ class Query:
     filters: set[F] = set()
 
     def __init__(self, *filters: Iterable[F]):
-        self.filters = set([f for f in filters])
+        self.filters = {f for f in filters}
 
     def where(self, **lookup: Lookup) -> Q:
         if "dataset" in lookup:

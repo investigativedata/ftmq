@@ -68,7 +68,7 @@ class SchemaFilter(BaseFilter):
         include_matchable: bool = False,
     ):
         super().__init__(schema)
-        self.values: set[Schema] = set([self.instance])
+        self.values: set[Schema] = {self.instance}
         self.include_descendants = include_descendants
         self.include_matchable = include_matchable
         if self.include_descendants:
@@ -130,9 +130,7 @@ class Operator:
 
 class PropertyFilter(BaseFilter):
     instance: Property = None
-    options = StrEnum(
-        "Properties", [n for n in set([p.name for p in model.properties])]
-    )
+    options = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
     value: Value = None
     operator: Operator = None
 

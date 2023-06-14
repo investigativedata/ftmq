@@ -1,0 +1,70 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install poetry
+      run: curl -sSL https://install.python-poetry.org | python3 -
+    - name: Configure poetry
+      run: poetry config virtualenvs.in-project true
+    - name: set PY
+      run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+    - name: Set up poetry cache
+      uses: actions/cache@v1
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ env.PY }}-${{ hashFiles('**/poetry.lock') }}
+    - name: Ensure cache is healthy
+      if: steps.cache.outputs.cache-hit == 'true'
+      run: poetry run pip --version >/dev/null 2>&1 || rm -rf .venv
+    - name: Set up pre-commit cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ runner.os }}-${{ env.PY }}-${{ hashFiles('.pre-commit-config.yaml') }}
+    - name: Install dependencies
+      run: poetry install --with dev
+    - name: Run pre-commit hooks
+      run: poetry run pre-commit run
+    - name: Lint with flake8
+      run: make lint
+    - name: Test with pytest
+      run: make test
+    - name: Test building
+      run: poetry build
+    - name: Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        flag-name: run-${{ matrix.python-version }}
+        parallel: true
+
+  finish:
+    needs: test
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true
+        carryforward: "run-3.10,run-3.11"
