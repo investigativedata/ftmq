@@ -1,23 +1,29 @@
 from typing import Optional
 
 import typer
+from typing_extensions import Annotated
+
+from ftmq.io import smart_read_proxies, smart_write_proxies
 
 from .query import Query
-from .util import smart_read_proxies, smart_write_proxies
 
 cli = typer.Typer()
 
 
 @cli.command()
 def ftmq(
-    input_uri: str = typer.Option("-", "-i", help="input file or uri"),
-    output_uri: str = typer.Option("-", "-o", help="output file or uri"),
-    dataset: Optional[list[str]] = typer.Option(
-        None, "-d", "--dataset", help="Dataset(s)"
-    ),
-    schema: Optional[list[str]] = typer.Option(
-        None, "-s", "--schema", help="Schema(tas)"
-    ),
+    input_uri: Annotated[
+        Optional[str], typer.Option("-i", help="input file or uri")
+    ] = "-",
+    output_uri: Annotated[
+        Optional[str], typer.Option("-o", help="output file or uri")
+    ] = "-",
+    dataset: Annotated[
+        Optional[list[str]], typer.Option("-d", "--dataset", help="Dataset(s)")
+    ] = None,
+    schema: Annotated[
+        Optional[list[str]], typer.Option("-s", "--schema", help="Schema(tas)")
+    ] = None,
     schema_include_descendants: bool = False,
     schema_include_matchable: bool = False,
 ):
@@ -35,4 +41,4 @@ def ftmq(
         )
 
     proxies = q.apply_iter(smart_read_proxies(input_uri))
-    smart_write_proxies(proxies)
+    smart_write_proxies(output_uri, proxies, serialize=True)
