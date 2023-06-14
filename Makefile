@@ -2,15 +2,15 @@ install:
 	poetry install --with dev
 
 lint:
-	poetry run flake8 investigraph --count --select=E9,F63,F7,F82 --show-source --statistics
-	poetry run flake8 investigraph --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+	poetry run flake8 ftmq --count --select=E9,F63,F7,F82 --show-source --statistics
+	poetry run flake8 ftmq --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 pre-commit:
 	poetry run pre-commit install
 	poetry run pre-commit run -a
 
 typecheck:
-	poetry run mypy --strict investigraph
+	poetry run mypy --strict ftmq
 
 test:
 	rm -rf .test

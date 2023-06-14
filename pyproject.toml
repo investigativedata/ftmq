@@ -18,7 +18,7 @@ classifiers = [
 packages = [{include = "ftmq"}]
 
 [tool.poetry.scripts]
-investigraph = "ftmq.cli:cli"
+ftmq = "ftmq.cli:cli"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/investigativedata/ftmq/issues"
