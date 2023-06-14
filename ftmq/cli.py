@@ -3,15 +3,15 @@ from typing import Optional
 import typer
 
 from .query import Query
-from .util import read_proxies, write_proxy
+from .util import smart_read_proxies, smart_write_proxies
 
 cli = typer.Typer()
 
 
 @cli.command()
 def ftmq(
-    input_file: typer.FileBinaryRead = typer.Option("-", "-i", help="input file"),
-    output_file: typer.FileBinaryWrite = typer.Option("-", "-o", help="output file"),
+    input_uri: str = typer.Option("-", "-i", help="input file or uri"),
+    output_uri: str = typer.Option("-", "-o", help="output file or uri"),
     dataset: Optional[list[str]] = typer.Option(
         None, "-d", "--dataset", help="Dataset(s)"
     ),
@@ -34,6 +34,5 @@ def ftmq(
             include_matchable=schema_include_matchable,
         )
 
-    for proxy in read_proxies(input_file):
-        if q.apply(proxy):
-            write_proxy(output_file, proxy)
+    proxies = q.apply_iter(smart_read_proxies(input_uri))
+    smart_write_proxies(proxies)

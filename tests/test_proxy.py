@@ -4,16 +4,8 @@ from followthemoney import model
 
 from ftmq.exceptions import ValidationError
 from ftmq.query import Query
-from ftmq.util import read_proxies
 
-
-def get_proxies():
-    proxies = []
-    with open("tests/fixtures/ec_meetings.ftm.json", "rb") as f:
-        proxies.extend(read_proxies(f))
-    with open("tests/fixtures/eu_authorities.ftm.json") as f:
-        proxies.extend(read_proxies(f))
-    return proxies
+from .conftest import get_proxies
 
 
 class ProxyTestCase(TestCase):

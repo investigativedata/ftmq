@@ -9,7 +9,8 @@ from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE
 
 from .exceptions import ValidationError
-from .util import Value, get_dataset
+from .types import Value
+from .util import make_dataset
 
 
 class BaseFilter:
@@ -52,7 +53,7 @@ class DatasetFilter(BaseFilter):
 
     def get_instance(self, value: str | Dataset) -> Dataset:
         if isinstance(value, str):
-            value = get_dataset(value)
+            value = make_dataset(value)
         return value
 
 

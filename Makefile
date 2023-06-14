@@ -6,7 +6,9 @@ install:
 
 test: # install
 	# mypy ftmq
-	pytest -s --cov=ftmq --cov-report term-missing
+	rm -rf .test
+	pytest --capture=sys --cov=ftmq --cov-report term-missing
+	rm -rf .test
 
 build:
 	python setup.py sdist bdist_wheel

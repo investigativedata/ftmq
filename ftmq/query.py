@@ -12,6 +12,7 @@ from .filters import (
     SchemaFilter,
     Value,
 )
+from .types import CEGenerator
 
 Q = TypeVar("Q", bound="Query")
 L = TypeVar("L", bound="Lookup")
@@ -53,3 +54,11 @@ class Query:
         if not self.filters:
             return True
         return all(f.apply(proxy) for f in self.filters)
+
+    def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
+        """
+        apply a `Query` to a generator of proxies and return a generator of filtered proxies
+        """
+        for proxy in proxies:
+            if self.apply(proxy):
+                yield proxy
