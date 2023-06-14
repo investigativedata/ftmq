@@ -1,4 +1,7 @@
-from enum import EnumType
+import sys
+
+if sys.version_info > (3, 10):
+    from enum import EnumType
 
 from nomenklatura.dataset import Dataset
 
@@ -18,6 +21,7 @@ def test_util_make_dataset():
 
 def test_util_str_enum():
     enum = util.StrEnum("Foo", ["a", "b", 2])
-    assert isinstance(enum, EnumType)
     assert enum.a == "a"
     assert str(enum.a) == "a"
+    if sys.version_info > (3, 10):
+        assert isinstance(enum, EnumType)
