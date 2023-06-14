@@ -20,8 +20,8 @@ def test_io_read(fixtures_path: Path):
 
 def test_io_write(test_dir: Path, proxies: list[CE]):
     path = test_dir / "proxies.json"
-    res = smart_write_proxies(path, proxies, serialize=True)
-    assert res == 45189
+    res = smart_write_proxies(path, proxies[:99], serialize=True)
+    assert res == 99
     success = False
     for proxy in smart_read_proxies(path):
         assert isinstance(proxy, CompositeEntity)
