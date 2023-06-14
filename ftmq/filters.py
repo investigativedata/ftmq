@@ -1,4 +1,3 @@
-from enum import StrEnum
 from typing import TypeVar
 
 from banal import as_bool, ensure_list
@@ -10,7 +9,7 @@ from nomenklatura.entity import CE
 
 from .exceptions import ValidationError
 from .types import Value
-from .util import make_dataset
+from .util import StrEnum, make_dataset
 
 
 class BaseFilter:

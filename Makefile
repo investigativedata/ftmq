@@ -14,7 +14,7 @@ typecheck:
 
 test:
 	rm -rf .test
-	poetry run pytest --capture=sys --cov=ftmq --cov-report term-missing
+	poetry run pytest -v --capture=sys --cov=ftmq --cov-report term-missing
 	rm -rf .test
 
 build:
