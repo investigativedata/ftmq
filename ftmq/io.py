@@ -53,9 +53,11 @@ def smart_write_proxies(
     mode: str | None = "wb",
     serialize: bool | None = False,
 ) -> int:
+    ix = 0
     with smart_open(uri, sys.stdout.buffer, mode=mode) as fh:
-        for _ix, proxy in enumerate(proxies):
+        for proxy in enumerate(proxies):
+            ix += 1
             if serialize:
                 proxy = proxy.to_dict()
             fh.write(orjson.dumps(proxy, option=orjson.OPT_APPEND_NEWLINE))
-    return _ix + 1
+    return ix + 1
