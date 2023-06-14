@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import orjson
+from click.testing import CliRunner
 from nomenklatura.entity import CompositeEntity
-from typer.testing import CliRunner
 
 from ftmq.cli import cli
 from ftmq.io import load_proxy
