@@ -76,13 +76,29 @@ Possible lookups:
 - `ilike` - SQLish `ILIKE`, case-insensitive (use `%` placeholders)
 - `[]` - usage: `prop[]=foo` evaluates if `foo` is member of array `prop`
 
+
+### ftmq apply
+
+"Uplevel" an entity input stream to `nomenklatura.entity.CompositeEntity` and
+optionally apply a dataset.
+
+    ftmq apply -i ./entities.ftm.json -d <aditional_dataset>
+
+Overwrite datasets:
+
+    ftmq apply -i ./entities.ftm.json -d <aditional_dataset> --replace-dataset
+
 ### ftmstore (database read)
+
+**NOT IMPLEMENTED YET**
 
 The same cli logic applies:
 
     ftmq store iterate -d ec_meetings -s Event --date__gte=2019 --date__lte=2020
 
 ## Python Library
+
+**NOT IMPLEMENTED YET**
 
 ```python
 from ftmq import Query

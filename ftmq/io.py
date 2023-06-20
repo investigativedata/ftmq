@@ -44,6 +44,7 @@ def smart_read_proxies(
             data = orjson.loads(line)
             if serialize:
                 data = load_proxy(data)
+            data.datasets.discard("default")
             yield data
 
 
@@ -61,3 +62,15 @@ def smart_write_proxies(
                 proxy = proxy.to_dict()
             fh.write(orjson.dumps(proxy, option=orjson.OPT_APPEND_NEWLINE))
     return ix
+
+
+def apply_datasets(
+    proxies: Iterable[CE], *datasets: Iterable[str], replace: bool | None = False
+) -> CEGenerator:
+    for proxy in proxies:
+        if datasets:
+            if replace:
+                proxy.datasets = set(datasets)
+            else:
+                proxy.datasets.update(datasets)
+        yield proxy

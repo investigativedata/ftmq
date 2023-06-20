@@ -4,7 +4,7 @@ import orjson
 from moto import mock_s3
 from nomenklatura.entity import CE, CompositeEntity
 
-from ftmq.io import load_proxy, smart_read_proxies, smart_write_proxies
+from ftmq.io import apply_datasets, load_proxy, smart_read_proxies, smart_write_proxies
 
 from .conftest import setup_s3
 
@@ -51,3 +51,25 @@ def test_io_s3(proxies: list[CE]):
     proxies.extend(smart_read_proxies(uri))
     assert len(proxies) == 5
     assert isinstance(proxies[0], CompositeEntity)
+
+
+def test_io_apply_datasets(proxies: list[CE]):
+    success = False
+    for proxy in apply_datasets(proxies, "foo", "bar"):
+        assert "foo" in proxy.datasets
+        assert "bar" in proxy.datasets
+        assert "default" not in proxy.datasets
+        success = True
+        break
+    assert success
+
+    success = False
+    proxies = apply_datasets(proxies, "foo", "bar")
+    for proxy in apply_datasets(proxies, "baz", replace=True):
+        assert "baz" in proxy.datasets
+        assert "foo" not in proxy.datasets
+        assert "bar" not in proxy.datasets
+        assert "default" not in proxy.datasets
+        success = True
+        break
+    assert success
