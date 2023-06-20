@@ -1723,13 +1723,13 @@ setuptools = "*"
 
 [[package]]
 name = "nomenklatura"
-version = "2.14.0"
+version = "2.14.1"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-2.14.0-py3-none-any.whl", hash = "sha256:a77174502d9a3e14a7d7335c865cb8e5b83725c42c65c44365aa4864bdd3fd9b"},
-    {file = "nomenklatura-2.14.0.tar.gz", hash = "sha256:e32907a2c77b65a0d13190d6a0747db175f6dcb9f52e4fbab6f45556fc2696b5"},
+    {file = "nomenklatura-2.14.1-py3-none-any.whl", hash = "sha256:c17396afd05209005d1535b9b9482f726217316c6b7a210a1e484de5f65a8b71"},
+    {file = "nomenklatura-2.14.1.tar.gz", hash = "sha256:da56f72623aa3e8771aaed9edacd55c3128b80c97a912cf5f02205c514d21c6d"},
 ]
 
 [package.dependencies]
@@ -2925,27 +2925,6 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
-name = "typer"
-version = "0.9.0"
-description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "typer-0.9.0-py3-none-any.whl", hash = "sha256:5d96d986a21493606a358cae4461bd8cdf83cbf33a5aa950ae629ca3b51467ee"},
-    {file = "typer-0.9.0.tar.gz", hash = "sha256:50922fd79aea2f4751a8e0408ff10d2662bd0c8bbfa84755a699f3bada2978b2"},
-]
-
-[package.dependencies]
-click = ">=7.1.1,<9.0.0"
-typing-extensions = ">=3.7.4.3"
-
-[package.extras]
-all = ["colorama (>=0.4.3,<0.5.0)", "rich (>=10.11.0,<14.0.0)", "shellingham (>=1.3.0,<2.0.0)"]
-dev = ["autoflake (>=1.3.1,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)", "pre-commit (>=2.17.0,<3.0.0)"]
-doc = ["cairosvg (>=2.5.2,<3.0.0)", "mdx-include (>=1.4.1,<2.0.0)", "mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "pillow (>=9.3.0,<10.0.0)"]
-test = ["black (>=22.3.0,<23.0.0)", "coverage (>=6.2,<7.0)", "isort (>=5.0.6,<6.0.0)", "mypy (==0.910)", "pytest (>=4.4.0,<8.0.0)", "pytest-cov (>=2.10.0,<5.0.0)", "pytest-sugar (>=0.9.4,<0.10.0)", "pytest-xdist (>=1.32.0,<4.0.0)", "rich (>=10.11.0,<14.0.0)", "shellingham (>=1.3.0,<2.0.0)"]
-
-[[package]]
 name = "types-pyyaml"
 version = "6.0.12.10"
 description = "Typing stubs for PyYAML"
@@ -3074,4 +3053,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c49ecf5002ac1b539fbfcfdd8f2c92d95540634afec381269dca6d914fbb75f2"
+content-hash = "945d614464cad845dd343c9b09a5723cfabdc413678d8f83328e0fc3a3f8c9cf"
