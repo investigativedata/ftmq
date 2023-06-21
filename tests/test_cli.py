@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import orjson
+from click.testing import CliRunner
 from nomenklatura.entity import CompositeEntity
-from typer.testing import CliRunner
 
 from ftmq.cli import cli
 from ftmq.io import load_proxy
@@ -36,3 +36,48 @@ def test_cli(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
+
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-s", "PublicBody", "--jurisdiction", "eu"]
+    )
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 151
+
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-s", "PublicBody", "--jurisdiction", "fr"]
+    )
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 0
+
+    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    result = runner.invoke(cli, ["-i", in_uri, "-s", "Event", "--date__gte", "2022"])
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 3575
+
+
+def test_cli_apply(fixtures_path: Path):
+    in_uri = str(fixtures_path / "eu_authorities.ftm.json")
+
+    result = runner.invoke(cli, ["apply", "-i", in_uri, "-d", "another_dataset"])
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 151
+    proxy = load_proxy(orjson.loads(lines[0]))
+    assert isinstance(proxy, CompositeEntity)
+    assert "another_dataset" in proxy.datasets
+    assert "eu_authorities" in proxy.datasets
+
+    # replace dataset
+    result = runner.invoke(
+        cli, ["apply", "-i", in_uri, "-d", "another_dataset", "--replace-dataset"]
+    )
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 151
+    proxy = load_proxy(orjson.loads(lines[0]))
+    assert isinstance(proxy, CompositeEntity)
+    assert "another_dataset" in proxy.datasets
+    assert "eu_authorities" not in proxy.datasets
