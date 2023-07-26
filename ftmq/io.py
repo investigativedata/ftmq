@@ -44,7 +44,7 @@ def smart_read_proxies(
             data = orjson.loads(line)
             if serialize:
                 data = load_proxy(data)
-            data.datasets.discard("default")
+                data.datasets.discard("default")
             yield data
 
 
