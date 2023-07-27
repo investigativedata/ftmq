@@ -28,7 +28,7 @@ ftmq = "ftmq.cli:cli"
 python = ">=3.10,<3.13"
 banal = "^1.0.6"
 followthemoney = "^3.4.0"
-nomenklatura = "^3.3.5"
+nomenklatura = "<3"
 orjson = "^3.9.1"
 PyICU = "^2.11"
 smart-open = {version = "6.3.0", extras = ["all"]}

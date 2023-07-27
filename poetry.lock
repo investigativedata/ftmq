@@ -1737,28 +1737,25 @@ setuptools = "*"
 
 [[package]]
 name = "nomenklatura"
-version = "3.3.5"
+version = "2.9.5"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.3.5-py3-none-any.whl", hash = "sha256:ebf7b12ff18a7bce8e743063f2f2ff32b32f32666ce3bf88deb0e182f3e6bf44"},
-    {file = "nomenklatura-3.3.5.tar.gz", hash = "sha256:533ff52c68faaef046e390cbccbdbe931e187f9877182dd3fe7be07d1a501322"},
+    {file = "nomenklatura-2.9.5-py3-none-any.whl", hash = "sha256:43fa0154092b9b2e5b3bd2c7f9c8260eb580e4ff3e99ca957476275ce435c753"},
+    {file = "nomenklatura-2.9.5.tar.gz", hash = "sha256:f2c2d0a2990cacdfe4fe86f47dce026fb5b3184701f68f9b4c0bc79537227e4c"},
 ]
 
 [package.dependencies]
-click = ">=8.0.0,<8.1.7"
+click = ">=8.0.0,<9.0.0"
 followthemoney = ">=3.3.0,<4.0.0"
-jellyfish = ">=1.0.0,<2.0.0"
-plyvel = "*"
 rich = ">=10.9.0,<14.0.0"
 scikit-learn = "1.2.2"
 shortuuid = ">=1.0.11,<2.0.0"
-textual = ">=0.19.0,<1.0.0"
+textual = ">=0.19.0,<0.21.0"
 
 [package.extras]
-dev = ["coverage (>=4.1)", "flake8 (>=2.6.0)", "mypy", "pytest", "pytest-cov", "requests-mock", "twine", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
-leveldb = ["plyvel"]
+dev = ["coverage (>=4.1)", "flake8 (>=2.6.0)", "mypy", "pytest", "pytest-cov", "twine", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
 
 [[package]]
 name = "normality"
@@ -2025,21 +2022,6 @@ files = [
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
-
-[[package]]
-name = "plyvel"
-version = "1.5.0"
-description = "Plyvel, a fast and feature-rich Python interface to LevelDB"
-optional = false
-python-versions = "*"
-files = [
-    {file = "plyvel-1.5.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:92d949ec657f58e966ee5cc58ea51c436b61e43b86247656f1b6d4a987782a35"},
-    {file = "plyvel-1.5.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:48df7416267977641e9ff82a2bce022e6f5e91889eae95322685fccf6ec9a3d7"},
-    {file = "plyvel-1.5.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f3b5ddaaa7b019db805a74cba52c39d88dd6447add1cb2620b0195115e4aa68b"},
-    {file = "plyvel-1.5.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c480b57848e31c2e47029d3fb0f57ad4fc6a9204867e51bbdcf81a62df75de4b"},
-    {file = "plyvel-1.5.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cb217f52215ac715091396bcbaf645d4ef8eb4b5dd9f96ef01abc0aaed45e2ca"},
-    {file = "plyvel-1.5.0.tar.gz", hash = "sha256:cd918e0b31690abcd3d202a8742caf951ab2fe1573de7af71c38456847f9202b"},
-]
 
 [[package]]
 name = "pre-commit"
@@ -2895,13 +2877,13 @@ files = [
 
 [[package]]
 name = "textual"
-version = "0.27.0"
+version = "0.20.1"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "textual-0.27.0-py3-none-any.whl", hash = "sha256:dc45eaf7da330686c56d6f76f59d05fd216ce6aad90fa44ee269881efc622151"},
-    {file = "textual-0.27.0.tar.gz", hash = "sha256:8bdcb09dc35a706ef939b1276ccfdec10eaaee6147b41cb7587cf33298a8dd33"},
+    {file = "textual-0.20.1-py3-none-any.whl", hash = "sha256:8495ea90388c8361ea125dca463358201e98a85ec765ff4fddb6d668fabeb490"},
+    {file = "textual-0.20.1.tar.gz", hash = "sha256:51d668ed5b2422e20ae29f506d52fd2c52fa254fb80e85a01ef08aa5d616ab9f"},
 ]
 
 [package.dependencies]
@@ -3079,4 +3061,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "bb30b10689f921354a70c8aa85d4f5a638fdfd435fc25955d876df3a50889178"
+content-hash = "eff839b5c6b6e0d59a2ece057160907c94b6f9bd8fdf4936e8843f38864714b5"
