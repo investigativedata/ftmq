@@ -3,6 +3,7 @@ import sys
 from typing import Any, Iterable, Literal
 
 import orjson
+from banal import is_listish
 from followthemoney import model
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
@@ -34,8 +35,15 @@ def smart_open(
 
 
 def smart_read_proxies(
-    uri: PathLike, mode: str | None = "rb", serialize: bool | None = True
+    uri: PathLike | Iterable[PathLike],
+    mode: str | None = "rb",
+    serialize: bool | None = True,
 ) -> CEGenerator:
+    if is_listish(uri):
+        for u in uri:
+            yield from smart_read_proxies(u, mode, serialize)
+        return
+
     with smart_open(uri, sys.stdin.buffer, mode=mode) as fh:
         while True:
             line = fh.readline()
@@ -44,7 +52,7 @@ def smart_read_proxies(
             data = orjson.loads(line)
             if serialize:
                 data = load_proxy(data)
-            data.datasets.discard("default")
+                data.datasets.discard("default")
             yield data
 
 
