@@ -16,5 +16,5 @@ CEGenerator: TypeAlias = Generator[CE, None, None]
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
 
-Schemata: TypeAlias = Literal[*[s.name for s in Schemata]]
-Properties: TypeAlias = Literal[*[p.name for p in Properties]]
+Schemata: TypeAlias = Literal[tuple(s.name for s in Schemata)]
+Properties: TypeAlias = Literal[tuple(p.name for p in Properties)]
