@@ -7,6 +7,7 @@ from followthemoney.schema import Schema
 from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE
 
+from .enums import Operators, Properties, Schemata
 from .exceptions import ValidationError
 from .types import Value
 from .util import StrEnum, make_dataset
@@ -58,7 +59,7 @@ class DatasetFilter(BaseFilter):
 
 class SchemaFilter(BaseFilter):
     instance: Schema = None
-    options = StrEnum("Schemata", [k for k in model.schemata.keys()])
+    options = Schemata
 
     def __init__(
         self,
@@ -88,9 +89,6 @@ class SchemaFilter(BaseFilter):
 
     def get_str_value(self) -> str:
         return self.instance.name
-
-
-Operators = StrEnum("Operators", ["in", "null", "gt", "gte", "lt", "lte"])
 
 
 class Operator:
@@ -129,7 +127,7 @@ class Operator:
 
 class PropertyFilter(BaseFilter):
     instance: Property = None
-    options = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
+    options = Properties
     value: Value = None
     operator: Operator = None
 
