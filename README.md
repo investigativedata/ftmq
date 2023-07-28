@@ -88,6 +88,29 @@ Overwrite datasets:
 
     ftmq apply -i ./entities.ftm.json -d <aditional_dataset> --replace-dataset
 
+### Coverage / Statistics
+
+Often in ftm scripting, we are iterating through all the proxies (e.g. during aggregation). Why not use this to collect statistics on the way? There is a context manager for this, which actually is a `nomenklatura.dataset.coverage.DataCoverage` instance:
+
+```python
+from ftmq.coverage import Coverage
+
+fragments = [...]
+buffer = {}
+
+coverage = Coverage({"frequency": "unknown"})
+with coverage as cx:
+    for proxy in fragments:
+        if proxy.id in buffer:
+            buffer[proxy.id].merge(proxy)
+        else:
+            buffer[proxy.id] = proxy
+            # here collect stats:
+            cx.collect(proxy)
+
+stats = coverage.to_dict()
+```
+
 ### ftmstore (database read)
 
 **NOT IMPLEMENTED YET**

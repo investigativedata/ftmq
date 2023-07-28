@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any, Iterable
 
 from followthemoney import model
+from nomenklatura.dataset.coverage import DataCoverage
 
 
 def StrEnum(name: str, values: Iterable[Any]) -> Enum:
@@ -34,3 +35,4 @@ def StrEnum(name: str, values: Iterable[Any]) -> Enum:
 Schemata = StrEnum("Schemata", [k for k in model.schemata.keys()])
 Properties = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
 Operators = StrEnum("Operators", ["in", "null", "gt", "gte", "lt", "lte"])
+Frequencies = StrEnum("Frequencies", [f for f in DataCoverage.FREQUENCIES])
