@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.1.4"
+version = "0.1.6"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -28,7 +28,7 @@ ftmq = "ftmq.cli:cli"
 python = ">=3.10,<3.13"
 banal = "^1.0.6"
 followthemoney = "^3.4.0"
-nomenklatura = "<3"
+nomenklatura = "2.14.1"
 orjson = "^3.9.1"
 PyICU = "^2.11"
 smart-open = {version = "6.3.0", extras = ["all"]}
@@ -49,6 +49,7 @@ flake8 = "^6.0.0"
 moto = "^4.1.11"
 ipdb = "^0.13.13"
 bump2version = "^1.0.1"
+cloudpickle = "^2.2.1"
 
 
 [build-system]
