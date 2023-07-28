@@ -46,7 +46,22 @@ class Collector:
         return data.to_dict()
 
 
-class Coverage(NKCoverage):
+class CoverageContext:
+    def __enter__(self):
+        self._collector = Collector()
+        return self._collector
+
+    def __exit__(self, *args, **kwargs):
+        res = self._collector.close()
+        self._collector = None
+        self.start = res.start
+        self.end = res.end
+        self.schemata = res.schemata
+        self.entities = res.entities
+        self.countries = res.countries
+
+
+class Coverage(NKCoverage, CoverageContext):
     start: date | None = None
     end: date | None = None
     countries: list[str] | None = None
@@ -65,16 +80,3 @@ class Coverage(NKCoverage):
         data["entities"] = self.entities
         data["schemata"] = self.schemata
         return cleanup(data)
-
-    def __enter__(self):
-        self._collector = Collector()
-        return self._collector
-
-    def __exit__(self, *args, **kwargs):
-        res = self._collector.close()
-        self._collector = None
-        self.start = res.start
-        self.end = res.end
-        self.schemata = res.schemata
-        self.entities = res.entities
-        self.countries = res.countries
