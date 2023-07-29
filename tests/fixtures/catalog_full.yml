@@ -1,0 +1,26 @@
+name: Test Catalog
+maintainer:
+  name: investigraph
+  url: https://investigraph.dev
+datasets:
+  - uri: http://localhost:8000/datasets/eu_transparency_register.json
+    name: eutr
+catalogs:
+  - name: investigraph.eu
+    url: https://investigraph.eu
+    datasets:
+      - uri: http://localhost:8000/datasets/ec_meetings.json
+      - uri: http://localhost:8000/datasets/eu_fts.json
+      - uri: http://localhost:8000/datasets/eu_authorities.json
+  - name: opensanctions
+    url: https://opensanctions.org
+    maintainer:
+      name: OpenSanctions
+      description: OpenSanctions is cool
+    datasets:
+      - uri: http://localhost:8000/datasets/eu_meps.json
+      - uri: http://localhost:8000/datasets/eu_cor_members.json
+      - uri: http://localhost:8000/datasets/eu_fsf.json
+        maintainer:
+          name: pudo
+  - uri: file://tests/fixtures/ftg.catalog.json

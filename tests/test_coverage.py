@@ -1,7 +1,8 @@
+from datetime import date
 from pathlib import Path
 
-from ftmq.coverage import Coverage
 from ftmq.io import smart_read_proxies
+from ftmq.model.coverage import Coverage
 
 
 def test_coverage(fixtures_path: Path):
@@ -9,9 +10,12 @@ def test_coverage(fixtures_path: Path):
         for proxy in smart_read_proxies(fixtures_path / "ec_meetings.ftm.json"):
             c.collect(proxy)
 
+    start = date(2014, 11, 12)
+    end = date(2023, 1, 20)
+
     assert c.to_dict() == {
-        "start": "2014-11-12",
-        "end": "2023-01-20",
+        "start": start,
+        "end": end,
         "countries": ["eu"],
         "frequency": "unknown",
         "entities": 45038,
@@ -30,9 +34,9 @@ def test_coverage(fixtures_path: Path):
         for proxy in smart_read_proxies(fixtures_path / "ec_meetings.ftm.json"):
             c.collect(proxy)
 
-    assert coverage.to_dict() == {
-        "start": "2014-11-12",
-        "end": "2023-01-20",
+    assert coverage.dict() == {
+        "start": start,
+        "end": end,
         "countries": ["eu"],
         "frequency": "unknown",
         "entities": 45038,
@@ -44,4 +48,12 @@ def test_coverage(fixtures_path: Path):
             "Person": 791,
             "Organization": 7097,
         },
+    }
+
+    # nk pass through
+    assert coverage.to_dict() == {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "countries": ["eu"],
+        "frequency": "unknown",
     }

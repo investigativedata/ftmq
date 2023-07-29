@@ -1,7 +1,11 @@
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 import boto3
 import pytest
+import requests
 
 from ftmq.io import smart_read_proxies
 
@@ -41,3 +45,27 @@ def setup_s3(with_fixtures: bool | None = False):
         client = boto3.client("s3")
         for f in FIXTURES:
             client.upload_file(FIXTURES_PATH / f, "ftmq", f)
+
+
+# https://pawamoy.github.io/posts/local-http-server-fake-files-testing-purposes/
+def spawn_and_wait_server():
+    process = subprocess.Popen(
+        [sys.executable, "-m", "http.server", "-d", FIXTURES_PATH]
+    )
+    while True:
+        try:
+            requests.get("http://localhost:8000")
+        except Exception:
+            time.sleep(1)
+        else:
+            break
+    return process
+
+
+@pytest.fixture(scope="session", autouse=True)
+def http_server():
+    process = spawn_and_wait_server()
+    yield process
+    process.kill()
+    process.wait()
+    return
