@@ -3,7 +3,7 @@ import sys
 from typing import Any, Iterable, Literal
 
 import orjson
-from banal import is_listish
+from banal import ensure_list, is_listish
 from followthemoney import model
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
@@ -82,6 +82,9 @@ def smart_write_proxies(
             ix += 1
             if serialize:
                 proxy = proxy.to_dict()
+            datasets = set(ensure_list(proxy.get("datasets")))
+            datasets.discard("default")
+            proxy["datasets"] = list(datasets)
             fh.write(orjson.dumps(proxy, option=orjson.OPT_APPEND_NEWLINE))
     return ix
 

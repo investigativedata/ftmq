@@ -69,6 +69,7 @@ def test_cli_apply(fixtures_path: Path):
     assert isinstance(proxy, CompositeEntity)
     assert "another_dataset" in proxy.datasets
     assert "eu_authorities" in proxy.datasets
+    assert "default" not in proxy.datasets
 
     # replace dataset
     result = runner.invoke(
@@ -81,6 +82,7 @@ def test_cli_apply(fixtures_path: Path):
     assert isinstance(proxy, CompositeEntity)
     assert "another_dataset" in proxy.datasets
     assert "eu_authorities" not in proxy.datasets
+    assert "default" not in proxy.datasets
 
 
 def test_cli_coverage(fixtures_path: Path):
