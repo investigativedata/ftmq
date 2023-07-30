@@ -13,17 +13,20 @@ from .types import CEGenerator, SDict
 
 
 def load_proxy(data: dict[str, Any]) -> CE:
-    return CompositeEntity.from_dict(model, data)
+    proxy = CompositeEntity.from_dict(model, data)
+    proxy.datasets.discard("default")
+    return proxy
 
 
 @contextlib.contextmanager
 def smart_open(
     uri: str | None = None,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
+    *args,
     **kwargs
 ):
     if uri and uri != "-":
-        fh = open(uri, **kwargs)
+        fh = open(uri, *args, **kwargs)
     else:
         fh = sys_io
 
@@ -32,6 +35,18 @@ def smart_open(
     finally:
         if fh not in (sys.stdout.buffer, sys.stdin.buffer):
             fh.close()
+
+
+def smart_read(uri, *args, **kwargs):
+    kwargs["mode"] = kwargs.get("mode", "rb")
+    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
+        return fh.read()
+
+
+def smart_write(uri, content: bytes, *args, **kwargs):
+    kwargs["mode"] = kwargs.get("mode", "wb")
+    with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
+        fh.write(content)
 
 
 def smart_read_proxies(
@@ -52,7 +67,6 @@ def smart_read_proxies(
             data = orjson.loads(line)
             if serialize:
                 data = load_proxy(data)
-                data.datasets.discard("default")
             yield data
 
 

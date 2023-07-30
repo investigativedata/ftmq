@@ -4,7 +4,14 @@ import orjson
 from moto import mock_s3
 from nomenklatura.entity import CE, CompositeEntity
 
-from ftmq.io import apply_datasets, load_proxy, smart_read_proxies, smart_write_proxies
+from ftmq.io import (
+    apply_datasets,
+    load_proxy,
+    smart_read,
+    smart_read_proxies,
+    smart_write,
+    smart_write_proxies,
+)
 
 from .conftest import setup_s3
 
@@ -16,6 +23,12 @@ def test_io_read(fixtures_path: Path):
         success = True
         break
     assert success
+
+    # read from an iterable of uris
+    uri = fixtures_path / "eu_authorities.ftm.json"
+    uris = [uri, uri]
+    proxies = smart_read_proxies(uris, serialize=False)
+    assert len([p for p in proxies]) == 302
 
 
 def test_io_write(test_dir: Path, proxies: list[CE]):
@@ -73,3 +86,17 @@ def test_io_apply_datasets(proxies: list[CE]):
         success = True
         break
     assert success
+
+
+@mock_s3
+def test_io_generic():
+    setup_s3()
+    uri = "s3://ftmq/content"
+    content = "foo"
+    smart_write(uri, content.encode())
+    content = smart_read(uri)
+    assert isinstance(content, bytes)
+    assert content.decode() == "foo"
+    content = smart_read(uri, mode="r")
+    assert isinstance(content, str)
+    assert content == "foo"
