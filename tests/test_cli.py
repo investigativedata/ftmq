@@ -90,6 +90,7 @@ def test_cli_coverage(fixtures_path: Path):
     result = runner.invoke(
         cli, ["-i", in_uri, "-o", "/dev/null", "--coverage-uri", "-"]
     )
+    assert result.exit_code == 0
     assert orjson.loads(result.output) == {
         "start": "2014-11-12",
         "end": "2023-01-20",
@@ -105,3 +106,13 @@ def test_cli_coverage(fixtures_path: Path):
         },
         "entities": 45038,
     }
+
+
+def test_cli_io(fixtures_path: Path):
+    in_uri = str(fixtures_path / "eu_authorities.ftm.json")
+    result = runner.invoke(cli, ["io", "-i", in_uri])
+    assert result.exit_code == 0
+    lines = _get_lines(result.output)
+    assert len(lines) == 151
+    proxy = load_proxy(orjson.loads(lines[0]))
+    assert isinstance(proxy, CompositeEntity)
