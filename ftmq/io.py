@@ -25,6 +25,7 @@ def smart_open(
     *args,
     **kwargs
 ):
+    kwargs["mode"] = kwargs.get("mode", "rb")
     if uri and uri != "-":
         fh = open(uri, *args, **kwargs)
     else:
