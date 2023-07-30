@@ -90,7 +90,13 @@ Overwrite datasets:
 
 ### Coverage / Statistics
 
-Often in ftm scripting, we are iterating through all the proxies (e.g. during aggregation). Why not use this to collect statistics on the way? There is a context manager for this, which actually is a `nomenklatura.dataset.coverage.DataCoverage` instance:
+Often in ftm scripting, we are iterating through all the proxies (e.g. during aggregation). Why not use this to collect statistics on the way? There is a context manager for this, which turns into the `Coverage` model:
+
+Print coverage to stdout (and filtered entities to nowhere):
+
+    cat entities.ftm.json | ftmq -s Event -o /dev/null --coverage-uri -
+
+Within code:
 
 ```python
 from ftmq.coverage import Coverage
@@ -108,7 +114,7 @@ with coverage as cx:
             # here collect stats:
             cx.collect(proxy)
 
-stats = coverage.to_dict()
+stats = coverage.dict()
 ```
 
 ### ftmstore (database read)

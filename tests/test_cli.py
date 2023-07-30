@@ -81,3 +81,25 @@ def test_cli_apply(fixtures_path: Path):
     assert isinstance(proxy, CompositeEntity)
     assert "another_dataset" in proxy.datasets
     assert "eu_authorities" not in proxy.datasets
+
+
+def test_cli_coverage(fixtures_path: Path):
+    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-o", "/dev/null", "--coverage-uri", "-"]
+    )
+    assert orjson.loads(result.output) == {
+        "start": "2014-11-12",
+        "end": "2023-01-20",
+        "countries": ["eu"],
+        "frequency": "unknown",
+        "schemata": {
+            "Address": 1281,
+            "PublicBody": 103,
+            "Event": 34975,
+            "Membership": 791,
+            "Person": 791,
+            "Organization": 7097,
+        },
+        "entities": 45038,
+    }

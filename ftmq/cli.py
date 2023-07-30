@@ -1,8 +1,10 @@
 import click
+import orjson
 from click_default_group import DefaultGroup
 
-from ftmq.io import apply_datasets, smart_read_proxies, smart_write_proxies
+from ftmq.io import apply_datasets, smart_read_proxies, smart_write, smart_write_proxies
 
+from .model.coverage import Collector
 from .query import Query
 from .util import parse_unknown_cli_filters
 
@@ -31,6 +33,11 @@ def cli():
 @click.option(
     "--schema-include-matchable", is_flag=True, default=False, show_default=True
 )
+@click.option(
+    "--coverage-uri",
+    default=None,
+    help="If specified, print coverage information to this uri",
+)
 @click.argument("properties", nargs=-1)
 def q(
     input_uri: str | None = "-",
@@ -40,6 +47,7 @@ def q(
     schema_include_descendants: bool | None = False,
     schema_include_matchable: bool | None = False,
     properties: tuple[str] | None = (),
+    coverage_uri: str | None = None,
 ):
     """
     Apply ftmq filter to a json stream of ftm entities.
@@ -57,6 +65,10 @@ def q(
         q = q.where(prop=prop, value=value, operator=op)
 
     proxies = q.apply_iter(smart_read_proxies(input_uri))
+    if coverage_uri:
+        coverage = Collector.apply(proxies)
+        coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
+        smart_write(coverage_uri, coverage)
     smart_write_proxies(output_uri, proxies, serialize=True)
 
 
