@@ -5,4 +5,5 @@
 ### 0.2.0 (2023-07-31)
 
 - Model [nomenklatura](github.com/opensanctions/nomenklatura) catalog/dataset via pydantic
-- add generic IO handling based on `smart_open`
+- Replace `smart_open` with [fsspec](https://github.com/fsspec/filesystem_spec)
+- add generic IO handling based on `fsspec`

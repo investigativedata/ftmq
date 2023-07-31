@@ -5,9 +5,9 @@ from typing import Any, Iterable, Literal
 import orjson
 from banal import ensure_list, is_listish
 from followthemoney import model
+from fsspec import open
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
-from smart_open import open
 
 from .types import CEGenerator, SDict
 
@@ -25,16 +25,21 @@ def smart_open(
     *args,
     **kwargs
 ):
+    is_buffer = False
     kwargs["mode"] = kwargs.get("mode", "rb")
     if uri and uri != "-":
         fh = open(uri, *args, **kwargs)
     else:
         fh = sys_io
+        is_buffer = True
 
     try:
-        yield fh
+        if is_buffer:
+            yield fh
+        else:
+            yield fh.open()
     finally:
-        if fh not in (sys.stdout.buffer, sys.stdin.buffer):
+        if not is_buffer:
             fh.close()
 
 
