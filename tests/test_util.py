@@ -32,7 +32,10 @@ def test_util_str_enum():
     # https://gist.github.com/simonwoerpel/bdb9959de75e550349961677549624fb
     enum = StrEnum("Foo", ["name", "name2"])
     assert "name" in enum.__dict__
-    assert isinstance(cloudpickle.dumps(enum), bytes)
+    dump = cloudpickle.dumps(enum)
+    assert isinstance(dump, bytes)
+    enum2 = cloudpickle.loads(dump)
+    assert enum2 == enum
 
 
 def test_util_unknown_filters():
