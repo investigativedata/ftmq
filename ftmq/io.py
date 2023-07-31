@@ -1,37 +1,59 @@
 import contextlib
 import sys
-from typing import Any, Iterable, Literal
+from collections.abc import Iterable
+from typing import Any, Literal
 
 import orjson
-from banal import is_listish
+from banal import ensure_list, is_listish
 from followthemoney import model
+from fsspec import open
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
-from smart_open import open
 
-from .types import CEGenerator, SDict
+from ftmq.types import CEGenerator, SDict
 
 
 def load_proxy(data: dict[str, Any]) -> CE:
-    return CompositeEntity.from_dict(model, data)
+    proxy = CompositeEntity.from_dict(model, data)
+    proxy.datasets.discard("default")
+    return proxy
 
 
 @contextlib.contextmanager
 def smart_open(
     uri: str | None = None,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
+    *args,
     **kwargs
 ):
+    is_buffer = False
+    kwargs["mode"] = kwargs.get("mode", "rb")
     if uri and uri != "-":
-        fh = open(uri, **kwargs)
+        fh = open(uri, *args, **kwargs)
     else:
         fh = sys_io
+        is_buffer = True
 
     try:
-        yield fh
+        if is_buffer:
+            yield fh
+        else:
+            yield fh.open()
     finally:
-        if fh not in (sys.stdout.buffer, sys.stdin.buffer):
+        if not is_buffer:
             fh.close()
+
+
+def smart_read(uri, *args, **kwargs):
+    kwargs["mode"] = kwargs.get("mode", "rb")
+    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
+        return fh.read()
+
+
+def smart_write(uri, content: bytes, *args, **kwargs):
+    kwargs["mode"] = kwargs.get("mode", "wb")
+    with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
+        fh.write(content)
 
 
 def smart_read_proxies(
@@ -52,7 +74,6 @@ def smart_read_proxies(
             data = orjson.loads(line)
             if serialize:
                 data = load_proxy(data)
-                data.datasets.discard("default")
             yield data
 
 
@@ -68,6 +89,9 @@ def smart_write_proxies(
             ix += 1
             if serialize:
                 proxy = proxy.to_dict()
+            datasets = set(ensure_list(proxy.get("datasets")))
+            datasets.discard("default")
+            proxy["datasets"] = list(datasets)
             fh.write(orjson.dumps(proxy, option=orjson.OPT_APPEND_NEWLINE))
     return ix
 
