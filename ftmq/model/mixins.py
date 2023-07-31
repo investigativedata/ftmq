@@ -11,8 +11,8 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from pydantic import BaseModel
-from smart_open import open
 
+from ftmq.io import smart_read
 from ftmq.types import PathLike
 
 log = logging.getLogger(__name__)
@@ -24,8 +24,7 @@ def cached_from_uri(uri: str) -> dict[str, Any]:
     Cache RemoteMixin on runtime
     """
     log.info("Loading `%s` ..." % uri)
-    with open(uri, "rb") as fh:
-        data = fh.read()
+    data = smart_read(uri)
     return orjson.loads(data)
 
 
@@ -61,8 +60,7 @@ class YamlMixin:
 
     @classmethod
     def from_path(cls, fp: PathLike) -> "YamlMixin":
-        with open(fp) as fh:
-            data = fh.read()
+        data = smart_read(fp)
         return cls.from_string(data, base_path=Path(fp).parent)
 
 
