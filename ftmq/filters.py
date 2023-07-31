@@ -7,10 +7,10 @@ from followthemoney.schema import Schema
 from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE
 
-from .enums import Operators, Properties, Schemata, StrEnum
-from .exceptions import ValidationError
-from .types import Value
-from .util import make_dataset
+from ftmq.enums import Operators, Properties, Schemata, StrEnum
+from ftmq.exceptions import ValidationError
+from ftmq.types import Value
+from ftmq.util import make_dataset
 
 
 class BaseFilter:

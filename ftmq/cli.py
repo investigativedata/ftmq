@@ -9,10 +9,9 @@ from ftmq.io import (
     smart_write,
     smart_write_proxies,
 )
-
-from .model.coverage import Collector
-from .query import Query
-from .util import parse_unknown_cli_filters
+from ftmq.model.coverage import Collector
+from ftmq.query import Query
+from ftmq.util import parse_unknown_cli_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)

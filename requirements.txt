@@ -1,3 +1,6 @@
+absolufy-imports==0.3.1 ; python_version >= "3.10" and python_version < "3.13" \
+    --hash=sha256:49bf7c753a9282006d553ba99217f48f947e3eef09e18a700f8a82f75dc7fc5c \
+    --hash=sha256:c90638a6c0b66826d1fb4880ddc20ef7701af34192c94faf40b95d32b59f9793
 aiobotocore==2.5.2 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:337429ffd3cc367532572d40be809a84c7b5335f3f8eca2f23e09dfaa9a9ef90 \
     --hash=sha256:e7399f21570db1c287f1c0c814dd3475dfe1c8166722e2c77ce67f172cbcfa89

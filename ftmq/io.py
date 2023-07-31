@@ -1,6 +1,7 @@
 import contextlib
 import sys
-from typing import Any, Iterable, Literal
+from collections.abc import Iterable
+from typing import Any, Literal
 
 import orjson
 from banal import ensure_list, is_listish
@@ -9,7 +10,7 @@ from fsspec import open
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
 
-from .types import CEGenerator, SDict
+from ftmq.types import CEGenerator, SDict
 
 
 def load_proxy(data: dict[str, Any]) -> CE:
