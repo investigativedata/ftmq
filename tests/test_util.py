@@ -29,13 +29,13 @@ def test_util_str_enum():
     if sys.version_info >= (3, 11):
         assert isinstance(enum, EnumType)
 
-    # https://gist.github.com/simonwoerpel/bdb9959de75e550349961677549624fb
-    enum = StrEnum("Foo", ["name", "name2"])
-    assert "name" in enum.__dict__
-    dump = cloudpickle.dumps(enum)
-    assert isinstance(dump, bytes)
-    enum2 = cloudpickle.loads(dump)
-    assert enum2 == enum
+        # https://gist.github.com/simonwoerpel/bdb9959de75e550349961677549624fb
+        enum = StrEnum("Foo", ["name", "name2"])
+        assert "name" in enum.__dict__
+        dump = cloudpickle.dumps(enum)
+        assert isinstance(dump, bytes)
+        enum2 = cloudpickle.loads(dump)
+        assert enum2 == enum
 
 
 def test_util_unknown_filters():
