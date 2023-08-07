@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
 from nomenklatura.entity import CE
+from nomenklatura.statement.statement import S
 
 from ftmq.enums import Frequencies, Properties, Schemata
 
@@ -16,6 +17,7 @@ Value: TypeAlias = list[str]
 
 # composite entity generator
 CEGenerator: TypeAlias = Generator[CE, None, None]
+SGenerator: TypeAlias = Generator[S, None, None]
 
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
@@ -36,6 +38,7 @@ __all__ = [
     Properties,
     Schemata,
     SDict,
+    SGenerator,
     StrGenerator,
     Value,
 ]

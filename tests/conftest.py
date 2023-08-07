@@ -1,8 +1,9 @@
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 from unittest.mock import MagicMock
 
 import aiobotocore.awsrequest
@@ -22,13 +23,6 @@ FIXTURES_PATH = (Path(__file__).parent / "fixtures").absolute()
 FIXTURES = ("ec_meetings.ftm.json", "eu_authorities.ftm.json")
 
 
-def get_proxies():
-    proxies = []
-    for f in FIXTURES:
-        proxies.extend(smart_read_proxies(FIXTURES_PATH / f))
-    return proxies
-
-
 @pytest.fixture(scope="module")
 def fixtures_path():
     return FIXTURES_PATH
@@ -43,7 +37,10 @@ def test_dir():
 
 @pytest.fixture(scope="module")
 def proxies():
-    return get_proxies()
+    proxies = []
+    for f in FIXTURES:
+        proxies.extend(smart_read_proxies(FIXTURES_PATH / f))
+    return proxies
 
 
 # https://pawamoy.github.io/posts/local-http-server-fake-files-testing-purposes/
