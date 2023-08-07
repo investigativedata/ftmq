@@ -18,9 +18,12 @@ from ftmq.util import make_dataset
 log = logging.getLogger(__name__)
 
 
-def load_proxy(data: dict[str, Any]) -> CE:
+def load_proxy(data: dict[str, Any], dataset: str | None = None) -> CE:
     datasets = ensure_list(data.pop("datasets", None))
-    if datasets:
+    if dataset is not None:
+        datasets.append(dataset)
+        dataset = make_dataset(dataset)
+    elif datasets:
         dataset = datasets[0]
         dataset = make_dataset(dataset)
     else:
