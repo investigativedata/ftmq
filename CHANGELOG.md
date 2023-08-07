@@ -2,6 +2,10 @@
 
 ## CHANGELOG
 
+### 0.2.1 (2023-08-07)
+
+- Align with `nomenklatura` v3
+
 ### 0.2.0 (2023-07-31)
 
 - Model [nomenklatura](https://github.com/opensanctions/nomenklatura) catalog/dataset via pydantic
