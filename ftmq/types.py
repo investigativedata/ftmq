@@ -1,10 +1,12 @@
 import os
+from collections.abc import Generator
+from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Generator, Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from nomenklatura.entity import CE
 
-from .enums import Frequencies, Properties, Schemata
+from ftmq.enums import Frequencies, Properties, Schemata
 
 # a string-keyed dict
 SDict: TypeAlias = dict[str, Any]
@@ -23,7 +25,7 @@ Properties: TypeAlias = Literal[tuple(p.name for p in Properties)]
 Frequencies: TypeAlias = Literal[tuple(f.name for f in Frequencies)]
 
 PathLike: TypeAlias = str | os.PathLike[str] | Path
-
+DateLike: TypeAlias = date | datetime
 
 __all__ = [
     BytesGenerator,
