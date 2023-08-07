@@ -2,13 +2,13 @@ import pytest
 from followthemoney import model
 
 from ftmq.exceptions import ValidationError
-from ftmq.io import load_proxy
+from ftmq.io import make_proxy
 from ftmq.query import Query
 
 
 def test_proxy_composite():
     data = {"id": "1", "schema": "Thing", "properties": {"name": "Test"}}
-    proxy = load_proxy(data)
+    proxy = make_proxy(data)
     assert proxy.id == "1"
     assert proxy.get("name") == ["Test"]
     assert proxy.datasets == {"default"}
@@ -19,7 +19,7 @@ def test_proxy_composite():
         "properties": {"name": "Test"},
         "datasets": ["test_dataset"],
     }
-    proxy = load_proxy(data)
+    proxy = make_proxy(data)
     assert proxy.id == "1"
     assert proxy.get("name") == ["Test"]
     assert proxy.datasets == {"test_dataset"}
@@ -30,7 +30,7 @@ def test_proxy_composite():
         "properties": {"name": "Test"},
         "datasets": ["test_dataset", "ds2"],
     }
-    proxy = load_proxy(data, "another_dataset")
+    proxy = make_proxy(data, "another_dataset")
     assert proxy.id == "1"
     assert proxy.get("name") == ["Test"]
     assert proxy.datasets == {"another_dataset", "ds2", "test_dataset"}

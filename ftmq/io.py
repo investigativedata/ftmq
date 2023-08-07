@@ -18,7 +18,7 @@ from ftmq.util import make_dataset
 log = logging.getLogger(__name__)
 
 
-def load_proxy(data: dict[str, Any], dataset: str | None = None) -> CE:
+def make_proxy(data: dict[str, Any], dataset: str | None = None) -> CE:
     datasets = ensure_list(data.pop("datasets", None))
     if dataset is not None:
         datasets.append(dataset)
@@ -89,7 +89,7 @@ def smart_read_proxies(
                 break
             data = orjson.loads(line)
             if serialize:
-                data = load_proxy(data)
+                data = make_proxy(data)
             yield data
 
 
