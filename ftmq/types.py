@@ -1,10 +1,13 @@
 import os
+from collections.abc import Generator
+from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Generator, Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from nomenklatura.entity import CE
+from nomenklatura.statement.statement import S
 
-from .enums import Frequencies, Properties, Schemata
+from ftmq.enums import Frequencies, Properties, Schemata
 
 # a string-keyed dict
 SDict: TypeAlias = dict[str, Any]
@@ -14,6 +17,7 @@ Value: TypeAlias = list[str]
 
 # composite entity generator
 CEGenerator: TypeAlias = Generator[CE, None, None]
+SGenerator: TypeAlias = Generator[S, None, None]
 
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
@@ -23,7 +27,7 @@ Properties: TypeAlias = Literal[tuple(p.name for p in Properties)]
 Frequencies: TypeAlias = Literal[tuple(f.name for f in Frequencies)]
 
 PathLike: TypeAlias = str | os.PathLike[str] | Path
-
+DateLike: TypeAlias = date | datetime
 
 __all__ = [
     BytesGenerator,
@@ -34,6 +38,7 @@ __all__ = [
     Properties,
     Schemata,
     SDict,
+    SGenerator,
     StrGenerator,
     Value,
 ]

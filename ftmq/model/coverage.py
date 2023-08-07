@@ -1,21 +1,19 @@
 from collections import Counter
-from datetime import date
 from typing import Any
 
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from pydantic import PrivateAttr
 
 from ftmq.enums import Properties
-from ftmq.types import CE, CEGenerator, Frequencies, Schemata
-
-from .mixins import NKModel
+from ftmq.model.mixins import NKModel
+from ftmq.types import CE, CEGenerator, DateLike, Frequencies, Schemata
 
 
 class Collector:
     schemata: Counter = None
     countries: set[str] = None
-    start: set[date] = None
-    end: set[date] = None
+    start: set[DateLike] = None
+    end: set[DateLike] = None
 
     def __init__(self):
         self.schemata = Counter()
@@ -59,8 +57,8 @@ class Coverage(NKModel):
     _nk_model = NKCoverage
     _collector: Collector | None = PrivateAttr()
 
-    start: date | None = None
-    end: date | None = None
+    start: DateLike | None = None
+    end: DateLike | None = None
     countries: list[str] | None = []
     frequency: Frequencies | None = "unknown"
 

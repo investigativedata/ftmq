@@ -1,21 +1,37 @@
 import contextlib
+import logging
 import sys
 from collections.abc import Iterable
 from typing import Any, Literal
 
 import orjson
 from banal import ensure_list, is_listish
-from followthemoney import model
 from fsspec import open
+from nomenklatura.dataset import DefaultDataset
 from nomenklatura.entity import CE, CompositeEntity
+from nomenklatura.statement import Statement
 from nomenklatura.util import PathLike
 
-from ftmq.types import CEGenerator, SDict
+from ftmq.types import CEGenerator, SDict, SGenerator
+from ftmq.util import make_dataset
+
+log = logging.getLogger(__name__)
 
 
-def load_proxy(data: dict[str, Any]) -> CE:
-    proxy = CompositeEntity.from_dict(model, data)
-    proxy.datasets.discard("default")
+def make_proxy(data: dict[str, Any], dataset: str | None = None) -> CE:
+    datasets = ensure_list(data.pop("datasets", None))
+    if dataset is not None:
+        datasets.append(dataset)
+        dataset = make_dataset(dataset)
+    elif datasets:
+        dataset = datasets[0]
+        dataset = make_dataset(dataset)
+    else:
+        dataset = DefaultDataset
+    proxy = CompositeEntity(dataset, data)
+    if datasets:
+        statements = get_statements(proxy, *datasets)
+        return CompositeEntity.from_statements(dataset, statements)
     return proxy
 
 
@@ -73,7 +89,7 @@ def smart_read_proxies(
                 break
             data = orjson.loads(line)
             if serialize:
-                data = load_proxy(data)
+                data = make_proxy(data)
             yield data
 
 
@@ -101,8 +117,14 @@ def apply_datasets(
 ) -> CEGenerator:
     for proxy in proxies:
         if datasets:
-            if replace:
-                proxy.datasets = set(datasets)
-            else:
-                proxy.datasets.update(datasets)
-        yield proxy
+            if not replace:
+                datasets = proxy.datasets | set(datasets)
+            statements = get_statements(proxy, *datasets)
+            dataset = make_dataset(list(datasets)[0])
+        yield CompositeEntity.from_statements(dataset, statements)
+
+
+def get_statements(proxy: CE, *datasets: Iterable[str]) -> SGenerator:
+    datasets = datasets or ["default"]
+    for dataset in datasets:
+        yield from Statement.from_entity(proxy, dataset)

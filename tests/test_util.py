@@ -18,7 +18,6 @@ def test_util_make_dataset():
         "name": "Test",
         "title": "Test",
         "resources": [],
-        "children": [],
     }
 
 

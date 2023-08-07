@@ -5,7 +5,7 @@ from click.testing import CliRunner
 from nomenklatura.entity import CompositeEntity
 
 from ftmq.cli import cli
-from ftmq.io import load_proxy
+from ftmq.io import make_proxy
 
 runner = CliRunner()
 
@@ -24,7 +24,7 @@ def test_cli(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
-    proxy = load_proxy(orjson.loads(lines[0]))
+    proxy = make_proxy(orjson.loads(lines[0]))
     assert isinstance(proxy, CompositeEntity)
 
     result = runner.invoke(cli, ["-i", in_uri, "-d", "other_dataset"])
@@ -65,7 +65,7 @@ def test_cli_apply(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
-    proxy = load_proxy(orjson.loads(lines[0]))
+    proxy = make_proxy(orjson.loads(lines[0]))
     assert isinstance(proxy, CompositeEntity)
     assert "another_dataset" in proxy.datasets
     assert "eu_authorities" in proxy.datasets
@@ -78,7 +78,7 @@ def test_cli_apply(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
-    proxy = load_proxy(orjson.loads(lines[0]))
+    proxy = make_proxy(orjson.loads(lines[0]))
     assert isinstance(proxy, CompositeEntity)
     assert "another_dataset" in proxy.datasets
     assert "eu_authorities" not in proxy.datasets
@@ -114,5 +114,5 @@ def test_cli_io(fixtures_path: Path):
     assert result.exit_code == 0
     lines = _get_lines(result.output)
     assert len(lines) == 151
-    proxy = load_proxy(orjson.loads(lines[0]))
+    proxy = make_proxy(orjson.loads(lines[0]))
     assert isinstance(proxy, CompositeEntity)

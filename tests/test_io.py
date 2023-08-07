@@ -6,14 +6,13 @@ from nomenklatura.entity import CE, CompositeEntity
 
 from ftmq.io import (
     apply_datasets,
-    load_proxy,
+    make_proxy,
     smart_read,
     smart_read_proxies,
     smart_write,
     smart_write_proxies,
 )
-
-from .conftest import setup_s3
+from tests.conftest import setup_s3
 
 
 def test_io_read(fixtures_path: Path):
@@ -49,7 +48,7 @@ def test_io_write_stdout(capsys, proxies: list[CE]):
     captured = capsys.readouterr()
     proxy = None
     for line in captured.out.split("\n"):
-        proxy = load_proxy(orjson.loads(line))
+        proxy = make_proxy(orjson.loads(line))
         break
     assert isinstance(proxy, CompositeEntity)
 
