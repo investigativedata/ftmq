@@ -40,7 +40,7 @@ def smart_open(
     uri: str | None = None,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
     *args,
-    **kwargs
+    **kwargs,
 ):
     is_buffer = False
     kwargs["mode"] = kwargs.get("mode", "rb")
@@ -83,10 +83,7 @@ def smart_read_proxies(
         return
 
     with smart_open(uri, sys.stdin.buffer, mode=mode) as fh:
-        while True:
-            line = fh.readline()
-            if not line:
-                break
+        while line := fh.readline():
             data = orjson.loads(line)
             if serialize:
                 data = make_proxy(data)
