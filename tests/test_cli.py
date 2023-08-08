@@ -57,6 +57,18 @@ def test_cli(fixtures_path: Path):
     lines = _get_lines(result.output)
     assert len(lines) == 3575
 
+    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    result = runner.invoke(cli, ["-i", in_uri, "-s", "Person", "--sort", "name"])
+    lines = _get_lines(result.output)
+    data = orjson.loads(lines[0])
+    assert data["caption"] == "Aare Järvan"
+    result = runner.invoke(
+        cli, ["-i", in_uri, "-s", "Person", "--sort", "name", "--sort-descending"]
+    )
+    lines = _get_lines(result.output)
+    data = orjson.loads(lines[0])
+    assert data["caption"] == "Zaneta Vegnere"
+
 
 def test_cli_apply(fixtures_path: Path):
     in_uri = str(fixtures_path / "eu_authorities.ftm.json")

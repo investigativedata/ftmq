@@ -38,6 +38,14 @@ def cli():
 @click.option(
     "--schema-include-matchable", is_flag=True, default=False, show_default=True
 )
+@click.option("--sort", help="Properties to sort for", multiple=True)
+@click.option(
+    "--sort-ascending/--sort-descending",
+    is_flag=True,
+    help="Sort in ascending order",
+    default=True,
+    show_default=True,
+)
 @click.option(
     "--coverage-uri",
     default=None,
@@ -51,6 +59,8 @@ def q(
     schema: tuple[str] | None = (),
     schema_include_descendants: bool | None = False,
     schema_include_matchable: bool | None = False,
+    sort: tuple[str] | None = None,
+    sort_ascending: bool | None = True,
     properties: tuple[str] | None = (),
     coverage_uri: str | None = None,
 ):
@@ -68,6 +78,8 @@ def q(
         )
     for prop, value, op in parse_unknown_cli_filters(properties):
         q = q.where(prop=prop, value=value, operator=op)
+    if len(sort):
+        q = q.sort(*sort, ascending=sort_ascending)
 
     proxies = q.apply_iter(smart_read_proxies(input_uri))
     if coverage_uri:
