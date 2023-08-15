@@ -1,13 +1,15 @@
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+from followthemoney.model import registry
 from nomenklatura.db import get_statement_table
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import NUMERIC, and_, func, or_, select
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.elements import BooleanClauseList
 from sqlalchemy.sql.selectable import Select
 
-from ftmq.enums import Operators
+from ftmq.enums import Operators, PropertyTypes
+from ftmq.exceptions import ValidationError
 from ftmq.filters import PropertyFilter
 
 if TYPE_CHECKING:
@@ -71,9 +73,16 @@ class Sql:
     @cached_property
     def _sorted_statements(self) -> Select:
         if self.q.sort:
-            prop = self.q.sort.values[0]  # FIXME
+            if len(self.q.sort.values) > 1:
+                raise ValidationError(
+                    f"Multi-valued sort not supported for `{self.__class__.__name__}`"
+                )
+            prop = self.q.sort.values[0]
+            value = self.table.c.value
+            if PropertyTypes[prop].value == registry.number:
+                value = func.cast(self.table.c.value, NUMERIC)
             inner = (
-                select(self.table.c.entity_id, self.table.c.value)
+                select(self.table.c.entity_id, value)
                 .where(
                     and_(
                         self.table.c.prop == prop,

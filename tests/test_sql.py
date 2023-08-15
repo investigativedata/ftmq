@@ -1,5 +1,7 @@
+import pytest
 from sqlalchemy.sql.selectable import Select
 
+from ftmq.exceptions import ValidationError
 from ftmq.query import Query
 
 
@@ -119,3 +121,12 @@ def test_sql():
         ORDER BY anon_1.value DESC, nk_store.entity_id
         """,
     )
+
+    # cast order by
+    q = Query().order_by("amount")
+    assert "CAST(nk_store.value AS NUMERIC)" in str(q.sql.statements)
+
+    # no multi-value sort
+    q = Query().order_by("name", "title")
+    with pytest.raises(ValidationError):
+        q.sql.statements
