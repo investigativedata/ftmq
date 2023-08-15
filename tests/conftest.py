@@ -29,18 +29,16 @@ def fixtures_path():
 
 
 @pytest.fixture(scope="module")
-def test_dir():
-    path = Path(".test").absolute()
-    path.mkdir(exist_ok=True)
-    return path
-
-
-@pytest.fixture(scope="module")
 def proxies():
     proxies = []
     for f in FIXTURES:
         proxies.extend(smart_read_proxies(FIXTURES_PATH / f))
     return proxies
+
+
+@pytest.fixture(scope="module")
+def eu_authorities():
+    return [x for x in smart_read_proxies(FIXTURES_PATH / FIXTURES[1])]
 
 
 # https://pawamoy.github.io/posts/local-http-server-fake-files-testing-purposes/

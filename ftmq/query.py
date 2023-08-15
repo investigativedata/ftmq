@@ -16,6 +16,7 @@ from ftmq.filters import (
     SchemaFilter,
     Value,
 )
+from ftmq.sql import Sql
 from ftmq.types import CEGenerator
 
 Q = TypeVar("Q", bound="Query")
@@ -46,7 +47,7 @@ class Sort:
                 values = values + (tuple(p_values))
         return values
 
-    def apply_iter(self, proxies: CE) -> CEGenerator:
+    def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
         yield from sorted(
             proxies, key=lambda x: self.apply(x), reverse=not self.ascending
         )
@@ -68,17 +69,17 @@ class Query:
         "include_matchable",
     }
     filters: set[F] = set()
-    order_by: Sort | None = None
+    sort: Sort | None = None
     slice: Slice | None = None
 
     def __init__(
         self,
         filters: Iterable[F] | None = None,
-        order_by: Sort | None = None,
+        sort: Sort | None = None,
         slice: Slice | None = None,
     ):
         self.filters = set(ensure_list(filters))
-        self.order_by = order_by
+        self.sort = sort
         self.slice = slice
 
     def __getitem__(self, value: Any) -> Any:
@@ -92,6 +93,12 @@ class Query:
                 raise ValidationError(f"Invalid slicing: `{value}`")
             return self._chain(slice=value)
         raise NotImplementedError
+
+    def __bool__(self) -> bool:
+        """
+        Detect if we have anything to do
+        """
+        return bool(self.to_dict())
 
     def _chain(self, **kwargs):
         # merge current state
@@ -115,14 +122,44 @@ class Query:
                 new_kwargs[key] = new_value
         return self.__class__(**new_kwargs)
 
-    def to_dict(self) -> dict[str, Any]:
+    @property
+    def lookups(self) -> dict[str, Any]:
         data = {}
         for fi in self.filters:
             data.update(fi.to_dict())
-        if self.order_by:
-            data["order_by"] = self.order_by.serialize()
+        return data
+
+    @property
+    def limit(self) -> int | None:
+        return self.slice.stop if self.slice else None
+
+    @property
+    def offset(self) -> int | None:
+        return self.slice.start if self.slice else None
+
+    @property
+    def sql(self) -> Sql:
+        return Sql(self)
+
+    @property
+    def datasets(self) -> set[DatasetFilter]:
+        return {f for f in self.filters if isinstance(f, DatasetFilter)}
+
+    @property
+    def schemata(self) -> set[SchemaFilter]:
+        return {f for f in self.filters if isinstance(f, SchemaFilter)}
+
+    @property
+    def properties(self) -> set[PropertyFilter]:
+        return {f for f in self.filters if isinstance(f, PropertyFilter)}
+
+    def to_dict(self) -> dict[str, Any]:
+        data = self.lookups
+        if self.sort:
+            data["order_by"] = self.sort.serialize()
         if self.slice:
-            data["slice"] = [self.slice.start, self.slice.stop, self.slice.step]
+            data["limit"] = self.limit
+            data["offset"] = self.offset
         return data
 
     def where(self, **lookup: Lookup) -> Q:
@@ -149,8 +186,8 @@ class Query:
             self.filters.add(f)
         return self._chain()
 
-    def sort(self, *values: Iterable[str], ascending: bool | None = True) -> Q:
-        self.order_by = Sort(values=values, ascending=ascending)
+    def order_by(self, *values: Iterable[str], ascending: bool | None = True) -> Q:
+        self.sort = Sort(values=values, ascending=ascending)
         return self._chain()
 
     def apply(self, proxy: CE) -> bool:
@@ -162,9 +199,13 @@ class Query:
         """
         apply a `Query` to a generator of proxies and return a generator of filtered proxies
         """
+        if not self:
+            yield from proxies
+            return
+
         proxies = (p for p in proxies if self.apply(p))
-        if self.order_by:
-            proxies = self.order_by.apply_iter(proxies)
+        if self.sort:
+            proxies = self.sort.apply_iter(proxies)
         if self.slice:
             proxies = islice(
                 proxies, self.slice.start, self.slice.stop, self.slice.step

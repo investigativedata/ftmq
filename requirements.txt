@@ -101,6 +101,9 @@ aioitertools==0.11.0 ; python_version >= "3.10" and python_version < "3.13" \
 aiosignal==1.3.1 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:54cd96e15e1649b75d6c87526a6ff0b6c1b0dd3459f43d9ca11d48c339b68cfc \
     --hash=sha256:f8376fb07dd1e86a584e4fcdec80b36b7f81aac666ebc724e2c090300dd83b17
+alephclient==2.3.6 ; python_version >= "3.10" and python_version < "3.13" \
+    --hash=sha256:41b0cb4494d6b8edd6e107593cb4b5542ba88ccea4d4fe0ca838e052f64c6146 \
+    --hash=sha256:9facda92111e784fad3bba86a20ef1355aa8a2e584f1e3a2d0dad2cf9aa03162
 appnope==0.1.3 ; python_version >= "3.10" and python_version < "3.13" and sys_platform == "darwin" \
     --hash=sha256:02bd91c4de869fbb1e1c50aafc4098827a7a54ab2f39d9dcba6c9547ed920e24 \
     --hash=sha256:265a455292d0bd8a72453494fa24df5a11eb18373a60c7c0430889f22548605e
@@ -1057,9 +1060,7 @@ networkx==3.1 ; python_version >= "3.10" and python_version < "3.13" \
 nodeenv==1.8.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:d51e0c37e64fbf47d017feac3145cdbb58836d7eee8c6f6d3b6880c5456227d2 \
     --hash=sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec
-nomenklatura==3.3.7 ; python_version >= "3.10" and python_version < "3.13" \
-    --hash=sha256:2e1b6659d1b582f83ef44382989faee36fb506ed129f2e0633804287bf5d673c \
-    --hash=sha256:4e81f6d72465a2dfb5a78b572d328b0da05f6d05c338c491a6dc22cc54ad4694
+nomenklatura @ file:///home/elliot/Projects/nomenklatura ; python_version >= "3.10" and python_version < "3.13"
 normality==2.4.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:38bbe4e1dfd737c318ffd70e981ae8ff40bd8839393f6d62f0e200e5aab9e992 \
     --hash=sha256:8bd9dd5a0220f641ed4cc59b7ad64ab11b0ee49e57e5a70bf515445ff72574d2
@@ -1454,6 +1455,9 @@ rdflib==6.3.2 ; python_version >= "3.10" and python_version < "3.13" \
 requests-oauthlib==1.3.1 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:2577c501a2fb8d05a304c09d090d6e47c306fef15809d102b327cf8364bddab5 \
     --hash=sha256:75beac4a47881eeb94d5ea5d6ad31ef88856affe2332b9aafb52c6452ccf0d7a
+requests-toolbelt==1.0.0 ; python_version >= "3.10" and python_version < "3.13" \
+    --hash=sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6 \
+    --hash=sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06
 requests==2.31.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
     --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1

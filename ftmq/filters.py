@@ -1,6 +1,6 @@
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from banal import as_bool, ensure_list
+from banal import as_bool, ensure_list, is_listish
 from followthemoney import model
 from followthemoney.property import Property
 from followthemoney.schema import Schema
@@ -25,15 +25,24 @@ class BaseFilter:
         return f"<{self.__class__.__name__}: `{self.instance}`>"
 
     def __str__(self) -> str:
-        return str(self.instance)
+        return self.instance.name
+
+    def __hash__(self) -> int:
+        return hash((self.get_key(), self.get_value()))
+
+    def __eq__(self, other: Any) -> bool:
+        return hash(self) == hash(other)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {self.get_key(): self.get_value()}
 
     def validate(self):
         if self.options is None:
             return
         try:
-            self.options[self.get_str_value()]
+            self.options[str(self)]
         except (KeyError, AttributeError):
-            raise ValidationError(f"{self}: invalid value: `{self.instance}`")
+            raise ValidationError(f"Invalid value: `{self.instance}`")
 
     def apply(self, proxy: CE) -> bool:
         raise NotImplementedError
@@ -41,8 +50,11 @@ class BaseFilter:
     def get_instance(self, value: str) -> Dataset | Schema | Property:
         raise NotImplementedError
 
-    def get_str_value(self) -> str:
-        return str(self.instance)
+    def get_key(self) -> str:
+        return self.instance.__class__.__name__.lower()
+
+    def get_value(self) -> str:
+        return str(self)
 
 
 class DatasetFilter(BaseFilter):
@@ -87,14 +99,17 @@ class SchemaFilter(BaseFilter):
             value = model.get(value)
         return value
 
-    def get_str_value(self) -> str:
-        return self.instance.name
-
 
 class Operator:
     def __init__(self, operator: Operators, value: str | None = None):
         self.operator = self.get_operator(operator)
         self.value = value
+
+    def __str__(self) -> str:
+        return str(self.operator)
+
+    def __eq__(self, other: Any) -> bool:
+        return str(self) == str(other)
 
     def get_value(self):
         if self.operator == "in":
@@ -107,12 +122,20 @@ class Operator:
         try:
             return Operators[operator]
         except KeyError:
-            raise ValidationError(f"{self}: Invalid oparator: `{operator}`")
+            raise ValidationError(f"Invalid oparator: `{operator}`")
 
     def apply(self, value: str | None) -> bool:
         parsed_value = self.get_value()
+        if self.operator == "not":
+            return value != parsed_value
         if self.operator == "in":
             return value in parsed_value
+        if self.operator == "not_in":
+            return value not in parsed_value
+        if self.operator == "startswith":
+            return value.startswith(parsed_value)
+        if self.operator == "endswith":
+            return value.endswith(parsed_value)
         if self.operator == "null":
             return not value == parsed_value
         if self.operator == "gt":
@@ -139,6 +162,12 @@ class PropertyFilter(BaseFilter):
         else:
             self.operator = None
 
+    def __hash__(self) -> int:
+        return hash((self.get_key(), str(self.value)))
+
+    def __eq__(self, other: Any) -> bool:
+        return hash(self) == hash(other)
+
     def apply(self, proxy: CE) -> bool:
         values = proxy.get(self.instance.name, quiet=True)
         if self.operator is not None:
@@ -149,14 +178,32 @@ class PropertyFilter(BaseFilter):
             return self.value in values
 
     def get_instance(self, value: str | Property) -> Property:
+        if isinstance(value, Property):
+            return value
         if isinstance(value, str):
             for prop in model.properties:
                 if prop.name == value or prop.qname == value:
                     return prop
-        return value
+        raise ValidationError(f"Invalid prop: `{value}`")
 
-    def get_str_value(self):
+    def get_key(self) -> str:
         return self.instance.name
+
+    def get_value(self) -> str | list[str] | dict[str, Any]:
+        if self.operator is not None:
+            return {str(self.operator): self.casted_value}
+        return str(self.value)
+
+    @property
+    def casted_value(self) -> str | list[str]:
+        if self.operator is not None and self.operator == "in":
+            return [str(v) for v in ensure_list(self.value)]
+        if is_listish(self.value):
+            return [str(v) for v in self.value]
+        return str(self.value)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"prop": self.get_key(), "value": self.get_value()}
 
 
 Filter = DatasetFilter | SchemaFilter | PropertyFilter

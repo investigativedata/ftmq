@@ -49,7 +49,14 @@ def cli():
 @click.option(
     "--coverage-uri",
     default=None,
+    show_default=True,
     help="If specified, print coverage information to this uri",
+)
+@click.option(
+    "--store-dataset",
+    default=None,
+    show_default=True,
+    help="If specified, default dataset for source and target stores",
 )
 @click.argument("properties", nargs=-1)
 def q(
@@ -63,6 +70,7 @@ def q(
     sort_ascending: bool | None = True,
     properties: tuple[str] | None = (),
     coverage_uri: str | None = None,
+    store_dataset: str | None = None,
 ):
     """
     Apply ftmq filter to a json stream of ftm entities.
@@ -79,14 +87,19 @@ def q(
     for prop, value, op in parse_unknown_cli_filters(properties):
         q = q.where(prop=prop, value=value, operator=op)
     if len(sort):
-        q = q.sort(*sort, ascending=sort_ascending)
+        q = q.order_by(*sort, ascending=sort_ascending)
 
-    proxies = q.apply_iter(smart_read_proxies(input_uri))
+    if len(dataset) == 1:
+        store_dataset = store_dataset or dataset[0]
+    proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
     if coverage_uri:
-        coverage = Collector.apply(proxies)
+        coverage = Collector()
+        proxies = coverage.apply(proxies)
+    smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
+    if coverage_uri:
+        coverage = coverage.export()
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
-    smart_write_proxies(output_uri, proxies, serialize=True)
 
 
 @cli.command("apply")

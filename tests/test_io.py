@@ -12,6 +12,7 @@ from ftmq.io import (
     smart_write,
     smart_write_proxies,
 )
+from ftmq.store import get_store
 from tests.conftest import setup_s3
 
 
@@ -30,8 +31,8 @@ def test_io_read(fixtures_path: Path):
     assert len([p for p in proxies]) == 302
 
 
-def test_io_write(test_dir: Path, proxies: list[CE]):
-    path = test_dir / "proxies.json"
+def test_io_write(tmp_path: Path, proxies: list[CE]):
+    path = tmp_path / "proxies.json"
     res = smart_write_proxies(path, proxies[:99], serialize=True)
     assert res == 99
     success = False
@@ -99,3 +100,23 @@ def test_io_generic():
     content = smart_read(uri, mode="r")
     assert isinstance(content, str)
     assert content == "foo"
+
+
+def test_io_store(tmp_path, eu_authorities):
+    uri = f"leveldb://{tmp_path}/level.db"
+    store = get_store(uri, dataset="eu_authorities")
+    with store.writer() as bulk:
+        for proxy in eu_authorities:
+            bulk.add_entity(proxy)
+            break
+    tested = False
+    for proxy in smart_read_proxies(uri, dataset="eu_authorities"):
+        assert isinstance(proxy, CompositeEntity)
+        tested = True
+        break
+    assert tested
+
+    res = smart_write_proxies(uri, eu_authorities, dataset="eu_authorities")
+    assert res == 151
+    res = [p for p in smart_read_proxies(uri, dataset="eu_authorities")]
+    assert len(res) == 151

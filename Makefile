@@ -13,9 +13,7 @@ typecheck:
 	poetry run mypy --strict ftmq
 
 test:
-	rm -rf .test
 	poetry run pytest -v --capture=sys --cov=ftmq --cov-report term-missing
-	rm -rf .test
 
 build:
 	poetry run build

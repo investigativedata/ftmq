@@ -42,15 +42,15 @@ class Collector:
         data = self.export()
         return data.dict()
 
-    @classmethod
-    def apply(cls, proxies: CEGenerator) -> "Coverage":
+    def apply(self, proxies: CEGenerator) -> CEGenerator:
         """
         Generate coverage from an input stream of proxies
+        This returns a generator again, so actual collection of coverage stats
+        will happen if the actual generator is executed
         """
-        cov = cls()
         for proxy in proxies:
-            cov.collect(proxy)
-        return cov.export()
+            self.collect(proxy)
+            yield proxy
 
 
 class Coverage(NKModel):
@@ -78,3 +78,13 @@ class Coverage(NKModel):
         self.schemata = res.schemata
         self.entities = res.entities
         self.countries = res.countries
+
+    def apply(self, proxies: CEGenerator) -> "Coverage":
+        """
+        Generate coverage from an input stream of proxies
+        """
+        if self._collector is None:
+            self._collector = Collector()
+        for proxy in proxies:
+            self._collector.collect(proxy)
+        self.__exit__()

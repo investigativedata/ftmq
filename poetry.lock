@@ -188,6 +188,27 @@ files = [
 frozenlist = ">=1.1.0"
 
 [[package]]
+name = "alephclient"
+version = "2.3.6"
+description = "Command-line client for Aleph API"
+optional = false
+python-versions = "*"
+files = [
+    {file = "alephclient-2.3.6-py2.py3-none-any.whl", hash = "sha256:9facda92111e784fad3bba86a20ef1355aa8a2e584f1e3a2d0dad2cf9aa03162"},
+    {file = "alephclient-2.3.6.tar.gz", hash = "sha256:41b0cb4494d6b8edd6e107593cb4b5542ba88ccea4d4fe0ca838e052f64c6146"},
+]
+
+[package.dependencies]
+banal = ">=1.0.1"
+click = ">=7.0"
+pyyaml = "*"
+requests = ">=2.21.0"
+requests-toolbelt = ">=0.9.1"
+
+[package.extras]
+dev = ["mypy", "pytest", "pytest-mock (>=1.10.0)", "wheel"]
+
+[[package]]
 name = "appnope"
 version = "0.1.3"
 description = "Disable App Nap on macOS >= 10.9"
@@ -2229,10 +2250,8 @@ version = "3.3.8"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
-files = [
-    {file = "nomenklatura-3.3.8-py3-none-any.whl", hash = "sha256:8c95999f02e255c92cdae955a5c6a19b787871fd715056fc043cc93493c76c1d"},
-    {file = "nomenklatura-3.3.8.tar.gz", hash = "sha256:020f95856600fec27a61533c5112947a2fef943a77a2a4afdf67090acd8d19dc"},
-]
+files = []
+develop = true
 
 [package.dependencies]
 click = ">=8.0.0,<8.1.7"
@@ -2247,6 +2266,10 @@ textual = ">=0.19.0,<1.0.0"
 [package.extras]
 dev = ["coverage (>=4.1)", "flake8 (>=2.6.0)", "mypy", "pytest", "pytest-cov", "requests-mock", "twine", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
 leveldb = ["plyvel"]
+
+[package.source]
+type = "directory"
+url = "../nomenklatura"
 
 [[package]]
 name = "normality"
@@ -3146,6 +3169,20 @@ requests = ">=2.0.0"
 rsa = ["oauthlib[signedtoken] (>=3.0.0)"]
 
 [[package]]
+name = "requests-toolbelt"
+version = "1.0.0"
+description = "A utility belt for advanced users of python-requests"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6"},
+    {file = "requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"},
+]
+
+[package.dependencies]
+requests = ">=2.0.1,<3.0.0"
+
+[[package]]
 name = "responses"
 version = "0.23.3"
 description = "A utility library for mocking out the `requests` Python library."
@@ -3836,4 +3873,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "7ac1d6014c4c8540fbcfc28aea8412f3b0a07c4d9acbb8942876d3132d4cc150"
+content-hash = "85a098a7fe4a326996b8c3536b5ef04089a6abef0a36ba178884cb122ee1d4f4"

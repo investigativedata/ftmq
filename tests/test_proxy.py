@@ -132,13 +132,13 @@ def test_proxy_filters_combined(proxies):
 
 def test_proxy_sort(proxies):
     tested = False
-    q = Query().where(schema="Person").sort("name")
+    q = Query().where(schema="Person").order_by("name")
     for proxy in q.apply_iter(proxies):
         assert proxy.caption == "Aare Järvan"
         tested = True
         break
     assert tested
-    q = Query().where(schema="Person").sort("name", ascending=False)
+    q = Query().where(schema="Person").order_by("name", ascending=False)
     for proxy in q.apply_iter(proxies):
         assert proxy.caption == "Zaneta Vegnere"
         tested = True
@@ -153,7 +153,7 @@ def test_proxy_slice(proxies):
     q = Query()[10:20]
     res = [p for p in q.apply_iter(proxies)]
     assert len(res) == 10
-    q = Query().where(schema="Person").sort("name")[0]
+    q = Query().where(schema="Person").order_by("name")[0]
     res = [p for p in q.apply_iter(proxies)]
     assert len(res) == 1
     assert res[0].caption == "Aare Järvan"

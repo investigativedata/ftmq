@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from datetime import datetime
-from typing import Any, Generator, Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
@@ -7,15 +8,15 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from normality import slugify
-from pydantic import AnyUrl, BaseModel, HttpUrl
+from pydantic import AnyUrl, HttpUrl
 
-from .coverage import Coverage
-from .mixins import NKModel, RemoteMixin, YamlMixin
+from ftmq.model.coverage import Coverage
+from ftmq.model.mixins import BaseModel, NKModel, RemoteMixin, YamlMixin
 
 Frequencies = Literal[tuple(NKCoverage.FREQUENCIES)]
 
 C = TypeVar("C", bound="Catalog")
-D = TypeVar("D", bound="Dataset")
+DS = TypeVar("DS", bound="Dataset")
 
 
 class Publisher(NKModel):
@@ -119,6 +120,17 @@ class Catalog(NKModel):
         yield from self.datasets
         for catalog in self.catalogs:
             yield from catalog.datasets
+
+    def get_scope(self) -> NKDataset:
+        catalog = self.to_nk()
+        return NKDataset(
+            catalog,
+            {
+                "name": slugify(self.name),
+                "title": self.name.title(),
+                "children": catalog.names,
+            },
+        )
 
     def metadata(self) -> dict[str, Any]:
         catalog = self.copy()

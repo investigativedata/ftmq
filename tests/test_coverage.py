@@ -2,7 +2,7 @@ from datetime import date
 from pathlib import Path
 
 from ftmq.io import smart_read_proxies
-from ftmq.model.coverage import Coverage
+from ftmq.model.coverage import Collector, Coverage
 
 
 def test_coverage(fixtures_path: Path):
@@ -57,3 +57,11 @@ def test_coverage(fixtures_path: Path):
         "countries": ["eu"],
         "frequency": "unknown",
     }
+
+    proxies = smart_read_proxies(fixtures_path / "ec_meetings.ftm.json")
+    collector = Collector()
+    proxies = collector.apply(proxies)
+    len_proxies = len([x for x in proxies])
+    coverage = collector.export()
+    assert coverage.entities > 0
+    assert coverage.entities == len_proxies
