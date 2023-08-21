@@ -124,6 +124,11 @@ class Catalog(NKModel):
     def to_nk(self):
         return self._nk_model(NKDataset, self.dict())
 
+    def get(self, name: str) -> Dataset | None:
+        for dataset in self.datasets:
+            if dataset.name == name:
+                return dataset
+
     def get_datasets(self) -> Generator[Dataset, None, None]:
         yield from self.datasets
         for catalog in self.catalogs:
