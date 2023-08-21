@@ -12,7 +12,7 @@ from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Dataset
-from ftmq.query import Q
+from ftmq.query import Q, Query
 from ftmq.settings import STORE_URI
 from ftmq.types import CE, CEGenerator, PathLike
 
@@ -70,6 +70,7 @@ class SqlQueryView(nk.sql.SqlView):
             yield from view.entities()
 
     def coverage(self, query: Q | None = None) -> Coverage:
+        query = query or Query()
         c = Collector()
         with ensure_tx(self.store.engine.connect()) as tx:
             for schema, count in tx.execute(query.sql.schemata):
