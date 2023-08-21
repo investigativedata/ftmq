@@ -2247,11 +2247,11 @@ setuptools = "*"
 [[package]]
 name = "nomenklatura"
 version = "3.3.8"
-description = "Make record linkages in followthemoney data."
+description = ""
 optional = false
 python-versions = "*"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 click = ">=8.0.0,<8.1.7"
@@ -2268,8 +2268,10 @@ dev = ["coverage (>=4.1)", "flake8 (>=2.6.0)", "mypy", "pytest", "pytest-cov", "
 leveldb = ["plyvel"]
 
 [package.source]
-type = "directory"
-url = "../nomenklatura"
+type = "git"
+url = "https://github.com/opensanctions/nomenklatura"
+reference = "feature/sql-store"
+resolved_reference = "565dc1027ae0e460d8548ddb569ffbe6ea4b9222"
 
 [[package]]
 name = "normality"
@@ -3873,4 +3875,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "85a098a7fe4a326996b8c3536b5ef04089a6abef0a36ba178884cb122ee1d4f4"
+content-hash = "c85ac3b2f630ee369122542b9814212cad5ee5372868e50063ef2d9910527443"
