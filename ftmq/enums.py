@@ -1,16 +1,25 @@
 from collections.abc import Iterable
-from enum import Enum
+from enum import Enum, EnumMeta
 from typing import Any
 
 from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage
 
 
+class EMeta(EnumMeta):
+    def __contains__(self, member: Any) -> bool:
+        try:
+            self(member)
+            return True
+        except ValueError:
+            return False
+
+
 def StrEnum(name: str, values: Iterable[Any]) -> Enum:
     # mimic py3.11 enum.StrEnum
     # and fix default enum implementation:
     # https://gist.github.com/simonwoerpel/bdb9959de75e550349961677549624fb
-    class _StrEnum(str, Enum):
+    class _StrEnum(str, Enum, metaclass=EMeta):
         def __str__(self):
             return self.value
 

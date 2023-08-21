@@ -25,6 +25,7 @@ def test_util_str_enum():
     enum = StrEnum("Foo", ["a", "b", 2])
     assert enum.a == "a"
     assert str(enum.a) == "a"
+    assert "a" in enum
     if sys.version_info >= (3, 11):
         assert isinstance(enum, EnumType)
 
