@@ -1,6 +1,6 @@
 from collections.abc import Generator
 from datetime import datetime
-from typing import Any, Literal, TypeVar
+from typing import Any, ForwardRef, Literal, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
@@ -55,6 +55,9 @@ class Maintainer(BaseModel, RemoteMixin, YamlMixin):
     logo_uri: HttpUrl | None = None
 
 
+Catalog = ForwardRef("Catalog")
+
+
 class Dataset(NKModel):
     _nk_model = NKDataset
 
@@ -76,9 +79,11 @@ class Dataset(NKModel):
     git_repo: AnyUrl | None = None
     uri: AnyUrl | None = None
     maintainer: Maintainer | None = None
-    catalog: C | None = None
+    catalog: Catalog | None = None
 
     def __init__(self, **data):
+        Catalog.update_forward_refs()
+        Dataset.update_forward_refs()
         if "include" in data:  # legacy behaviour
             data["uri"] = data.pop("include", None)
         data["updated_at"] = data.get("updated_at") or datetime.utcnow().replace(
@@ -94,6 +99,9 @@ class Dataset(NKModel):
         return self._nk_model(self.catalog.to_nk(), self.dict())
 
 
+Dataset.update_forward_refs()
+
+
 class Catalog(NKModel):
     _nk_model = NKCatalog
 
@@ -106,7 +114,7 @@ class Catalog(NKModel):
     url: HttpUrl | None = None
     uri: AnyUrl | None = None
     logo_uri: AnyUrl | None = None
-    catalogs: list[C] | None = []
+    catalogs: list[Catalog] | None = []
 
     def __init__(self, **data):
         if "name" not in data:
@@ -147,5 +155,4 @@ class Catalog(NKModel):
         return names
 
 
-Dataset.update_forward_refs()
 Catalog.update_forward_refs()
