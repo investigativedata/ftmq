@@ -79,7 +79,7 @@ def test_query():
     assert q.slice == slice(None, 10, None)
     q = Query()[1:10]
     assert q.slice == slice(1, 10, None)
-    assert q.to_dict() == {"limit": 10, "offset": 1}
+    assert q.to_dict() == {"limit": 9, "offset": 1}
 
     with pytest.raises(ValidationError):
         Query().where(foo="bar")

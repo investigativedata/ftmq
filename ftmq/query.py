@@ -125,7 +125,11 @@ class Query:
 
     @property
     def limit(self) -> int | None:
-        return self.slice.stop if self.slice else None
+        if self.slice is None:
+            return None
+        if self.slice.start and self.slice.stop:
+            return self.slice.stop - self.slice.start
+        return self.slice.stop
 
     @property
     def offset(self) -> int | None:
