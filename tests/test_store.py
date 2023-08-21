@@ -68,6 +68,14 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert len(res) == 76
     assert res[0].get("location") == ["virtual"]
 
+    # slice
+    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = q.order_by("location")
+    q = q[:10]
+    res = [e for e in view.entities(q)]
+    assert len(res) == 10
+    assert res[0].get("location") == ["Abu Dhabi, UAE"]
+
     return True
 
 

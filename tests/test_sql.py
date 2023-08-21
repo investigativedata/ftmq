@@ -28,7 +28,7 @@ def test_sql():
     assert _compare_str(
         q.sql.entity_ids,
         f"""
-        SELECT nk_store.entity_id
+        SELECT DISTINCT nk_store.entity_id
         FROM nk_store {whereclause}
         """,
     )
@@ -38,7 +38,7 @@ def test_sql():
         q.sql.statements,
         f"""
         SELECT {fields} FROM nk_store
-        WHERE nk_store.entity_id IN (SELECT nk_store.entity_id FROM nk_store {whereclause})
+        WHERE nk_store.entity_id IN (SELECT DISTINCT nk_store.entity_id FROM nk_store {whereclause})
         ORDER BY nk_store.entity_id
         """,
     )
@@ -79,7 +79,7 @@ def test_sql():
         SELECT nk_store.value, count(DISTINCT nk_store.entity_id) AS count_1
         FROM nk_store
         WHERE nk_store.prop_type = :prop_type_1 AND nk_store.entity_id IN
-        (SELECT nk_store.entity_id FROM nk_store {whereclause})
+        (SELECT DISTINCT nk_store.entity_id FROM nk_store {whereclause})
         GROUP BY nk_store.value
         """,
     )
@@ -91,7 +91,7 @@ def test_sql():
         SELECT min(nk_store.value) AS min_1, max(nk_store.value) AS max_1
         FROM nk_store
         WHERE nk_store.prop_type = :prop_type_1 AND nk_store.entity_id IN
-        (SELECT nk_store.entity_id FROM nk_store {whereclause})
+        (SELECT DISTINCT nk_store.entity_id FROM nk_store {whereclause})
         """,
     )
 
@@ -107,18 +107,16 @@ def test_sql():
     assert _compare_str(
         q.sql.statements,
         f"""
-        SELECT {fields}, anon_1.entity_id AS entity_id_1, anon_1.value AS value_1
-        FROM nk_store JOIN (SELECT DISTINCT nk_store.entity_id AS entity_id,
-            nk_store.value AS value
+        SELECT {fields}, anon_1.entity_id AS entity_id_1, anon_1.sortable_value
+        FROM nk_store JOIN (SELECT nk_store.entity_id AS entity_id, group_concat(nk_store.value) AS sortable_value
             FROM nk_store
-            WHERE nk_store.prop = :prop_1 AND nk_store.entity_id IN (SELECT nk_store.entity_id
-                FROM nk_store
-                WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
-                AND nk_store.schema = :schema_1
-                AND nk_store.prop = :prop_2 AND nk_store.value >= :value_2))
-        AS anon_1
-        ON nk_store.entity_id = anon_1.entity_id
-        ORDER BY anon_1.value DESC, nk_store.entity_id
+            WHERE nk_store.prop = :prop_1 AND nk_store.entity_id IN (SELECT DISTINCT nk_store.entity_id
+                FROM nk_store WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
+                AND nk_store.schema = :schema_1 AND nk_store.prop = :prop_2 AND nk_store.value >= :value_1)
+            GROUP BY nk_store.entity_id
+            ORDER BY sortable_value DESC, nk_store.entity_id)
+        AS anon_1 ON nk_store.entity_id = anon_1.entity_id
+        ORDER BY anon_1.sortable_value DESC, nk_store.entity_id
         """,
     )
 
@@ -130,3 +128,41 @@ def test_sql():
     q = Query().order_by("name", "title")
     with pytest.raises(ValidationError):
         q.sql.statements
+
+    # slice
+    q = (
+        Query()
+        .where(dataset="test")
+        .where(dataset="other", schema="Event")
+        .where(prop="date", value=2023, operator="gte")
+    )
+    assert str(q[:10].sql.entity_ids).endswith("LIMIT :param_1")
+    assert str(q[1:10].sql.entity_ids).endswith("LIMIT :param_1 OFFSET :param_2")
+
+    # ordered slice
+    q = (
+        Query()
+        .where(dataset="test")
+        .where(dataset="other", schema="Event")
+        .where(prop="date", value=2023, operator="gte")
+        .order_by("name")
+    )
+    assert not str(q[:10].sql.entity_ids).endswith("LIMIT :param_1")
+    assert not str(q[1:10].sql.entity_ids).endswith("LIMIT :param_1 OFFSET :param_2")
+    q = q[1:10]
+    assert _compare_str(
+        q.sql.statements,
+        f"""
+        SELECT {fields}, anon_1.entity_id AS entity_id_1, anon_1.sortable_value
+        FROM nk_store JOIN (SELECT nk_store.entity_id AS entity_id, group_concat(nk_store.value) AS sortable_value
+            FROM nk_store
+            WHERE nk_store.prop = :prop_1 AND nk_store.entity_id IN (SELECT DISTINCT nk_store.entity_id
+                FROM nk_store WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
+                AND nk_store.schema = :schema_1 AND nk_store.prop = :prop_2 AND nk_store.value >= :value_1)
+            GROUP BY nk_store.entity_id
+            ORDER BY sortable_value, nk_store.entity_id
+            LIMIT :param_1 OFFSET :param_2)
+        AS anon_1 ON nk_store.entity_id = anon_1.entity_id
+        ORDER BY anon_1.sortable_value, nk_store.entity_id
+        """,
+    )

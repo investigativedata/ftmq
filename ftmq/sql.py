@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from followthemoney.model import registry
 from nomenklatura.db import get_statement_table
-from sqlalchemy import NUMERIC, and_, func, or_, select
+from sqlalchemy import NUMERIC, and_, desc, func, or_, select
 from sqlalchemy.schema import Column
 from sqlalchemy.sql.elements import BooleanClauseList
 from sqlalchemy.sql.selectable import Select
@@ -59,8 +59,10 @@ class Sql:
 
     @cached_property
     def entity_ids(self) -> Select:
-        # no distinct here for performance, distinct later if necessary
-        return select(self.table.c.entity_id).where(self.clause)
+        q = select(self.table.c.entity_id.distinct()).where(self.clause)
+        if self.q.sort is None:
+            q = q.limit(self.q.limit).offset(self.q.offset)
+        return q
 
     @cached_property
     def _unsorted_statements(self) -> Select:
@@ -82,22 +84,31 @@ class Sql:
             if PropertyTypes[prop].value == registry.number:
                 value = func.cast(self.table.c.value, NUMERIC)
             inner = (
-                select(self.table.c.entity_id, value)
+                select(
+                    self.table.c.entity_id,
+                    func.group_concat(value).label("sortable_value"),
+                )
                 .where(
                     and_(
                         self.table.c.prop == prop,
                         self.table.c.entity_id.in_(self.entity_ids),
                     )
                 )
-                .distinct(self.table.c.entity_id)
+                .group_by(self.table.c.entity_id)
+                .limit(self.q.limit)
+                .offset(self.q.offset)
             )
-            order_by = inner.c.value
+
+            order_by = "sortable_value"
             if not self.q.sort.ascending:
-                order_by = order_by.desc()
+                order_by = desc(order_by)
+            order_by = [order_by, self.table.c.entity_id]
+
+            inner = inner.order_by(*order_by)
 
             return select(
                 self.table.join(inner, self.table.c.entity_id == inner.c.entity_id)
-            ).order_by(order_by, self.table.c.entity_id)
+            ).order_by(*order_by)
 
     @cached_property
     def statements(self) -> Select:

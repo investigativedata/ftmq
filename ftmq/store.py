@@ -63,10 +63,10 @@ class LevelDBQueryView(nk.level.LevelDBView, CoverageView):
 
 class SqlQueryView(nk.sql.SqlView):
     def entities(self, query: Q | None = None) -> CEGenerator:
-        view = self.store.view(self.scope)
         if query:
             yield from self.store._iterate(query.sql.statements)
         else:
+            view = self.store.view(self.scope)
             yield from view.entities()
 
     def coverage(self, query: Q | None = None) -> Coverage:
