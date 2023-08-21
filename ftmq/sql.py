@@ -147,7 +147,7 @@ class Sql:
             func.max(self.table.c.value),
         ).where(
             self.table.c.prop_type == "date",
-            self.table.c.entity_id.in_(self.entity_ids),
+            self.table.c.entity_id.in_(self.entity_ids.limit(None).offset(None)),
         )
 
     @property

@@ -78,6 +78,9 @@ class SqlQueryView(nk.sql.SqlView):
                 if country is not None:
                     c.countries.add(country)
             coverage = c.export()
+            for start, end in tx.execute(query.sql.dates):
+                coverage.start = start
+                coverage.end = end
             coverage.entities = tx.execute(query.sql.count).scalar()
         return coverage
 
