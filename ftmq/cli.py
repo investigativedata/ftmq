@@ -11,7 +11,7 @@ from ftmq.io import (
 )
 from ftmq.model.coverage import Collector
 from ftmq.query import Query
-from ftmq.util import parse_unknown_cli_filters
+from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
@@ -84,7 +84,7 @@ def q(
             include_descendants=schema_include_descendants,
             include_matchable=schema_include_matchable,
         )
-    for prop, value, op in parse_unknown_cli_filters(properties):
+    for prop, value, op in parse_unknown_filters(properties):
         q = q.where(prop=prop, value=value, operator=op)
     if len(sort):
         q = q.order_by(*sort, ascending=sort_ascending)

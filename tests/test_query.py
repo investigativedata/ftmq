@@ -108,3 +108,8 @@ def test_query_cast():
     assert f.value == 2023
     assert f.casted_value == "2023"
     assert f.get_value() == "2023"
+
+
+def test_query_arbitrary_kwargs():
+    q = Query().where(date__gte=2023)
+    assert q.to_dict() == {"prop": "date", "value": {"gte": "2023"}}

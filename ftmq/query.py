@@ -5,6 +5,7 @@ from typing import Any, TypedDict, TypeVar
 from banal import ensure_list, is_listish, is_mapping
 from nomenklatura.entity import CE
 
+from ftmq.enums import Operators
 from ftmq.exceptions import ValidationError
 from ftmq.filters import (
     Dataset,
@@ -18,6 +19,7 @@ from ftmq.filters import (
 )
 from ftmq.sql import Sql
 from ftmq.types import CEGenerator
+from ftmq.util import parse_unknown_filters
 
 Q = TypeVar("Q", bound="Query")
 L = TypeVar("L", bound="Lookup")
@@ -29,6 +31,7 @@ class Lookup(TypedDict):
     schema: Schema | str | None = None
     prop: Property | str | None = None
     value: Value | None = None
+    operator: Operators = None
 
 
 class Sort:
@@ -59,15 +62,6 @@ class Sort:
 
 
 class Query:
-    WHERE_KWARGS = {
-        "dataset",
-        "schema",
-        "prop",
-        "value",
-        "operator",
-        "include_descendants",
-        "include_matchable",
-    }
     filters: set[F] = set()
     sort: Sort | None = None
     slice: Slice | None = None
@@ -163,15 +157,12 @@ class Query:
         return data
 
     def where(self, **lookup: Lookup) -> Q:
-        rest = set(lookup.keys()) - self.WHERE_KWARGS
-        if rest:
-            raise ValidationError(f"Unexpected lookup: `{rest}`")
         if "dataset" in lookup:
-            self.filters.add(DatasetFilter(lookup["dataset"]))
+            self.filters.add(DatasetFilter(lookup.pop("dataset")))
         if "schema" in lookup:
             self.filters.add(
                 SchemaFilter(
-                    lookup["schema"],
+                    lookup.pop("schema"),
                     include_descendants=lookup.pop("include_descendants", False),
                     include_matchable=lookup.pop("include_matchable", False),
                 )
@@ -180,10 +171,20 @@ class Query:
             if "value" not in lookup:
                 raise ValidationError("No lookup value specified")
             f = PropertyFilter(
-                lookup["prop"], lookup["value"], lookup.pop("operator", None)
+                lookup.pop("prop"), lookup.pop("value"), lookup.pop("operator", None)
             )
             self.filters.discard(f)  # replace existing property filter with updated one
             self.filters.add(f)
+
+        # parse arbitrary `date_gte=2023` stuff
+        for key, val in lookup.items():
+            for prop, value, operator in parse_unknown_filters((key, val)):
+                f = PropertyFilter(prop, value, operator)
+                self.filters.discard(
+                    f
+                )  # replace existing property filter with updated one
+                self.filters.add(f)
+
         return self._chain()
 
     def order_by(self, *values: Iterable[str], ascending: bool | None = True) -> Q:

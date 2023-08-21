@@ -19,7 +19,7 @@ def make_dataset(name: str) -> Dataset:
     return catalog.get(name)
 
 
-def parse_unknown_cli_filters(
+def parse_unknown_filters(
     filters: tuple[str],
 ) -> Generator[tuple[str, str, str], None, None]:
     filters = (f for f in filters)
