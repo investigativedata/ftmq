@@ -53,9 +53,16 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     # coverage
     q = Query().where(dataset="eu_authorities")
     coverage = view.coverage(q)
-    assert coverage.countries == ["eu"]
+    assert coverage.countries == [{"code": "eu", "label": "eu", "count": 151}]
     assert coverage.entities == 151
-    assert coverage.schemata == {"PublicBody": 151}
+    assert coverage.schemata == [
+        {
+            "name": "PublicBody",
+            "label": "Public body",
+            "plural": "Public bodies",
+            "count": 151,
+        }
+    ]
 
     # ordering
     q = Query().where(schema="Event", prop="date", value=2023, operator="gte")

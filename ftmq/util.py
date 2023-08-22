@@ -2,6 +2,7 @@ from collections.abc import Generator, Iterable
 from functools import cache
 from typing import Any
 
+import pycountry
 from banal import ensure_list
 from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
 from nomenklatura.entity import CE, CompositeEntity
@@ -58,3 +59,12 @@ def get_statements(proxy: CE, *datasets: Iterable[str]) -> SGenerator:
     datasets = datasets or ["default"]
     for dataset in datasets:
         yield from Statement.from_entity(proxy, dataset)
+
+
+@cache
+def get_country_name(alpha2: str) -> str:
+    try:
+        country = pycountry.countries.get(alpha_2=alpha2.lower())
+        return country.name
+    except (LookupError, AttributeError):
+        return alpha2

@@ -43,6 +43,7 @@ gcsfs = "^2023.6.0"
 adlfs = "^2023.4.0"
 sqlalchemy = "^2.0.19"
 alephclient = "^2.3.6"
+pycountry = "^22.3.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.2"

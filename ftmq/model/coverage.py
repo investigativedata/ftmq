@@ -1,29 +1,55 @@
 from collections import Counter
 from typing import Any
 
+from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from pydantic import PrivateAttr
 
 from ftmq.enums import Properties
-from ftmq.model.mixins import NKModel
-from ftmq.types import CE, CEGenerator, DateLike, Frequencies, Schemata
+from ftmq.model.mixins import BaseModel, NKModel
+from ftmq.types import CE, CEGenerator, DateLike, Frequencies
+from ftmq.util import get_country_name
+
+
+class Schema(BaseModel):
+    name: str
+    count: int
+    label: str
+    plural: str
+
+    def __init__(self, **data):
+        schema = model.get(data["name"])
+        data["label"] = schema.label
+        data["plural"] = schema.plural
+        super().__init__(**data)
+
+
+class Country(BaseModel):
+    code: str
+    count: int
+    label: str | None
+
+    def __init__(self, **data):
+        data["label"] = get_country_name(data["code"])
+        super().__init__(**data)
 
 
 class Collector:
     schemata: Counter = None
-    countries: set[str] = None
+    countries: Counter = None
     start: set[DateLike] = None
     end: set[DateLike] = None
 
     def __init__(self):
         self.schemata = Counter()
-        self.countries = set()
+        self.countries = Counter()
         self.start = set()
         self.end = set()
 
     def collect(self, proxy: CE) -> None:
         self.schemata[proxy.schema.name] += 1
-        self.countries.update(proxy.countries)
+        for country in proxy.countries:
+            self.countries[country] += 1
         self.start.update(proxy.get(Properties.startDate, quiet=True))
         self.start.update(proxy.get(Properties.date, quiet=True))
         self.end.update(proxy.get(Properties.endDate, quiet=True))
@@ -33,8 +59,8 @@ class Collector:
         return Coverage(
             start=min(self.start) if self.start else None,
             end=max(self.end) if self.end else None,
-            schemata=dict(self.schemata),
-            countries=self.countries,
+            schemata=[Schema(name=k, count=v) for k, v in self.schemata.items()],
+            countries=[Country(code=k, count=v) for k, v in self.countries.items()],
             entities=self.schemata.total(),
         )
 
@@ -59,11 +85,11 @@ class Coverage(NKModel):
 
     start: DateLike | None = None
     end: DateLike | None = None
-    countries: list[str] | None = []
     frequency: Frequencies | None = "unknown"
 
     # own additions:
-    schemata: dict[Schemata, int] = None
+    schemata: list[Schema] | None = []
+    countries: list[Country] | None = []
     entities: int = 0
 
     def __enter__(self):
@@ -88,3 +114,8 @@ class Coverage(NKModel):
         for proxy in proxies:
             self._collector.collect(proxy)
         self.__exit__()
+
+    def to_nk(self) -> NKCoverage:
+        data = self.dict()
+        data["countries"] = [c["code"] for c in data["countries"]]
+        return NKCoverage(data)

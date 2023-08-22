@@ -106,16 +106,36 @@ def test_cli_coverage(fixtures_path: Path):
     assert orjson.loads(result.output) == {
         "start": "2014-11-12",
         "end": "2023-01-20",
-        "countries": ["eu"],
         "frequency": "unknown",
-        "schemata": {
-            "Address": 1281,
-            "PublicBody": 103,
-            "Event": 34975,
-            "Membership": 791,
-            "Person": 791,
-            "Organization": 7097,
-        },
+        "schemata": [
+            {
+                "name": "Address",
+                "count": 1281,
+                "label": "Address",
+                "plural": "Addresses",
+            },
+            {
+                "name": "PublicBody",
+                "count": 103,
+                "label": "Public body",
+                "plural": "Public bodies",
+            },
+            {"name": "Event", "count": 34975, "label": "Event", "plural": "Events"},
+            {
+                "name": "Membership",
+                "count": 791,
+                "label": "Membership",
+                "plural": "Memberships",
+            },
+            {"name": "Person", "count": 791, "label": "Person", "plural": "People"},
+            {
+                "name": "Organization",
+                "count": 7097,
+                "label": "Organization",
+                "plural": "Organizations",
+            },
+        ],
+        "countries": [{"code": "eu", "count": 103, "label": "eu"}],
         "entities": 45038,
     }
 

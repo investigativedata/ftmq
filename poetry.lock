@@ -2712,6 +2712,19 @@ files = [
 ]
 
 [[package]]
+name = "pycountry"
+version = "22.3.5"
+description = "ISO country, subdivision, language, currency and script definitions and their translations"
+optional = false
+python-versions = ">=3.6, <4"
+files = [
+    {file = "pycountry-22.3.5.tar.gz", hash = "sha256:b2163a246c585894d808f18783e19137cb70a0c18fb36748dc01fc6f109c1646"},
+]
+
+[package.dependencies]
+setuptools = "*"
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -3885,4 +3898,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "c85ac3b2f630ee369122542b9814212cad5ee5372868e50063ef2d9910527443"
+content-hash = "6b4b572a81e730f3dd455ba1a31e4c39e8d7120b259d0822272ccc93d65d17a3"

@@ -65,6 +65,10 @@ class Sql:
         return q
 
     @cached_property
+    def all_entity_ids(self) -> Select:
+        return self.entity_ids.limit(None).offset(None)
+
+    @cached_property
     def _unsorted_statements(self) -> Select:
         return (
             select(self.table)
@@ -147,7 +151,7 @@ class Sql:
             func.max(self.table.c.value),
         ).where(
             self.table.c.prop_type == "date",
-            self.table.c.entity_id.in_(self.entity_ids.limit(None).offset(None)),
+            self.table.c.entity_id.in_(self.all_entity_ids),
         )
 
     @property
@@ -159,7 +163,7 @@ class Sql:
             )
             .where(
                 self.table.c.prop_type == "country",
-                self.table.c.entity_id.in_(self.entity_ids),
+                self.table.c.entity_id.in_(self.all_entity_ids),
             )
             .group_by(self.table.c.value)
         )

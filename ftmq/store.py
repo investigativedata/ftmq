@@ -75,9 +75,9 @@ class SqlQueryView(nk.sql.SqlView):
         with ensure_tx(self.store.engine.connect()) as tx:
             for schema, count in tx.execute(query.sql.schemata):
                 c.schemata[schema] = count
-            for country, _ in tx.execute(query.sql.countries):
+            for country, count in tx.execute(query.sql.countries):
                 if country is not None:
-                    c.countries.add(country)
+                    c.countries[country] = count
             coverage = c.export()
             for start, end in tx.execute(query.sql.dates):
                 coverage.start = start
