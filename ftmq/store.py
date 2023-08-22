@@ -10,6 +10,7 @@ from nomenklatura.resolver import Resolver
 
 from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
+from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Dataset
 from ftmq.query import Q, Query
@@ -71,15 +72,23 @@ class AlephQueryView(View, AlephView):
 
 
 class SqlQueryView(View, nk.sql.SqlView):
+    def ensure_scoped_query(self, query: Q) -> Q:
+        if not query.datasets:
+            return query.where(dataset=self.dataset_names)
+        if query.dataset_names - self.dataset_names:
+            raise ValidationError("Query datasets outside view scope")
+        return query
+
     def entities(self, query: Q | None = None) -> CEGenerator:
         if query:
+            query = self.ensure_scoped_query(query)
             yield from self.store._iterate(query.sql.statements)
         else:
             view = self.store.view(self.scope)
             yield from view.entities()
 
     def coverage(self, query: Q | None = None) -> Coverage:
-        query = query or Query()
+        query = self.ensure_scoped_query(query or Query())
         c = Collector()
         with ensure_tx(self.store.engine.connect()) as tx:
             for schema, count in tx.execute(query.sql.schemata):

@@ -33,6 +33,23 @@ def test_query():
         }
     )
 
+    # multi dataset / schema
+    q2 = Query().where(dataset=["d1", "d2"])
+    assert q2.lookups == q2.to_dict() == {"dataset": ["d1", "d2"]}
+    q2 = q2.where(schema="Event").where(schema=["Person", "Organization"])
+    assert (
+        q2.lookups
+        == q2.to_dict()  # noqa
+        == {  # noqa
+            "dataset": ["d1", "d2"],
+            "schema": ["Event", "Organization", "Person"],
+        }
+    )
+    assert q2.dataset_names == {"d1", "d2"}
+    q2 = q2.where(dataset=None, schema=None).where(dataset="test")
+    assert q2.lookups == q2.to_dict() == {"dataset": "test"}
+    assert q2.dataset_names == {"test"}
+
     q = q.where(prop="date", value=2023, operator="gte")
     assert len(q.filters) == 3
     assert (

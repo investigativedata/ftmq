@@ -120,7 +120,11 @@ class Query:
     def lookups(self) -> dict[str, Any]:
         data = {}
         for fi in self.filters:
-            data.update(fi.to_dict())
+            for k, v in fi.to_dict().items():
+                if k in data:
+                    data[k] = list(sorted(ensure_list(data[k]) + [v]))
+                else:
+                    data[k] = v
         return data
 
     @property
@@ -144,6 +148,10 @@ class Query:
         return {f for f in self.filters if isinstance(f, DatasetFilter)}
 
     @property
+    def dataset_names(self) -> set[str]:
+        return {str(f) for f in self.datasets}
+
+    @property
     def schemata(self) -> set[SchemaFilter]:
         return {f for f in self.filters if isinstance(f, SchemaFilter)}
 
@@ -161,14 +169,24 @@ class Query:
         return data
 
     def where(self, **lookup: Lookup) -> Q:
-        if "dataset" in lookup:
-            self.filters.add(DatasetFilter(lookup.pop("dataset")))
-        if "schema" in lookup:
+        include_descendants = lookup.pop("include_descendants", False)
+        include_matchable = lookup.pop("include_matchable", False)
+        dataset = lookup.pop("dataset", [])
+        if dataset is None:  # reset filters
+            for f in self.datasets:
+                self.filters.discard(f)
+        for name in ensure_list(dataset):
+            self.filters.add(DatasetFilter(name))
+        schema = lookup.pop("schema", [])
+        if schema is None:  # reset filters
+            for f in self.schemata:
+                self.filters.discard(f)
+        for name in ensure_list(schema):
             self.filters.add(
                 SchemaFilter(
-                    lookup.pop("schema"),
-                    include_descendants=lookup.pop("include_descendants", False),
-                    include_matchable=lookup.pop("include_matchable", False),
+                    name,
+                    include_descendants=include_descendants,
+                    include_matchable=include_matchable,
                 )
             )
         if "prop" in lookup:
