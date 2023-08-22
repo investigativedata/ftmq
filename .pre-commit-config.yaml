@@ -19,11 +19,11 @@ repos:
         args: [ "--fix=lf" ]
       - id: trailing-whitespace
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
-    hooks:
-      - id: pyupgrade
-        args: [ "--py310-plus" ]
+  # - repo: https://github.com/asottile/pyupgrade
+  #   rev: v3.10.1
+  #   hooks:
+  #     - id: pyupgrade
+  #       args: [ "--py310-plus" ]
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1

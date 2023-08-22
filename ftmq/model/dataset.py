@@ -1,6 +1,6 @@
 from collections.abc import Generator
 from datetime import datetime
-from typing import Any, ForwardRef, Literal, TypeVar
+from typing import Any, ForwardRef, Literal, Optional, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
@@ -79,7 +79,7 @@ class Dataset(NKModel):
     git_repo: AnyUrl | None = None
     uri: AnyUrl | None = None
     maintainer: Maintainer | None = None
-    catalog: Catalog | None = None
+    catalog: Optional[Catalog] = None
 
     def __init__(self, **data):
         Catalog.update_forward_refs()
