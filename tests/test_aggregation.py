@@ -20,9 +20,7 @@ def test_agg(donations):
     _ = [x for x in proxies]
     assert agg.value == "2002-07-04"
 
-    agg = Aggregator(
-        aggregations=[Aggregation(prop="amountEur", func=key) for key in values]
-    )
+    agg = Aggregator.from_dict({key: ["amountEur"] for key in values})
     proxies = agg.apply(donations)
     _ = [x for x in proxies]
     tested = False

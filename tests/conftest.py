@@ -20,7 +20,8 @@ import requests
 from ftmq.io import smart_read_proxies
 
 FIXTURES_PATH = (Path(__file__).parent / "fixtures").absolute()
-FIXTURES = ("ec_meetings.ftm.json", "eu_authorities.ftm.json", "donations.ijson")
+FIXTURES = ("ec_meetings.ftm.json", "eu_authorities.ftm.json")
+DONATIONS = "donations.ijson"
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +44,7 @@ def eu_authorities():
 
 @pytest.fixture(scope="module")
 def donations():
-    return [x for x in smart_read_proxies(FIXTURES_PATH / FIXTURES[2])]
+    return [x for x in smart_read_proxies(FIXTURES_PATH / DONATIONS)]
 
 
 # https://pawamoy.github.io/posts/local-http-server-fake-files-testing-purposes/
