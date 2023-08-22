@@ -1,6 +1,6 @@
 from functools import cache
 from pathlib import Path
-from typing import TypeVar
+from typing import Iterable, TypeVar
 from urllib.parse import urlparse
 
 from nomenklatura import store as nk
@@ -36,32 +36,41 @@ class Store(nk.Store):
         yield from view.entities()
 
 
-class CoverageView(nk.base.View):
+class View(nk.base.View):
+    def entities(self, query: Q | None = None) -> CEGenerator:
+        view = self.store.view(self.scope)
+        if query:
+            yield from query.apply_iter(view.entities())
+        else:
+            yield from view.entities()
+
+    def get_adjacents(self, proxies: Iterable[CE]) -> CEGenerator:
+        seen = set()
+        for proxy in proxies:
+            for _, adjacent in self.get_adjacent(proxy):
+                if adjacent.id not in seen:
+                    seen.add(adjacent.id)
+                    yield adjacent
+
     def coverage(self, query: Q | None = None) -> Coverage:
         c = Coverage()
         c.apply(self.entities(query))
         return c
 
 
-class MemoryQueryView(nk.memory.MemoryView, CoverageView):
-    def entities(self, query: Q | None = None) -> CEGenerator:
-        view = self.store.view(self.scope)
-        if query:
-            yield from query.apply_iter(view.entities())
-        else:
-            yield from view.entities()
+class MemoryQueryView(View, nk.memory.MemoryView):
+    pass
 
 
-class LevelDBQueryView(nk.level.LevelDBView, CoverageView):
-    def entities(self, query: Q | None = None) -> CEGenerator:
-        view = self.store.view(self.scope)
-        if query:
-            yield from query.apply_iter(view.entities())
-        else:
-            yield from view.entities()
+class LevelDBQueryView(View, nk.level.LevelDBView):
+    pass
 
 
-class SqlQueryView(nk.sql.SqlView):
+class AlephQueryView(View, AlephView):
+    pass
+
+
+class SqlQueryView(View, nk.sql.SqlView):
     def entities(self, query: Q | None = None) -> CEGenerator:
         if query:
             yield from self.store._iterate(query.sql.statements)
@@ -84,15 +93,6 @@ class SqlQueryView(nk.sql.SqlView):
                 coverage.end = end
             coverage.entities = tx.execute(query.sql.count).scalar()
         return coverage
-
-
-class AlephQueryView(AlephView, CoverageView):
-    def entities(self, query: Q | None = None) -> CEGenerator:
-        view = self.store.view(self.scope)
-        if query:
-            yield from query.apply_iter(view.entities())
-        else:
-            yield from view.entities()
 
 
 class MemoryStore(Store, nk.SimpleMemoryStore):
