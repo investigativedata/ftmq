@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import cache
 from pathlib import Path
 from typing import Iterable, TypeVar
@@ -8,6 +9,7 @@ from nomenklatura.dataset import DS, DefaultDataset
 from nomenklatura.db import ensure_tx
 from nomenklatura.resolver import Resolver
 
+from ftmq.aggregations import AggregatorResult
 from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
 from ftmq.exceptions import ValidationError
@@ -58,6 +60,12 @@ class View(nk.base.View):
         c.apply(self.entities(query))
         return c
 
+    def aggregations(self, query: Q) -> AggregatorResult | None:
+        if not query.aggregations:
+            return
+        aggregator = query.apply_aggregations(self.entities(query))
+        return dict(aggregator.result)
+
 
 class MemoryQueryView(View, nk.memory.MemoryView):
     pass
@@ -102,6 +110,15 @@ class SqlQueryView(View, nk.sql.SqlView):
                 coverage.end = end
             coverage.entities = tx.execute(query.sql.count).scalar()
         return coverage
+
+    def aggregations(self, query: Q) -> AggregatorResult | None:
+        if not query.aggregations:
+            return
+        query = self.ensure_scoped_query(query)
+        res: AggregatorResult = defaultdict(dict)
+        for prop, func, value in self.store._execute(query.sql.aggregations):
+            res[func][prop] = value
+        return res
 
 
 class MemoryStore(Store, nk.SimpleMemoryStore):

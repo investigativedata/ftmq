@@ -3,10 +3,19 @@ from typing import TYPE_CHECKING
 
 from followthemoney.model import registry
 from nomenklatura.db import get_statement_table
-from sqlalchemy import NUMERIC, and_, desc, func, or_, select
-from sqlalchemy.schema import Column
-from sqlalchemy.sql.elements import BooleanClauseList
-from sqlalchemy.sql.selectable import Select
+from sqlalchemy import (
+    NUMERIC,
+    BooleanClauseList,
+    Column,
+    Select,
+    and_,
+    desc,
+    func,
+    or_,
+    select,
+    text,
+    union,
+)
 
 from ftmq.enums import Operators, PropertyTypes
 from ftmq.exceptions import ValidationError
@@ -120,7 +129,7 @@ class Sql:
             return self._sorted_statements
         return self._unsorted_statements
 
-    @property
+    @cached_property
     def count(self) -> Select:
         return (
             select(func.count(self.table.c.entity_id.distinct()))
@@ -128,7 +137,7 @@ class Sql:
             .where(self.clause)
         )
 
-    @property
+    @cached_property
     def datasets(self) -> Select:
         return (
             select(self.table.c.dataset, func.count(self.table.c.entity_id.distinct()))
@@ -136,7 +145,7 @@ class Sql:
             .group_by(self.table.c.dataset)
         )
 
-    @property
+    @cached_property
     def schemata(self) -> Select:
         return (
             select(self.table.c.schema, func.count(self.table.c.entity_id.distinct()))
@@ -144,7 +153,7 @@ class Sql:
             .group_by(self.table.c.schema)
         )
 
-    @property
+    @cached_property
     def dates(self) -> Select:
         return select(
             func.min(self.table.c.value),
@@ -154,7 +163,7 @@ class Sql:
             self.table.c.entity_id.in_(self.all_entity_ids),
         )
 
-    @property
+    @cached_property
     def countries(self) -> Select:
         return (
             select(
@@ -167,3 +176,19 @@ class Sql:
             )
             .group_by(self.table.c.value)
         )
+
+    @cached_property
+    def aggregations(self) -> Select:
+        qs = []
+        for agg in self.q.aggregations:
+            qs.append(
+                select(
+                    self.table.c.prop,
+                    text(f"'{agg.func}'"),
+                    getattr(func, agg.func)(self.table.c.value),
+                ).where(
+                    self.table.c.prop == agg.prop,
+                    self.table.c.entity_id.in_(self.all_entity_ids),
+                )
+            )
+        return union(*qs)

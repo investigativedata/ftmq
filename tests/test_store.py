@@ -83,6 +83,11 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert len(res) == 10
     assert res[0].get("location") == ["Abu Dhabi, UAE"]
 
+    # aggregation
+    q = Query().aggregate("max", "date").aggregate("min", "date")
+    res = view.aggregations(q)
+    assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
+
     return True
 
 

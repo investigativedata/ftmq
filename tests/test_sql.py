@@ -166,3 +166,10 @@ def test_sql():
         ORDER BY anon_1.sortable_value, nk_store.entity_id
         """,
     )
+
+    # aggregation
+    q = q.aggregate("sum", "amount").aggregate("max", "date")
+    q = str(q.sql.aggregations)
+    assert len(q.split("UNION")) == 2
+    assert "SELECT nk_store.prop, 'max', max(nk_store.value) AS max" in q
+    assert "SELECT nk_store.prop, 'sum', sum(nk_store.value) AS sum" in q

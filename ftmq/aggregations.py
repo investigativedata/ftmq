@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import cache
 from typing import Any, Iterable, TypeAlias
 
+from banal import ensure_list
 from followthemoney.schema import Schema
 from followthemoney.types import registry
 from pydantic import BaseModel
@@ -27,6 +28,12 @@ class Aggregation(BaseModel):
     func: Aggregations
     values: list[int | float] = []
     value: Value | None = None
+
+    def __hash__(self) -> int:
+        return hash((self.prop, self.func))
+
+    def __eq__(self, other: Any) -> bool:
+        return hash(self) == hash(other)
 
     def get_value(self) -> Value | None:
         if self.func == "min":
@@ -89,6 +96,12 @@ class Aggregator(BaseModel):
             aggregations=[
                 Aggregation(prop=p, func=agg)
                 for agg, props in data.items()
-                for p in props
+                for p in ensure_list(props)
             ]
         )
+
+    def to_dict(self) -> dict[str, set[str]]:
+        data = defaultdict(set)
+        for agg in self.aggregations:
+            data[str(agg.func)].add(str(agg.prop))
+        return dict(data)

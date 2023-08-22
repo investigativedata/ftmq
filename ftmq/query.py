@@ -5,7 +5,8 @@ from typing import Any, TypedDict, TypeVar
 from banal import ensure_list, is_listish, is_mapping
 from nomenklatura.entity import CE
 
-from ftmq.enums import Operators
+from ftmq.aggregations import Aggregation, Aggregator
+from ftmq.enums import Aggregations, Operators, Properties
 from ftmq.exceptions import ValidationError
 from ftmq.filters import (
     Dataset,
@@ -63,16 +64,22 @@ class Sort:
 
 class Query:
     filters: set[F] = set()
+    aggregations: set[Aggregation] = set()
+    aggregator: Aggregator | None = None
     sort: Sort | None = None
     slice: Slice | None = None
 
     def __init__(
         self,
         filters: Iterable[F] | None = None,
+        aggregations: Iterable[Aggregation] | None = None,
+        aggregator: Aggregator | None = None,
         sort: Sort | None = None,
         slice: Slice | None = None,
     ):
         self.filters = set(ensure_list(filters))
+        self.aggregations = set(ensure_list(aggregations))
+        self.aggregator = aggregator
         self.sort = sort
         self.slice = slice
 
@@ -166,6 +173,8 @@ class Query:
         if self.slice:
             data["limit"] = self.limit
             data["offset"] = self.offset
+        if self.aggregations:
+            data["aggregations"] = self.get_aggregator().to_dict()
         return data
 
     def where(self, **lookup: Lookup) -> Q:
@@ -213,6 +222,14 @@ class Query:
         self.sort = Sort(values=values, ascending=ascending)
         return self._chain()
 
+    def aggregate(self, func: Aggregations, *props: Properties) -> Q:
+        for prop in props:
+            self.aggregations.add(Aggregation(func=func, prop=prop))
+        return self._chain()
+
+    def get_aggregator(self) -> Aggregator:
+        return Aggregator(aggregations=self.aggregations)
+
     def apply(self, proxy: CE) -> bool:
         if not self.filters:
             return True
@@ -233,4 +250,12 @@ class Query:
             proxies = islice(
                 proxies, self.slice.start, self.slice.stop, self.slice.step
             )
+        if self.aggregations:
+            self.aggregator = self.get_aggregator()
+            proxies = self.aggregator.apply(proxies)
         yield from proxies
+
+    def apply_aggregations(self, proxies: CEGenerator) -> Aggregator:
+        aggregator = self.get_aggregator()
+        [x for x in aggregator.apply(proxies)]
+        return aggregator

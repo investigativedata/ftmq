@@ -2,7 +2,6 @@ import click
 import orjson
 from click_default_group import DefaultGroup
 
-from ftmq.aggregations import Aggregator
 from ftmq.io import (
     apply_datasets,
     smart_read,
@@ -107,22 +106,23 @@ def q(
 
     if len(dataset) == 1:
         store_dataset = store_dataset or dataset[0]
+    aggs = {
+        k: v for k, v in {"sum": sum, "min": min, "max": max, "avg": avg}.items() if v
+    }
+    if aggregation_uri and aggs:
+        for func, props in aggs.items():
+            q = q.aggregate(func, *props)
     proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
     if coverage_uri:
         coverage = Collector()
         proxies = coverage.apply(proxies)
-    if aggregation_uri:
-        aggregator = Aggregator.from_dict(
-            {"sum": sum, "min": min, "max": max, "avg": avg}
-        )
-        proxies = aggregator.apply(proxies)
     smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
     if coverage_uri:
         coverage = coverage.export()
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
-    if aggregation_uri:
-        result = orjson.dumps(aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
+    if q.aggregator:
+        result = orjson.dumps(q.aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
         smart_write(aggregation_uri, result)
 
 

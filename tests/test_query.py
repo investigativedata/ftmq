@@ -28,8 +28,7 @@ def test_query():
         == {  # noqa
             "dataset": "test",
             "schema": "Event",
-            "prop": "date",
-            "value": "2023",
+            "date": "2023",
         }
     )
 
@@ -58,15 +57,13 @@ def test_query():
         == {  # noqa
             "dataset": "test",
             "schema": "Event",
-            "prop": "date",
-            "value": {"gte": "2023"},
+            "date": {"gte": "2023"},
         }
     )
 
     q = Query().where(prop="name", value=["test", "other"], operator="in")
     assert q.to_dict() == {
-        "prop": "name",
-        "value": {"in": ["test", "other"]},
+        "name": {"in": ["test", "other"]},
     }
     # filter uniqueness
     q = Query().where(dataset="test").where(dataset="test")
@@ -128,5 +125,16 @@ def test_query_cast():
 
 
 def test_query_arbitrary_kwargs():
-    q = Query().where(date__gte=2023)
-    assert q.to_dict() == {"prop": "date", "value": {"gte": "2023"}}
+    q = Query().where(date__gte=2023, name__ilike="%jane%")
+    assert q.to_dict() == {"date": {"gte": "2023"}, "name": {"ilike": "%jane%"}}
+
+
+def test_query_aggregate():
+    q = Query().where(schema="Payment", date__gte=2023, amount__null=False)
+    q = q.aggregate("sum", "amountEur", "amount")
+    assert q.to_dict() == {
+        "schema": "Payment",
+        "date": {"gte": "2023"},
+        "amount": {"null": False},
+        "aggregations": {"sum": {"amount", "amountEur"}},
+    }

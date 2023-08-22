@@ -200,10 +200,9 @@ class PropertyFilter(BaseFilter):
             return [str(v) for v in ensure_list(self.value)]
         if is_listish(self.value):
             return [str(v) for v in self.value]
+        if self.operator == Operators.null:
+            return as_bool(self.value)
         return str(self.value)
-
-    def to_dict(self) -> dict[str, Any]:
-        return {"prop": self.get_key(), "value": self.get_value()}
 
 
 Filter = DatasetFilter | SchemaFilter | PropertyFilter

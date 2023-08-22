@@ -2272,7 +2272,7 @@ leveldb = ["plyvel"]
 type = "git"
 url = "https://github.com/opensanctions/nomenklatura"
 reference = "feature/sql-store"
-resolved_reference = "565dc1027ae0e460d8548ddb569ffbe6ea4b9222"
+resolved_reference = "3d25cb41a466a94325f3ff9f4f6ff1842b718bf4"
 
 [[package]]
 name = "normality"
