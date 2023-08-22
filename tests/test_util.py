@@ -52,3 +52,11 @@ def test_util_unknown_filters():
     args = ("--country", "de", "--year__gte", "2023")
     res = (("country", "de", None), ("year", "2023", "gte"))
     assert tuple(util.parse_unknown_filters(args)) == res
+
+
+def test_util_numeric():
+    assert util.to_numeric("1") == 1
+    assert util.to_numeric("1.0") == 1
+    assert util.to_numeric("1.1") == 1.1
+    assert util.to_numeric("1,101,000") == 1_101_000
+    assert util.to_numeric("foo") is None

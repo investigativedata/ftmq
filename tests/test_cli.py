@@ -148,3 +148,23 @@ def test_cli_io(fixtures_path: Path):
     assert len(lines) == 151
     proxy = make_proxy(orjson.loads(lines[0]))
     assert isinstance(proxy, CompositeEntity)
+
+
+def test_cli_aggregation(fixtures_path: Path):
+    in_uri = str(fixtures_path / "donations.ijson")
+    result = runner.invoke(
+        cli,
+        [
+            "-i",
+            in_uri,
+            "-o",
+            "/dev/null",
+            "--aggregation-uri",
+            "-",
+            "--sum",
+            "amountEur",
+        ],
+    )
+    assert result.exit_code == 0
+    result = orjson.loads(result.output)
+    assert result == {"sum": {"amountEur": 40589689.15}}

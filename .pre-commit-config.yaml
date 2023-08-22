@@ -53,7 +53,7 @@ repos:
     rev: v2.2.5
     hooks:
       - id: codespell
-        exclude: (test_[\w]+\.py|\.csv|\.json|\.lock)$
+        exclude: (test_[\w]+\.py|\.csv|\.i?json|\.lock)$
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0

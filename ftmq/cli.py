@@ -2,6 +2,7 @@ import click
 import orjson
 from click_default_group import DefaultGroup
 
+from ftmq.aggregations import Aggregator
 from ftmq.io import (
     apply_datasets,
     smart_read,
@@ -58,6 +59,16 @@ def cli():
     show_default=True,
     help="If specified, default dataset for source and target stores",
 )
+@click.option("--sum", multiple=True, help="Properties for sum aggregation")
+@click.option("--min", multiple=True, help="Properties for min aggregation")
+@click.option("--max", multiple=True, help="Properties for max aggregation")
+@click.option("--avg", multiple=True, help="Properties for avg aggregation")
+@click.option(
+    "--aggregation-uri",
+    default=None,
+    show_default=True,
+    help="If specified, print aggregation information to this uri",
+)
 @click.argument("properties", nargs=-1)
 def q(
     input_uri: str | None = "-",
@@ -71,6 +82,11 @@ def q(
     properties: tuple[str] | None = (),
     coverage_uri: str | None = None,
     store_dataset: str | None = None,
+    sum: tuple[str] | None = (),
+    min: tuple[str] | None = (),
+    max: tuple[str] | None = (),
+    avg: tuple[str] | None = (),
+    aggregation_uri: str | None = None,
 ):
     """
     Apply ftmq filter to a json stream of ftm entities.
@@ -95,11 +111,19 @@ def q(
     if coverage_uri:
         coverage = Collector()
         proxies = coverage.apply(proxies)
+    if aggregation_uri:
+        aggregator = Aggregator.from_dict(
+            {"sum": sum, "min": min, "max": max, "avg": avg}
+        )
+        proxies = aggregator.apply(proxies)
     smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
     if coverage_uri:
         coverage = coverage.export()
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
+    if aggregation_uri:
+        result = orjson.dumps(aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
+        smart_write(aggregation_uri, result)
 
 
 @cli.command("apply")

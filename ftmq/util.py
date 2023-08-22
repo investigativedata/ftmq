@@ -68,3 +68,14 @@ def get_country_name(alpha2: str) -> str:
         return country.name
     except (LookupError, AttributeError):
         return alpha2
+
+
+def to_numeric(value: Any) -> int | float | None:
+    try:
+        value = str(value).replace(",", "")
+        value = float(value)
+        if value == int(value):
+            return int(value)
+        return float(value)
+    except ValueError:
+        return
