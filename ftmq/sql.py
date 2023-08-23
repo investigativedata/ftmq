@@ -14,7 +14,7 @@ from sqlalchemy import (
     or_,
     select,
     text,
-    union,
+    union_all,
 )
 
 from ftmq.enums import Operators, PropertyTypes
@@ -183,7 +183,7 @@ class Sql:
         for agg in self.q.aggregations:
             qs.append(
                 select(
-                    self.table.c.prop,
+                    text(f"'{agg.prop}'"),
                     text(f"'{agg.func}'"),
                     getattr(func, agg.func)(self.table.c.value),
                 ).where(
@@ -191,4 +191,4 @@ class Sql:
                     self.table.c.entity_id.in_(self.all_entity_ids),
                 )
             )
-        return union(*qs)
+        return union_all(*qs)

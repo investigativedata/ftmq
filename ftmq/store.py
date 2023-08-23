@@ -6,7 +6,6 @@ from urllib.parse import urlparse
 
 from nomenklatura import store as nk
 from nomenklatura.dataset import DS, DefaultDataset
-from nomenklatura.db import ensure_tx
 from nomenklatura.resolver import Resolver
 
 from ftmq.aggregations import AggregatorResult
@@ -98,17 +97,20 @@ class SqlQueryView(View, nk.sql.SqlView):
     def coverage(self, query: Q | None = None) -> Coverage:
         query = self.ensure_scoped_query(query or Query())
         c = Collector()
-        with ensure_tx(self.store.engine.connect()) as tx:
-            for schema, count in tx.execute(query.sql.schemata):
-                c.schemata[schema] = count
-            for country, count in tx.execute(query.sql.countries):
-                if country is not None:
-                    c.countries[country] = count
-            coverage = c.export()
-            for start, end in tx.execute(query.sql.dates):
-                coverage.start = start
-                coverage.end = end
-            coverage.entities = tx.execute(query.sql.count).scalar()
+        for schema, count in self.store._execute(query.sql.schemata, many=False):
+            c.schemata[schema] = count
+        for country, count in self.store._execute(query.sql.countries, many=False):
+            if country is not None:
+                c.countries[country] = count
+        coverage = c.export()
+        for start, end in self.store._execute(query.sql.dates, many=False):
+            coverage.start = start
+            coverage.end = end
+
+        for res in self.store._execute(query.sql.count, many=False):
+            for count in res:
+                coverage.entities = count
+                break
         return coverage
 
     def aggregations(self, query: Q) -> AggregatorResult | None:
@@ -116,7 +118,9 @@ class SqlQueryView(View, nk.sql.SqlView):
             return
         query = self.ensure_scoped_query(query)
         res: AggregatorResult = defaultdict(dict)
-        for prop, func, value in self.store._execute(query.sql.aggregations):
+        for prop, func, value in self.store._execute(
+            query.sql.aggregations, many=False
+        ):
             res[func][prop] = value
         return res
 

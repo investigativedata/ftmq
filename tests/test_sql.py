@@ -171,5 +171,5 @@ def test_sql():
     q = q.aggregate("sum", "amount").aggregate("max", "date")
     q = str(q.sql.aggregations)
     assert len(q.split("UNION")) == 2
-    assert "SELECT nk_store.prop, 'max', max(nk_store.value) AS max" in q
-    assert "SELECT nk_store.prop, 'sum', sum(nk_store.value) AS sum" in q
+    assert "SELECT 'date', 'max', max(nk_store.value) AS max" in q
+    assert "SELECT 'amount', 'sum', sum(nk_store.value) AS sum" in q
