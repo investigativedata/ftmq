@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from nomenklatura import store as nk
 from nomenklatura.dataset import DS, DefaultDataset
+from nomenklatura.db import get_metadata
 from nomenklatura.resolver import Resolver
 
 from ftmq.aggregations import AggregatorResult
@@ -182,6 +183,7 @@ def get_store(
         path = Path(path).absolute()
         return LevelDBStore(catalog, dataset, path=path)
     if "sql" in parsed.scheme:
+        get_metadata.cache_clear()
         return SQLStore(catalog, dataset, uri=uri)
     if "aleph" in parsed.scheme:
         return AlephStore.from_uri(uri, catalog=catalog, dataset=dataset)
