@@ -2247,7 +2247,7 @@ setuptools = "*"
 
 [[package]]
 name = "nomenklatura"
-version = "3.3.8"
+version = "3.3.9"
 description = ""
 optional = false
 python-versions = "*"
@@ -2271,8 +2271,8 @@ leveldb = ["plyvel"]
 [package.source]
 type = "git"
 url = "https://github.com/opensanctions/nomenklatura"
-reference = "feature/sql-store"
-resolved_reference = "3d25cb41a466a94325f3ff9f4f6ff1842b718bf4"
+reference = "HEAD"
+resolved_reference = "4ef0ca58bf437fccda93d80f218b70032ec6e0f6"
 
 [[package]]
 name = "normality"
@@ -3899,4 +3899,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "6b4b572a81e730f3dd455ba1a31e4c39e8d7120b259d0822272ccc93d65d17a3"
+content-hash = "f8db0809e95bac82ed9228e7f1c92d82fea431823f898c1cf32410fd874931ca"

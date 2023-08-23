@@ -940,9 +940,9 @@ mdit-py-plugins==0.4.0 ; python_version >= "3.10" and python_version < "3.13" \
 mdurl==0.1.2 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
     --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba
-moto==4.1.14 ; python_version >= "3.10" and python_version < "3.13" \
-    --hash=sha256:545afeb4df94dfa730e2d7e87366dc26b4a33c2891f462cbb049f040c80ed1ec \
-    --hash=sha256:7d3bd748a34641715ba469c761f72fb8ec18f349987c98f5a0f9be85a07a9911
+moto==4.1.15 ; python_version >= "3.10" and python_version < "3.13" \
+    --hash=sha256:272236d312457b324c645741ee589924fd61a96b84680dc2e607f8663c563551 \
+    --hash=sha256:3fbcf91090692c30117d275fb34b48a075a6f65d4712ba6c4d004ffab976db46
 msal-extensions==1.0.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:91e3db9620b822d0ed2b4d1850056a0f133cba04455e62f11612e40f5502f2ee \
     --hash=sha256:c676aba56b0cce3783de1b5c5ecfe828db998167875126ca4b47dc6436451354
@@ -1061,7 +1061,7 @@ networkx==3.1 ; python_version >= "3.10" and python_version < "3.13" \
 nodeenv==1.8.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:d51e0c37e64fbf47d017feac3145cdbb58836d7eee8c6f6d3b6880c5456227d2 \
     --hash=sha256:df865724bb3c3adc86b3876fa209771517b0cfe596beff01a92700e0e8be4cec
-nomenklatura @ git+https://github.com/opensanctions/nomenklatura@feature/sql-store ; python_version >= "3.10" and python_version < "3.13"
+nomenklatura @ git+https://github.com/opensanctions/nomenklatura@HEAD ; python_version >= "3.10" and python_version < "3.13"
 normality==2.4.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:38bbe4e1dfd737c318ffd70e981ae8ff40bd8839393f6d62f0e200e5aab9e992 \
     --hash=sha256:8bd9dd5a0220f641ed4cc59b7ad64ab11b0ee49e57e5a70bf515445ff72574d2
