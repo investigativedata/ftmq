@@ -29,7 +29,7 @@ class Sql:
     OPERATORS = {
         Operators["not"]: "__ne__",
         Operators["in"]: "in_",
-        Operators.null: "is_",  # FIXME
+        Operators.null: "is_",
         Operators.gt: "__gt__",
         Operators.gte: "__ge__",
         Operators.lt: "__lt__",
@@ -67,22 +67,22 @@ class Sql:
         return and_(*clauses)
 
     @cached_property
-    def entity_ids(self) -> Select:
-        q = select(self.table.c.entity_id.distinct()).where(self.clause)
+    def canonical_ids(self) -> Select:
+        q = select(self.table.c.canonical_id.distinct()).where(self.clause)
         if self.q.sort is None:
             q = q.limit(self.q.limit).offset(self.q.offset)
         return q
 
     @cached_property
-    def all_entity_ids(self) -> Select:
-        return self.entity_ids.limit(None).offset(None)
+    def all_canonical_ids(self) -> Select:
+        return self.canonical_ids.limit(None).offset(None)
 
     @cached_property
     def _unsorted_statements(self) -> Select:
         return (
             select(self.table)
-            .where(self.table.c.entity_id.in_(self.entity_ids))
-            .order_by(self.table.c.entity_id)
+            .where(self.table.c.canonical_id.in_(self.canonical_ids))
+            .order_by(self.table.c.canonical_id)
         )
 
     @cached_property
@@ -98,16 +98,16 @@ class Sql:
                 value = func.cast(self.table.c.value, NUMERIC)
             inner = (
                 select(
-                    self.table.c.entity_id,
+                    self.table.c.canonical_id,
                     func.group_concat(value).label("sortable_value"),
                 )
                 .where(
                     and_(
                         self.table.c.prop == prop,
-                        self.table.c.entity_id.in_(self.entity_ids),
+                        self.table.c.canonical_id.in_(self.canonical_ids),
                     )
                 )
-                .group_by(self.table.c.entity_id)
+                .group_by(self.table.c.canonical_id)
                 .limit(self.q.limit)
                 .offset(self.q.offset)
             )
@@ -115,12 +115,14 @@ class Sql:
             order_by = "sortable_value"
             if not self.q.sort.ascending:
                 order_by = desc(order_by)
-            order_by = [order_by, self.table.c.entity_id]
+            order_by = [order_by, self.table.c.canonical_id]
 
             inner = inner.order_by(*order_by)
 
             return select(
-                self.table.join(inner, self.table.c.entity_id == inner.c.entity_id)
+                self.table.join(
+                    inner, self.table.c.canonical_id == inner.c.canonical_id
+                )
             ).order_by(*order_by)
 
     @cached_property
@@ -132,7 +134,7 @@ class Sql:
     @cached_property
     def count(self) -> Select:
         return (
-            select(func.count(self.table.c.entity_id.distinct()))
+            select(func.count(self.table.c.canonical_id.distinct()))
             .select_from(self.table)
             .where(self.clause)
         )
@@ -140,7 +142,9 @@ class Sql:
     @cached_property
     def datasets(self) -> Select:
         return (
-            select(self.table.c.dataset, func.count(self.table.c.entity_id.distinct()))
+            select(
+                self.table.c.dataset, func.count(self.table.c.canonical_id.distinct())
+            )
             .where(self.clause)
             .group_by(self.table.c.dataset)
         )
@@ -148,7 +152,9 @@ class Sql:
     @cached_property
     def schemata(self) -> Select:
         return (
-            select(self.table.c.schema, func.count(self.table.c.entity_id.distinct()))
+            select(
+                self.table.c.schema, func.count(self.table.c.canonical_id.distinct())
+            )
             .where(self.clause)
             .group_by(self.table.c.schema)
         )
@@ -160,7 +166,7 @@ class Sql:
             func.max(self.table.c.value),
         ).where(
             self.table.c.prop_type == "date",
-            self.table.c.entity_id.in_(self.all_entity_ids),
+            self.table.c.canonical_id.in_(self.all_canonical_ids),
         )
 
     @cached_property
@@ -168,11 +174,11 @@ class Sql:
         return (
             select(
                 self.table.c.value,
-                func.count(self.table.c.entity_id.distinct()),
+                func.count(self.table.c.canonical_id.distinct()),
             )
             .where(
                 self.table.c.prop_type == "country",
-                self.table.c.entity_id.in_(self.all_entity_ids),
+                self.table.c.canonical_id.in_(self.all_canonical_ids),
             )
             .group_by(self.table.c.value)
         )
@@ -188,7 +194,7 @@ class Sql:
                     getattr(func, agg.func)(self.table.c.value),
                 ).where(
                     self.table.c.prop == agg.prop,
-                    self.table.c.entity_id.in_(self.all_entity_ids),
+                    self.table.c.canonical_id.in_(self.all_canonical_ids),
                 )
             )
         return union_all(*qs)
