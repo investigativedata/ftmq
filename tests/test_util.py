@@ -59,4 +59,5 @@ def test_util_numeric():
     assert util.to_numeric("1.0") == 1
     assert util.to_numeric("1.1") == 1.1
     assert util.to_numeric("1,101,000") == 1_101_000
+    assert util.to_numeric("1.000,1") == 1000.1
     assert util.to_numeric("foo") is None

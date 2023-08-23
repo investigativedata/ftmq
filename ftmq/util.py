@@ -1,3 +1,4 @@
+import re
 from collections.abc import Generator, Iterable
 from functools import cache
 from typing import Any
@@ -70,12 +71,19 @@ def get_country_name(alpha2: str) -> str:
         return alpha2
 
 
-def to_numeric(value: Any) -> int | float | None:
+NUMERIC_US = re.compile(r"^-?\d+(?:,\d{3})*(?:\.\d+)?$")
+NUMERIC_DE = re.compile(r"^-?\d+(?:\.\d{3})*(?:,\d+)?$")
+
+
+def to_numeric(value: str) -> float | int | None:
+    value = str(value).strip()
     try:
-        value = str(value).replace(",", "")
         value = float(value)
-        if value == int(value):
+        if int(value) == value:
             return int(value)
-        return float(value)
+        return value
     except ValueError:
-        return
+        if re.match(NUMERIC_US, value):
+            return to_numeric(value.replace(",", ""))
+        if re.match(NUMERIC_DE, value):
+            return to_numeric(value.replace(".", "").replace(",", "."))
