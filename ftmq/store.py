@@ -24,12 +24,12 @@ class Store(nk.Store):
     def __init__(
         self, catalog: C | None = None, dataset: Dataset | None = None, *args, **kwargs
     ) -> None:
-        if catalog is not None:
-            dataset = catalog.get_scope()
-        elif dataset is not None:
+        if dataset is not None:
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
             dataset = dataset.to_nk()
+        elif catalog is not None:
+            dataset = catalog.get_scope()
         else:
             dataset = DefaultDataset
         super().__init__(dataset=dataset, resolver=Resolver(), *args, **kwargs)
