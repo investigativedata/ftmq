@@ -1,3 +1,4 @@
+from nomenklatura.db import get_metadata
 from nomenklatura.entity import CompositeEntity
 
 from ftmq.model import Catalog, Dataset
@@ -101,11 +102,14 @@ def test_store_leveldb(tmp_path, proxies):
 
 
 def test_store_sql_sqlite(tmp_path, proxies):
+    get_metadata.cache_clear()
     uri = f"sqlite:///{tmp_path}/test.db"
     assert _run_store_test(SQLStore, proxies, uri=uri)
 
 
 def test_store_init(tmp_path):
+    get_metadata.cache_clear()
+
     store = get_store()
     assert isinstance(store, MemoryStore)
     store = get_store("memory:///")
