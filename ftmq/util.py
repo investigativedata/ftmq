@@ -59,7 +59,13 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
 def get_statements(proxy: CE, *datasets: Iterable[str]) -> SGenerator:
     datasets = datasets or ["default"]
     for dataset in datasets:
-        yield from Statement.from_entity(proxy, dataset)
+        # FIXME
+        for stmt in Statement.from_entity(proxy, dataset):
+            stmt = stmt.to_dict()
+            stmt["target"] = stmt.get("target") or False
+            stmt["external"] = stmt.get("external") or False
+            stmt = Statement.from_dict(stmt)
+            yield stmt
 
 
 @cache
