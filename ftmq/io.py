@@ -3,7 +3,7 @@ import logging
 import re
 import sys
 from collections.abc import Iterable
-from typing import Literal
+from typing import Any, Literal
 from urllib.parse import urlparse
 
 import orjson
@@ -47,13 +47,24 @@ def smart_open(
             fh.close()
 
 
-def smart_read(uri, *args, **kwargs):
+def _smart_stream(uri, *args, **kwargs) -> Any:
     kwargs["mode"] = kwargs.get("mode", "rb")
+    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
+        while line := fh.readline():
+            yield line
+
+
+def smart_read(uri, *args, **kwargs) -> Any:
+    kwargs["mode"] = kwargs.get("mode", "rb")
+    stream = kwargs.pop("stream", False)
+    if stream:
+        return _smart_stream(uri, *args, **kwargs)
+
     with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
         return fh.read()
 
 
-def smart_write(uri, content: bytes, *args, **kwargs):
+def smart_write(uri, content: bytes, *args, **kwargs) -> Any:
     kwargs["mode"] = kwargs.get("mode", "wb")
     with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
         fh.write(content)

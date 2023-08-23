@@ -89,7 +89,7 @@ def test_io_apply_datasets(proxies: list[CE]):
 
 
 @mock_s3
-def test_io_generic():
+def test_io_generic(fixtures_path: Path):
     setup_s3()
     uri = "s3://ftmq/content"
     content = "foo"
@@ -100,6 +100,13 @@ def test_io_generic():
     content = smart_read(uri, mode="r")
     assert isinstance(content, str)
     assert content == "foo"
+
+    # stream
+    tested = False
+    for line in smart_read(fixtures_path / "ec_meetings.ftm.json", stream=True):
+        assert isinstance(orjson.loads(line), dict)
+        tested = True
+    assert tested
 
 
 def test_io_store(tmp_path, eu_authorities):
