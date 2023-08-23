@@ -2,11 +2,12 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from followthemoney.model import registry
-from nomenklatura.db import get_statement_table
+from nomenklatura.statement import make_statement_table
 from sqlalchemy import (
     NUMERIC,
     BooleanClauseList,
     Column,
+    MetaData,
     Select,
     and_,
     desc,
@@ -38,7 +39,8 @@ class Sql:
 
     def __init__(self, q: "Q") -> None:
         self.q = q
-        self.table = get_statement_table()
+        self.metadata = MetaData()
+        self.table = make_statement_table(self.metadata)
 
     def get_expression(self, column: Column, prop: PropertyFilter):
         if prop.operator is None:

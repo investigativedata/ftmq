@@ -16,20 +16,20 @@ def test_sql():
         .where(dataset="other", schema="Event")
         .where(prop="date", value=2023, operator="gte")
     )
-    whereclause = """WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
-    AND nk_store.schema = :schema_1
-    AND nk_store.prop = :prop_1
-    AND nk_store.value >= :value_1"""
-    fields = """nk_store.id, nk_store.entity_id, nk_store.canonical_id, nk_store.prop,
-    nk_store.prop_type, nk_store.schema, nk_store.value, nk_store.original_value,
-    nk_store.dataset, nk_store.lang, nk_store.target, nk_store.external,
-    nk_store.first_seen, nk_store.last_seen"""
+    whereclause = """WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)
+    AND test_table.schema = :schema_1
+    AND test_table.prop = :prop_1
+    AND test_table.value >= :value_1"""
+    fields = """test_table.id, test_table.entity_id, test_table.canonical_id, test_table.prop,
+    test_table.prop_type, test_table.schema, test_table.value, test_table.original_value,
+    test_table.dataset, test_table.lang, test_table.target, test_table.external,
+    test_table.first_seen, test_table.last_seen"""
     assert isinstance(q.sql.canonical_ids, Select)
     assert _compare_str(
         q.sql.canonical_ids,
         f"""
-        SELECT DISTINCT nk_store.canonical_id
-        FROM nk_store {whereclause}
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table {whereclause}
         """,
     )
 
@@ -37,9 +37,9 @@ def test_sql():
     assert _compare_str(
         q.sql.statements,
         f"""
-        SELECT {fields} FROM nk_store
-        WHERE nk_store.canonical_id IN (SELECT DISTINCT nk_store.canonical_id FROM nk_store {whereclause})
-        ORDER BY nk_store.canonical_id
+        SELECT {fields} FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
+        ORDER BY test_table.canonical_id
         """,
     )
 
@@ -47,8 +47,8 @@ def test_sql():
     assert _compare_str(
         q.sql.count,
         f"""
-        SELECT count(DISTINCT nk_store.canonical_id) AS count_1
-        FROM nk_store {whereclause}
+        SELECT count(DISTINCT test_table.canonical_id) AS count_1
+        FROM test_table {whereclause}
         """,
     )
 
@@ -56,9 +56,9 @@ def test_sql():
     assert _compare_str(
         q.sql.datasets,
         f"""
-        SELECT nk_store.dataset, count(DISTINCT nk_store.canonical_id) AS count_1
-        FROM nk_store {whereclause}
-        GROUP BY nk_store.dataset
+        SELECT test_table.dataset, count(DISTINCT test_table.canonical_id) AS count_1
+        FROM test_table {whereclause}
+        GROUP BY test_table.dataset
         """,
     )
 
@@ -66,9 +66,9 @@ def test_sql():
     assert _compare_str(
         q.sql.schemata,
         f"""
-        SELECT nk_store.schema, count(DISTINCT nk_store.canonical_id) AS count_1
-        FROM nk_store {whereclause}
-        GROUP BY nk_store.schema
+        SELECT test_table.schema, count(DISTINCT test_table.canonical_id) AS count_1
+        FROM test_table {whereclause}
+        GROUP BY test_table.schema
         """,
     )
 
@@ -76,11 +76,11 @@ def test_sql():
     assert _compare_str(
         q.sql.countries,
         f"""
-        SELECT nk_store.value, count(DISTINCT nk_store.canonical_id) AS count_1
-        FROM nk_store
-        WHERE nk_store.prop_type = :prop_type_1 AND nk_store.canonical_id IN
-        (SELECT DISTINCT nk_store.canonical_id FROM nk_store {whereclause})
-        GROUP BY nk_store.value
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count_1
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
+        GROUP BY test_table.value
         """,
     )
 
@@ -88,10 +88,10 @@ def test_sql():
     assert _compare_str(
         q.sql.dates,
         f"""
-        SELECT min(nk_store.value) AS min_1, max(nk_store.value) AS max_1
-        FROM nk_store
-        WHERE nk_store.prop_type = :prop_type_1 AND nk_store.canonical_id IN
-        (SELECT DISTINCT nk_store.canonical_id FROM nk_store {whereclause})
+        SELECT min(test_table.value) AS min_1, max(test_table.value) AS max_1
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
         """,
     )
 
@@ -108,21 +108,21 @@ def test_sql():
         q.sql.statements,
         f"""
         SELECT {fields}, anon_1.canonical_id AS canonical_id_1, anon_1.sortable_value
-        FROM nk_store JOIN (SELECT nk_store.canonical_id AS canonical_id, group_concat(nk_store.value) AS sortable_value
-            FROM nk_store
-            WHERE nk_store.prop = :prop_1 AND nk_store.canonical_id IN (SELECT DISTINCT nk_store.canonical_id
-                FROM nk_store WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
-                AND nk_store.schema = :schema_1 AND nk_store.prop = :prop_2 AND nk_store.value >= :value_1)
-            GROUP BY nk_store.canonical_id
-            ORDER BY sortable_value DESC, nk_store.canonical_id)
-        AS anon_1 ON nk_store.canonical_id = anon_1.canonical_id
-        ORDER BY anon_1.sortable_value DESC, nk_store.canonical_id
+        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, group_concat(test_table.value) AS sortable_value
+            FROM test_table
+            WHERE test_table.prop = :prop_1 AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+                FROM test_table WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)
+                AND test_table.schema = :schema_1 AND test_table.prop = :prop_2 AND test_table.value >= :value_1)
+            GROUP BY test_table.canonical_id
+            ORDER BY sortable_value DESC, test_table.canonical_id)
+        AS anon_1 ON test_table.canonical_id = anon_1.canonical_id
+        ORDER BY anon_1.sortable_value DESC, test_table.canonical_id
         """,
     )
 
     # cast order by
     q = Query().order_by("amount")
-    assert "CAST(nk_store.value AS NUMERIC)" in str(q.sql.statements)
+    assert "CAST(test_table.value AS NUMERIC)" in str(q.sql.statements)
 
     # no multi-value sort
     q = Query().order_by("name", "title")
@@ -154,16 +154,16 @@ def test_sql():
         q.sql.statements,
         f"""
         SELECT {fields}, anon_1.canonical_id AS canonical_id_1, anon_1.sortable_value
-        FROM nk_store JOIN (SELECT nk_store.canonical_id AS canonical_id, group_concat(nk_store.value) AS sortable_value
-            FROM nk_store
-            WHERE nk_store.prop = :prop_1 AND nk_store.canonical_id IN (SELECT DISTINCT nk_store.canonical_id
-                FROM nk_store WHERE (nk_store.dataset = :dataset_1 OR nk_store.dataset = :dataset_2)
-                AND nk_store.schema = :schema_1 AND nk_store.prop = :prop_2 AND nk_store.value >= :value_1)
-            GROUP BY nk_store.canonical_id
-            ORDER BY sortable_value, nk_store.canonical_id
+        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, group_concat(test_table.value) AS sortable_value
+            FROM test_table
+            WHERE test_table.prop = :prop_1 AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+                FROM test_table WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)
+                AND test_table.schema = :schema_1 AND test_table.prop = :prop_2 AND test_table.value >= :value_1)
+            GROUP BY test_table.canonical_id
+            ORDER BY sortable_value, test_table.canonical_id
             LIMIT :param_1 OFFSET :param_2)
-        AS anon_1 ON nk_store.canonical_id = anon_1.canonical_id
-        ORDER BY anon_1.sortable_value, nk_store.canonical_id
+        AS anon_1 ON test_table.canonical_id = anon_1.canonical_id
+        ORDER BY anon_1.sortable_value, test_table.canonical_id
         """,
     )
 
@@ -171,5 +171,5 @@ def test_sql():
     q = q.aggregate("sum", "amount").aggregate("max", "date")
     q = str(q.sql.aggregations)
     assert len(q.split("UNION")) == 2
-    assert "SELECT 'date', 'max', max(nk_store.value) AS max" in q
-    assert "SELECT 'amount', 'sum', sum(nk_store.value) AS sum" in q
+    assert "SELECT 'date', 'max', max(test_table.value) AS max" in q
+    assert "SELECT 'amount', 'sum', sum(test_table.value) AS sum" in q

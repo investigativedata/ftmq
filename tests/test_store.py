@@ -2,7 +2,7 @@ from nomenklatura.entity import CompositeEntity
 
 from ftmq.model import Catalog, Dataset
 from ftmq.query import Query
-from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SqlStore, Store, get_store
+from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SQLStore, Store, get_store
 
 
 def _run_store_test(cls: Store, proxies, **kwargs):
@@ -102,7 +102,7 @@ def test_store_leveldb(tmp_path, proxies):
 
 def test_store_sql_sqlite(tmp_path, proxies):
     uri = f"sqlite:///{tmp_path}/test.db"
-    assert _run_store_test(SqlStore, proxies, uri=uri)
+    assert _run_store_test(SQLStore, proxies, uri=uri)
 
 
 def test_store_init(tmp_path):
@@ -114,7 +114,7 @@ def test_store_init(tmp_path):
     store = get_store(f"leveldb://{path}")
     assert isinstance(store, LevelDBStore)
     store = get_store("sqlite:///:memory:")
-    assert isinstance(store, SqlStore)
+    assert isinstance(store, SQLStore)
     store = get_store(dataset="test_dataset")
     assert store.dataset.name == "test_dataset"
     store = get_store("http+aleph://test_dataset@aleph.example.org")

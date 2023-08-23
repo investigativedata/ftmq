@@ -78,7 +78,7 @@ class AlephQueryView(View, AlephView):
     pass
 
 
-class SqlQueryView(View, nk.sql.SqlView):
+class SQLQueryView(View, nk.sql.SQLView):
     def ensure_scoped_query(self, query: Q) -> Q:
         if not query.datasets:
             return query.where(dataset=self.dataset_names)
@@ -97,17 +97,17 @@ class SqlQueryView(View, nk.sql.SqlView):
     def coverage(self, query: Q | None = None) -> Coverage:
         query = self.ensure_scoped_query(query or Query())
         c = Collector()
-        for schema, count in self.store._execute(query.sql.schemata, many=False):
+        for schema, count in self.store._execute(query.sql.schemata, stream=False):
             c.schemata[schema] = count
-        for country, count in self.store._execute(query.sql.countries, many=False):
+        for country, count in self.store._execute(query.sql.countries, stream=False):
             if country is not None:
                 c.countries[country] = count
         coverage = c.export()
-        for start, end in self.store._execute(query.sql.dates, many=False):
+        for start, end in self.store._execute(query.sql.dates, stream=False):
             coverage.start = start
             coverage.end = end
 
-        for res in self.store._execute(query.sql.count, many=False):
+        for res in self.store._execute(query.sql.count, stream=False):
             for count in res:
                 coverage.entities = count
                 break
@@ -119,7 +119,7 @@ class SqlQueryView(View, nk.sql.SqlView):
         query = self.ensure_scoped_query(query)
         res: AggregatorResult = defaultdict(dict)
         for prop, func, value in self.store._execute(
-            query.sql.aggregations, many=False
+            query.sql.aggregations, stream=False
         ):
             res[func][prop] = value
         return res
@@ -137,10 +137,10 @@ class LevelDBStore(Store, nk.LevelDBStore):
         return LevelDBQueryView(self, scope, external=external)
 
 
-class SqlStore(Store, nk.SqlStore):
+class SQLStore(Store, nk.SQLStore):
     def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
         scope = scope or self.dataset
-        return SqlQueryView(self, scope, external=external)
+        return SQLQueryView(self, scope, external=external)
 
 
 class AlephStore(Store, _AlephStore):
@@ -182,10 +182,10 @@ def get_store(
         path = Path(path).absolute()
         return LevelDBStore(catalog, dataset, path=path)
     if "sql" in parsed.scheme:
-        return SqlStore(catalog, dataset, uri=uri)
+        return SQLStore(catalog, dataset, uri=uri)
     if "aleph" in parsed.scheme:
         return AlephStore.from_uri(uri, catalog=catalog, dataset=dataset)
     raise NotImplementedError(uri)
 
 
-__all__ = ["get_store", "S", "LevelDBStore", "MemoryStore", "SqlStore"]
+__all__ = ["get_store", "S", "LevelDBStore", "MemoryStore", "SQLStore"]

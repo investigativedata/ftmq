@@ -2247,15 +2247,17 @@ setuptools = "*"
 
 [[package]]
 name = "nomenklatura"
-version = "3.3.9"
-description = ""
+version = "3.4.0"
+description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
-files = []
-develop = false
+files = [
+    {file = "nomenklatura-3.4.0-py3-none-any.whl", hash = "sha256:b169eada1de93417cb5f883b25dcbd9a3b3ac4ebd0f400dc6a0a6a494f79beb0"},
+    {file = "nomenklatura-3.4.0.tar.gz", hash = "sha256:d9269938ed6eb80703e75a9b6ccbbccba7b651d7938726008f4faa4d1af4aef0"},
+]
 
 [package.dependencies]
-click = ">=8.0.0,<8.1.7"
+click = "<9.0.0"
 followthemoney = ">=3.3.0,<4.0.0"
 jellyfish = ">=1.0.0,<2.0.0"
 plyvel = "*"
@@ -2267,12 +2269,6 @@ textual = ">=0.19.0,<1.0.0"
 [package.extras]
 dev = ["coverage (>=4.1)", "flake8 (>=2.6.0)", "mypy", "pytest", "pytest-cov", "requests-mock", "twine", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
 leveldb = ["plyvel"]
-
-[package.source]
-type = "git"
-url = "https://github.com/opensanctions/nomenklatura"
-reference = "HEAD"
-resolved_reference = "4ef0ca58bf437fccda93d80f218b70032ec6e0f6"
 
 [[package]]
 name = "normality"
@@ -2896,6 +2892,23 @@ pytest = ">=4.6"
 
 [package.extras]
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtualenv"]
+
+[[package]]
+name = "pytest-env"
+version = "1.0.0"
+description = "py.test plugin that allows you to add environment variables."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest_env-1.0.0-py3-none-any.whl", hash = "sha256:c5ec593abf2430e21aec5b62ef50a0d894de634e84c935a44f3fe9663c5868c6"},
+    {file = "pytest_env-1.0.0.tar.gz", hash = "sha256:3265fe88f570337635689bacd9dafbe6e227c524abdb2b0f46454d6b6011a51c"},
+]
+
+[package.dependencies]
+pytest = ">=7.3.1"
+
+[package.extras]
+test = ["coverage (>=7.2.7)", "pytest-mock (>=3.10)"]
 
 [[package]]
 name = "python-dateutil"
@@ -3899,4 +3912,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "f8db0809e95bac82ed9228e7f1c92d82fea431823f898c1cf32410fd874931ca"
+content-hash = "62c8f4685c2b1a8fc6426a8c7ecc0e5ebc19ef973aa6cd3bef480bb34ef3816d"
