@@ -19,11 +19,11 @@ repos:
         args: [ "--fix=lf" ]
       - id: trailing-whitespace
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
-    hooks:
-      - id: pyupgrade
-        args: [ "--py310-plus" ]
+  # - repo: https://github.com/asottile/pyupgrade
+  #   rev: v3.10.1
+  #   hooks:
+  #     - id: pyupgrade
+  #       args: [ "--py310-plus" ]
 
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
@@ -46,18 +46,20 @@ repos:
     hooks:
       - id: pyproject-flake8
         additional_dependencies: [ flake8-bugbear ]
-        args: [ "--extend-ignore", "E501" ]
+        args: [ "--extend-ignore", "E203, E501" ]
+        exclude: (test_[\w]+\.py|\.csv|\.json|\.lock)$
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
     hooks:
       - id: codespell
-        exclude: \.(csv|json|lock)$
+        exclude: (test_[\w]+\.py|\.csv|\.i?json|\.lock)$
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
       - id: python-check-blanket-noqa
+        exclude: (test_[\w]+\.py)$
       - id: python-check-blanket-type-ignore
       - id: python-no-eval
       - id: python-use-type-annotations

@@ -110,9 +110,50 @@ def test_proxy_filter_property(proxies):
     result = list(filter(q.apply, proxies))
     assert len(result) == 34975
 
+    q = Query().where(prop="full", value="Brux", operator="startswith")
+    result = list(filter(q.apply, proxies))
+    assert len(result) == 12
+
+    q = Query().where(prop="full", value="elles", operator="endswith")
+    result = list(filter(q.apply, proxies))
+    assert len(result) == 12
+
+    q = Query().where(prop="full", value="Bruxelles", operator="not")
+    result = list(filter(q.apply, proxies))
+    assert len(result) == 1279
+
 
 def test_proxy_filters_combined(proxies):
     q = Query().where(prop="jurisdiction", value="eu")
     q = q.where(schema="Event")
     result = list(filter(q.apply, proxies))
     assert len(result) == 0
+
+
+def test_proxy_sort(proxies):
+    tested = False
+    q = Query().where(schema="Person").order_by("name")
+    for proxy in q.apply_iter(proxies):
+        assert proxy.caption == "Aare Järvan"
+        tested = True
+        break
+    assert tested
+    q = Query().where(schema="Person").order_by("name", ascending=False)
+    for proxy in q.apply_iter(proxies):
+        assert proxy.caption == "Zaneta Vegnere"
+        tested = True
+        break
+    assert tested
+
+
+def test_proxy_slice(proxies):
+    q = Query()[:10]
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 10
+    q = Query()[10:20]
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 10
+    q = Query().where(schema="Person").order_by("name")[0]
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 1
+    assert res[0].caption == "Aare Järvan"

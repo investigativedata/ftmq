@@ -11,7 +11,7 @@ from ftmq.io import (
 )
 from ftmq.model.coverage import Collector
 from ftmq.query import Query
-from ftmq.util import parse_unknown_cli_filters
+from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
@@ -38,10 +38,35 @@ def cli():
 @click.option(
     "--schema-include-matchable", is_flag=True, default=False, show_default=True
 )
+@click.option("--sort", help="Properties to sort for", multiple=True)
+@click.option(
+    "--sort-ascending/--sort-descending",
+    is_flag=True,
+    help="Sort in ascending order",
+    default=True,
+    show_default=True,
+)
 @click.option(
     "--coverage-uri",
     default=None,
+    show_default=True,
     help="If specified, print coverage information to this uri",
+)
+@click.option(
+    "--store-dataset",
+    default=None,
+    show_default=True,
+    help="If specified, default dataset for source and target stores",
+)
+@click.option("--sum", multiple=True, help="Properties for sum aggregation")
+@click.option("--min", multiple=True, help="Properties for min aggregation")
+@click.option("--max", multiple=True, help="Properties for max aggregation")
+@click.option("--avg", multiple=True, help="Properties for avg aggregation")
+@click.option(
+    "--aggregation-uri",
+    default=None,
+    show_default=True,
+    help="If specified, print aggregation information to this uri",
 )
 @click.argument("properties", nargs=-1)
 def q(
@@ -51,8 +76,16 @@ def q(
     schema: tuple[str] | None = (),
     schema_include_descendants: bool | None = False,
     schema_include_matchable: bool | None = False,
+    sort: tuple[str] | None = None,
+    sort_ascending: bool | None = True,
     properties: tuple[str] | None = (),
     coverage_uri: str | None = None,
+    store_dataset: str | None = None,
+    sum: tuple[str] | None = (),
+    min: tuple[str] | None = (),
+    max: tuple[str] | None = (),
+    avg: tuple[str] | None = (),
+    aggregation_uri: str | None = None,
 ):
     """
     Apply ftmq filter to a json stream of ftm entities.
@@ -66,15 +99,31 @@ def q(
             include_descendants=schema_include_descendants,
             include_matchable=schema_include_matchable,
         )
-    for prop, value, op in parse_unknown_cli_filters(properties):
+    for prop, value, op in parse_unknown_filters(properties):
         q = q.where(prop=prop, value=value, operator=op)
+    if len(sort):
+        q = q.order_by(*sort, ascending=sort_ascending)
 
-    proxies = q.apply_iter(smart_read_proxies(input_uri))
+    if len(dataset) == 1:
+        store_dataset = store_dataset or dataset[0]
+    aggs = {
+        k: v for k, v in {"sum": sum, "min": min, "max": max, "avg": avg}.items() if v
+    }
+    if aggregation_uri and aggs:
+        for func, props in aggs.items():
+            q = q.aggregate(func, *props)
+    proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
     if coverage_uri:
-        coverage = Collector.apply(proxies)
+        coverage = Collector()
+        proxies = coverage.apply(proxies)
+    smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
+    if coverage_uri:
+        coverage = coverage.export()
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
-    smart_write_proxies(output_uri, proxies, serialize=True)
+    if q.aggregator:
+        result = orjson.dumps(q.aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
+        smart_write(aggregation_uri, result)
 
 
 @cli.command("apply")

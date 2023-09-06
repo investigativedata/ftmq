@@ -25,6 +25,7 @@ def test_util_str_enum():
     enum = StrEnum("Foo", ["a", "b", 2])
     assert enum.a == "a"
     assert str(enum.a) == "a"
+    assert "a" in enum
     if sys.version_info >= (3, 11):
         assert isinstance(enum, EnumType)
 
@@ -40,14 +41,23 @@ def test_util_str_enum():
 def test_util_unknown_filters():
     res = (("country", "de", None), ("name", "alice", None))
     args = ("--country", "de", "--name", "alice")
-    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    assert tuple(util.parse_unknown_filters(args)) == res
     args = ("--country=de", "--name=alice")
-    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    assert tuple(util.parse_unknown_filters(args)) == res
     args = ("--country", "de", "--name=alice")
-    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    assert tuple(util.parse_unknown_filters(args)) == res
     args = ()
-    assert tuple(util.parse_unknown_cli_filters(args)) == ()
+    assert tuple(util.parse_unknown_filters(args)) == ()
 
     args = ("--country", "de", "--year__gte", "2023")
     res = (("country", "de", None), ("year", "2023", "gte"))
-    assert tuple(util.parse_unknown_cli_filters(args)) == res
+    assert tuple(util.parse_unknown_filters(args)) == res
+
+
+def test_util_numeric():
+    assert util.to_numeric("1") == 1
+    assert util.to_numeric("1.0") == 1
+    assert util.to_numeric("1.1") == 1.1
+    assert util.to_numeric("1,101,000") == 1_101_000
+    assert util.to_numeric("1.000,1") == 1000.1
+    assert util.to_numeric("foo") is None
