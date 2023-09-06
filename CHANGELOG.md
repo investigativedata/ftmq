@@ -2,6 +2,10 @@
 
 ## CHANGELOG
 
+### 0.3.0 (2023-09-06)
+
+- Add `nomeklatura` based stores and query views built upon that (needs documentation)
+
 ### 0.2.1 (2023-08-07)
 
 - Align with `nomenklatura` v3
