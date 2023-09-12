@@ -23,7 +23,12 @@ from ftmq.types import CE, CEGenerator, PathLike
 
 class Store(nk.Store):
     def __init__(
-        self, catalog: C | None = None, dataset: Dataset | None = None, *args, **kwargs
+        self,
+        catalog: C | None = None,
+        dataset: Dataset | None = None,
+        resolver: Resolver | None = None,
+        *args,
+        **kwargs,
     ) -> None:
         if dataset is not None:
             if isinstance(dataset, str):
@@ -33,7 +38,10 @@ class Store(nk.Store):
             dataset = catalog.get_scope()
         else:
             dataset = DefaultDataset
-        super().__init__(dataset=dataset, resolver=Resolver(), *args, **kwargs)
+        super().__init__(
+            dataset=dataset, resolver=resolver or Resolver(), *args, **kwargs
+        )
+        self.cache = {}
 
     def iterate(self) -> CEGenerator:
         view = self.default_view()
@@ -179,7 +187,11 @@ class AlephStore(Store, _AlephStore):
 
     @classmethod
     def from_uri(
-        cls, uri: str, dataset: Dataset | str | None = None, catalog: C | None = None
+        cls,
+        uri: str,
+        dataset: Dataset | str | None = None,
+        catalog: C | None = None,
+        resolver: Resolver | None = None,
     ) -> nk.Store[DS, CE]:
         host, api_key, foreign_id = parse_uri(uri)
         if dataset is None and foreign_id is not None:
@@ -188,7 +200,7 @@ class AlephStore(Store, _AlephStore):
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
 
-        return cls(catalog, dataset, host=host, api_key=api_key)
+        return cls(catalog, dataset, resolver=resolver, host=host, api_key=api_key)
 
 
 S = TypeVar("S", bound=Store)
@@ -199,22 +211,27 @@ def get_store(
     uri: PathLike | None = STORE_URI,
     catalog: C | None = None,
     dataset: Dataset | str | None = None,
+    resolver: Resolver | str | None = None,
 ) -> Store:
     if isinstance(dataset, str):
         dataset = Dataset(name=dataset)
+    if isinstance(resolver, (str, Path)):
+        resolver = Resolver.load(resolver)
     uri = str(uri)
     parsed = urlparse(uri)
     if parsed.scheme == "memory":
-        return MemoryStore(catalog, dataset)
+        return MemoryStore(catalog, dataset, resolver=resolver)
     if parsed.scheme == "leveldb":
         path = uri.replace("leveldb://", "")
         path = Path(path).absolute()
-        return LevelDBStore(catalog, dataset, path=path)
+        return LevelDBStore(catalog, dataset, path=path, resolver=resolver)
     if "sql" in parsed.scheme:
         get_metadata.cache_clear()
-        return SQLStore(catalog, dataset, uri=uri)
+        return SQLStore(catalog, dataset, uri=uri, resolver=resolver)
     if "aleph" in parsed.scheme:
-        return AlephStore.from_uri(uri, catalog=catalog, dataset=dataset)
+        return AlephStore.from_uri(
+            uri, catalog=catalog, dataset=dataset, resolver=resolver
+        )
     raise NotImplementedError(uri)
 
 
