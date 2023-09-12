@@ -5,7 +5,24 @@ from ftmq.query import Query
 from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SQLStore, Store, get_store
 
 
+def _run_store_test_implicit(cls: Store, proxies, **kwargs):
+    # implicit catalog from store content
+    store = cls(**kwargs)
+    assert not store.get_catalog().names
+
+    datasets_seen = set()
+    with store.writer() as bulk:
+        for proxy in proxies:
+            if proxy.datasets - datasets_seen:
+                bulk.add_entity(proxy)
+                datasets_seen.update(proxy.datasets)
+
+    assert store.get_catalog().names == {"ec_meetings", "eu_authorities"}
+    return True
+
+
 def _run_store_test(cls: Store, proxies, **kwargs):
+    # explicit catalog
     catalog = Catalog(
         datasets=[Dataset(name="eu_authorities"), Dataset(name="ec_meetings")]
     )
@@ -92,16 +109,24 @@ def _run_store_test(cls: Store, proxies, **kwargs):
 
 
 def test_store_memory(proxies):
+    assert _run_store_test_implicit(MemoryStore, proxies)
     assert _run_store_test(MemoryStore, proxies)
 
 
 def test_store_leveldb(tmp_path, proxies):
     path = tmp_path / "level.db"
+    assert _run_store_test_implicit(MemoryStore, proxies)
+    path = tmp_path / "level2.db"
     assert _run_store_test(LevelDBStore, proxies, path=path)
 
 
 def test_store_sql_sqlite(tmp_path, proxies):
     uri = f"sqlite:///{tmp_path}/test.db"
+    assert _run_store_test_implicit(SQLStore, proxies, uri=uri)
+
+    from nomenklatura.db import get_metadata
+
+    get_metadata.cache_clear()
     assert _run_store_test(SQLStore, proxies, uri=uri)
 
 

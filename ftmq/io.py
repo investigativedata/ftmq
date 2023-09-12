@@ -64,7 +64,7 @@ def smart_read(uri, *args, **kwargs) -> Any:
         return fh.read()
 
 
-def smart_write(uri, content: bytes, *args, **kwargs) -> Any:
+def smart_write(uri, content: bytes | str, *args, **kwargs) -> Any:
     kwargs["mode"] = kwargs.get("mode", "wb")
     with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
         fh.write(content)

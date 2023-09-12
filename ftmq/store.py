@@ -8,13 +8,14 @@ from nomenklatura import store as nk
 from nomenklatura.dataset import DS, DefaultDataset
 from nomenklatura.db import get_metadata
 from nomenklatura.resolver import Resolver
+from sqlalchemy import select
 
 from ftmq.aggregations import AggregatorResult
 from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
 from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
-from ftmq.model.dataset import C, Dataset
+from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.settings import STORE_URI
 from ftmq.types import CE, CEGenerator, PathLike
@@ -37,6 +38,10 @@ class Store(nk.Store):
     def iterate(self) -> CEGenerator:
         view = self.default_view()
         yield from view.entities()
+
+    def get_catalog(self) -> C:
+        # return implicit catalog computed from current datasets in store
+        raise NotImplementedError
 
 
 class View(nk.base.View):
@@ -127,24 +132,47 @@ class SQLQueryView(View, nk.sql.SQLView):
 
 
 class MemoryStore(Store, nk.SimpleMemoryStore):
+    def get_catalog(self) -> C:
+        return Catalog.from_names(self.entities.keys())
+
     def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
         scope = scope or self.dataset
         return MemoryQueryView(self, scope, external=external)
 
 
 class LevelDBStore(Store, nk.LevelDBStore):
+    def get_catalog(self) -> C:
+        names: set[str] = set()
+        with self.db.iterator(prefix=b"e:", include_value=False) as it:
+            for k in it:
+                _, _, dataset = k.decode("utf-8").split(":", 2)
+                names.add(dataset)
+        return Catalog.from_names(names)
+
     def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
         scope = scope or self.dataset
         return LevelDBQueryView(self, scope, external=external)
 
 
 class SQLStore(Store, nk.SQLStore):
+    def get_catalog(self) -> C:
+        q = select(self.table.c.dataset).distinct()
+        names: set[str] = set()
+        for row in self._execute(q, stream=False):
+            names.add(row[0])
+        return Catalog.from_names(names)
+
     def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
         scope = scope or self.dataset
         return SQLQueryView(self, scope, external=external)
 
 
 class AlephStore(Store, _AlephStore):
+    def get_catalog(self) -> C:
+        # FIXME
+        # api.filter_collections("*")
+        return Catalog.from_names(DefaultDataset.leaf_names)
+
     def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
         scope = scope or self.dataset
         return AlephQueryView(self, scope, external=external)
