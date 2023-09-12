@@ -55,6 +55,10 @@ def test_proxy_filter_schema(proxies):
     result = list(filter(q.apply, proxies))
     assert len(result) == 7097
 
+    q = Query().where(schema__in=["Event", "Organization"])
+    result = list(filter(q.apply, proxies))
+    assert len(result) == 34975 + 7097
+
     q = Query().where(schema="Organization", include_matchable=True)
     result = list(filter(q.apply, proxies))
     assert len(result) == 7351
@@ -75,6 +79,10 @@ def test_proxy_filter_schema(proxies):
     result = list(filter(q.apply, proxies))
     assert len(result) == 791
 
+    q = Query().where(schema__startswith="Pers")
+    result = list(filter(q.apply, proxies))
+    assert len(result) == 791
+
     # invalid
     with pytest.raises(ValidationError):
         q = Query().where(schema="Invalid schema")
@@ -85,40 +93,40 @@ def test_proxy_filter_property(proxies):
     result = list(filter(q.apply, proxies))
     assert len(result) == 254
 
-    q = Query().where(prop="date", value="2022", operator="gte")
+    q = Query().where(prop="date", value="2022", comparator="gte")
     result = list(filter(q.apply, proxies))
     assert len(result) == 3575
 
-    q = Query().where(prop="date", value="2022", operator="gt")
+    q = Query().where(prop="date", value="2022", comparator="gt")
     result = list(filter(q.apply, proxies))
     assert len(result) == 3575
 
     # chained same props as AND
-    q = q.where(prop="date", value="2023", operator="lt")
+    q = q.where(prop="date", value="2023", comparator="lt")
     result = list(filter(q.apply, proxies))
     assert len(result) == 3499
 
-    q = Query().where(prop="date", value=2023, operator="gte")
+    q = Query().where(prop="date", value=2023, comparator="gte")
     result = list(filter(q.apply, proxies))
     assert len(result) == 76
 
-    q = Query().where(prop="date", value=True, operator="null")
+    q = Query().where(prop="date", value=True, comparator="null")
     result = list(filter(q.apply, proxies))
     assert len(result) == 34975
 
-    q = Query().where(prop="date", value=False, operator="null")
+    q = Query().where(prop="date", value=False, comparator="null")
     result = list(filter(q.apply, proxies))
     assert len(result) == 34975
 
-    q = Query().where(prop="full", value="Brux", operator="startswith")
+    q = Query().where(prop="full", value="Brux", comparator="startswith")
     result = list(filter(q.apply, proxies))
     assert len(result) == 12
 
-    q = Query().where(prop="full", value="elles", operator="endswith")
+    q = Query().where(prop="full", value="elles", comparator="endswith")
     result = list(filter(q.apply, proxies))
     assert len(result) == 12
 
-    q = Query().where(prop="full", value="Bruxelles", operator="not")
+    q = Query().where(prop="full", value="Bruxelles", comparator="not")
     result = list(filter(q.apply, proxies))
     assert len(result) == 1279
 
@@ -157,3 +165,23 @@ def test_proxy_slice(proxies):
     res = [p for p in q.apply_iter(proxies)]
     assert len(res) == 1
     assert res[0].caption == "Aare Järvan"
+
+
+def test_proxy_filter_reverse(proxies):
+    entity_id = "eu-tr-09571422185-81"
+    q = Query().where(reverse=entity_id)
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 13
+    tested = False
+    for proxy in res:
+        assert entity_id in proxy.get("involved")
+        tested = True
+    assert tested
+
+    q = Query().where(reverse=entity_id, schema="Event")
+    q = q.where(prop="date", value=2022, comparator="gte")
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 3
+    q = Query().where(reverse=entity_id, schema="Person")
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 0

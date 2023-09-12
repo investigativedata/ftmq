@@ -62,7 +62,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = [e for e in view.entities(q)]
     assert len(res) == 151
     assert "eu_authorities" in res[0].datasets
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     res = [e for e in view.entities(q)]
     assert res[0].schema.name == "Event"
     assert len(res) == 76
@@ -82,7 +82,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     ]
 
     # ordering
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     q = q.order_by("location")
     res = [e for e in view.entities(q)]
     assert len(res) == 76
@@ -93,7 +93,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert res[0].get("location") == ["virtual"]
 
     # slice
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     q = q.order_by("location")
     q = q[:10]
     res = [e for e in view.entities(q)]
@@ -104,6 +104,25 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     q = Query().aggregate("max", "date").aggregate("min", "date")
     res = view.aggregations(q)
     assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
+
+    # reversed
+    entity_id = "eu-tr-09571422185-81"
+    q = Query().where(reverse=entity_id)
+    res = [p for p in view.entities(q)]
+    assert len(res) == 13
+    tested = False
+    for proxy in res:
+        assert entity_id in proxy.get("involved")
+        tested = True
+    assert tested
+
+    q = Query().where(reverse=entity_id, schema="Event")
+    q = q.where(prop="date", value=2022, comparator="gte")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 3
+    q = Query().where(reverse=entity_id, schema="Person")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
 
     return True
 

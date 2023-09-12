@@ -46,9 +46,10 @@ Schemata = StrEnum("Schemata", [k for k in model.schemata.keys()])
 Properties = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
 PropertyTypes = {p.name: p.type for p in model.properties}
 PropertyTypes = Enum("PropertyTypes", PropertyTypes.items())
-Operators = StrEnum(
-    "Operators",
+Comparators = StrEnum(
+    "Comparators",
     [
+        "eq",
         "not",
         "in",
         "not_in",

@@ -95,7 +95,7 @@ class AlephQueryView(View, AlephView):
 class SQLQueryView(View, nk.sql.SQLView):
     def ensure_scoped_query(self, query: Q) -> Q:
         if not query.datasets:
-            return query.where(dataset=self.dataset_names)
+            return query.where(dataset__in=self.dataset_names)
         if query.dataset_names - self.dataset_names:
             raise ValidationError("Query datasets outside view scope")
         return query

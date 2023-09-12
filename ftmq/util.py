@@ -9,6 +9,7 @@ from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
 
+from ftmq.enums import Comparators
 from ftmq.exceptions import ValidationError
 from ftmq.types import SGenerator
 
@@ -19,6 +20,15 @@ def make_dataset(name: str) -> Dataset:
         Dataset, {"datasets": [{"name": name, "title": name.title()}]}
     )
     return catalog.get(name)
+
+
+def parse_comparator(key: str) -> tuple[str, Comparators]:
+    key, *comparator = key.split("__", 1)
+    if comparator:
+        comparator = Comparators[comparator[0]]
+    else:
+        comparator = Comparators["eq"]
+    return key, comparator
 
 
 def parse_unknown_filters(

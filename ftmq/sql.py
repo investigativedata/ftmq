@@ -18,23 +18,24 @@ from sqlalchemy import (
     union_all,
 )
 
-from ftmq.enums import Operators, PropertyTypes
+from ftmq.enums import Comparators, PropertyTypes
 from ftmq.exceptions import ValidationError
-from ftmq.filters import PropertyFilter
+from ftmq.filters import F
 
 if TYPE_CHECKING:
     from ftmq.query import Q
 
 
 class Sql:
-    OPERATORS = {
-        Operators["not"]: "__ne__",
-        Operators["in"]: "in_",
-        Operators.null: "is_",
-        Operators.gt: "__gt__",
-        Operators.gte: "__ge__",
-        Operators.lt: "__lt__",
-        Operators.lte: "__le__",
+    COMPARATORS = {
+        Comparators["eq"]: "__eq__",
+        Comparators["not"]: "__ne__",
+        Comparators["in"]: "in_",
+        Comparators.null: "is_",
+        Comparators.gt: "__gt__",
+        Comparators.gte: "__ge__",
+        Comparators.lt: "__lt__",
+        Comparators.lte: "__le__",
     }
 
     def __init__(self, q: "Q") -> None:
@@ -42,28 +43,47 @@ class Sql:
         self.metadata = MetaData()
         self.table = make_statement_table(self.metadata)
 
-    def get_expression(self, column: Column, prop: PropertyFilter):
-        if prop.operator is None:
-            return column.__eq__(prop.casted_value)
-        op = self.OPERATORS.get(str(prop.operator), str(prop.operator))
+    def get_expression(self, column: Column, f: F):
+        op = self.COMPARATORS.get(str(f.comparator), str(f.comparator))
         op = getattr(column, op)
-        return op(prop.casted_value)
+        return op(f.value)
 
     @cached_property
     def clause(self) -> BooleanClauseList:
         clauses = []
         if self.q.datasets:
-            clauses.append(or_(self.table.c.dataset == str(d) for d in self.q.datasets))
+            clauses.append(
+                or_(
+                    self.get_expression(self.table.c.dataset, f)
+                    for f in self.q.datasets
+                )
+            )
         if self.q.schemata:
-            clauses.append(or_(self.table.c.schema == str(s) for s in self.q.schemata))
+            clauses.append(
+                or_(
+                    self.get_expression(self.table.c.schema, f) for f in self.q.schemata
+                )
+            )
+        if self.q.reversed:
+            rclause = or_(
+                and_(
+                    self.table.c.prop_type == str(registry.entity),
+                    self.get_expression(self.table.c.value, f),
+                )
+                for f in self.q.reversed
+            )
+            rq = select(self.table.c.canonical_id.distinct()).where(
+                and_(rclause, *clauses)
+            )
+            clauses.append(self.table.c.canonical_id.in_(rq))
         if self.q.properties:
             clauses.append(
                 or_(
                     and_(
-                        self.table.c.prop == str(p),
-                        self.get_expression(self.table.c.value, p),
+                        self.table.c.prop == f.key,
+                        self.get_expression(self.table.c.value, f),
                     )
-                    for p in self.q.properties
+                    for f in self.q.properties
                 )
             )
         return and_(*clauses)

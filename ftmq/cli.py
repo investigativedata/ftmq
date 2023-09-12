@@ -101,7 +101,7 @@ def q(
             include_matchable=schema_include_matchable,
         )
     for prop, value, op in parse_unknown_filters(properties):
-        q = q.where(prop=prop, value=value, operator=op)
+        q = q.where(prop=prop, value=value, comparator=op)
     if len(sort):
         q = q.order_by(*sort, ascending=sort_ascending)
 

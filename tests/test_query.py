@@ -13,8 +13,8 @@ def test_query():
     assert q.lookups == q.to_dict() == {"dataset": "test"}
     assert q
     fi = list(q.filters)[0]
-    assert fi.get_key() == "dataset"
-    assert fi.get_value() == str(fi) == "test"
+    assert fi.key == "dataset"
+    assert fi.value == "test"
     assert fi.to_dict() == {"dataset": "test"}
 
     q = q.where(schema="Event")
@@ -33,15 +33,16 @@ def test_query():
     )
 
     # multi dataset / schema
-    q2 = Query().where(dataset=["d1", "d2"])
-    assert q2.lookups == q2.to_dict() == {"dataset": ["d1", "d2"]}
-    q2 = q2.where(schema="Event").where(schema=["Person", "Organization"])
+    q2 = Query().where(dataset__in=["d1", "d2"])
+    assert q2.lookups == q2.to_dict() == {"dataset__in": {"d1", "d2"}}
+    q2 = q2.where(schema="Event").where(schema__in=["Person", "Organization"])
     assert (
         q2.lookups
         == q2.to_dict()  # noqa
         == {  # noqa
-            "dataset": ["d1", "d2"],
-            "schema": ["Event", "Organization", "Person"],
+            "dataset__in": {"d1", "d2"},
+            "schema": "Event",
+            "schema__in": {"Organization", "Person"},
         }
     )
     assert q2.dataset_names == {"d1", "d2"}
@@ -49,7 +50,7 @@ def test_query():
     assert q2.lookups == q2.to_dict() == {"dataset": "test"}
     assert q2.dataset_names == {"test"}
 
-    q = q.where(prop="date", value=2023, operator="gte")
+    q = q.where(prop="date", value=2023, comparator="gte")
     assert len(q.filters) == 3
     assert (
         q.lookups
@@ -57,13 +58,13 @@ def test_query():
         == {  # noqa
             "dataset": "test",
             "schema": "Event",
-            "date": {"gte": "2023"},
+            "date__gte": "2023",
         }
     )
 
-    q = Query().where(prop="name", value=["test", "other"], operator="in")
+    q = Query().where(prop="name", value=["test", "other"], comparator="in")
     assert q.to_dict() == {
-        "name": {"in": ["test", "other"]},
+        "name__in": {"test", "other"},
     }
     # filter uniqueness
     q = Query().where(dataset="test").where(dataset="test")
@@ -72,7 +73,7 @@ def test_query():
     assert len(q.filters) == 2
     q = Query().where(prop="date", value=2023)
     assert len(q.filters) == 1
-    q = q.where(prop="date", value=2023, operator="gte")
+    q = q.where(prop="date", value=2023, comparator="gte")
     assert len(q.filters) == 1
     q = q.where(prop="date", value=2024)
     assert len(q.filters) == 2
@@ -104,29 +105,27 @@ def test_query():
     with pytest.raises(ValidationError):
         Query().where(prop="foo", value="bar")
     with pytest.raises(ValidationError):
-        Query().where(prop="date", value=2023, operator="foo")
+        Query().where(prop="date", value=2023, comparator="foo")
     with pytest.raises(ValidationError):
         Query()[-1]
     with pytest.raises(ValidationError):
         Query()[1:1:1]
+    with pytest.raises(ValidationError):
+        Query().where(dataset=[1, 2, 3])
 
 
 def test_query_cast():
-    q = Query().where(prop="name", value="test", operator="in")
+    q = Query().where(prop="name", value="test", comparator="in")
     f = list(q.filters)[0]
-    assert f.value == "test"
-    assert f.casted_value == ["test"]
-    assert f.get_value() == {"in": ["test"]}
+    assert f.value == {"test"}
     q = Query().where(prop="date", value=2023)
     f = list(q.filters)[0]
-    assert f.value == 2023
-    assert f.casted_value == "2023"
-    assert f.get_value() == "2023"
+    assert f.value == "2023"
 
 
 def test_query_arbitrary_kwargs():
     q = Query().where(date__gte=2023, name__ilike="%jane%")
-    assert q.to_dict() == {"date": {"gte": "2023"}, "name": {"ilike": "%jane%"}}
+    assert q.to_dict() == {"date__gte": "2023", "name__ilike": "%jane%"}
 
 
 def test_query_aggregate():
@@ -134,7 +133,28 @@ def test_query_aggregate():
     q = q.aggregate("sum", "amountEur", "amount")
     assert q.to_dict() == {
         "schema": "Payment",
-        "date": {"gte": "2023"},
-        "amount": {"null": False},
+        "date__gte": "2023",
+        "amount__null": False,
         "aggregations": {"sum": {"amount", "amountEur"}},
     }
+
+
+def test_query_reversed():
+    q = Query().where(schema="Payment", date__gte=2023, amount__null=False)
+    q = q.where(reverse="my_id")
+    q = q.aggregate("sum", "amountEur", "amount")
+    assert q.to_dict() == {
+        "reverse": "my_id",
+        "schema": "Payment",
+        "date__gte": "2023",
+        "amount__null": False,
+        "aggregations": {"sum": {"amount", "amountEur"}},
+    }
+
+
+def test_query_filter_comparators():
+    q = Query().where(dataset__in=["a", "b"])
+    assert q.to_dict() == {"dataset__in": {"a", "b"}}
+
+    q = Query().where(dataset__startswith="a")
+    assert q.to_dict() == {"dataset__startswith": "a"}
