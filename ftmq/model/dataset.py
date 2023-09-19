@@ -1,6 +1,6 @@
 from collections.abc import Generator
 from datetime import datetime
-from typing import Any, ForwardRef, Literal, Optional, TypeVar
+from typing import Any, ForwardRef, Iterable, Literal, Optional, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
@@ -158,6 +158,10 @@ class Catalog(NKModel):
         for catalog in self.catalogs:
             names.update(catalog.names)
         return names
+
+    @classmethod
+    def from_names(cls, names: Iterable[set]) -> Catalog:
+        return cls(datasets=[Dataset(name=n) for n in names])
 
 
 Catalog.update_forward_refs()

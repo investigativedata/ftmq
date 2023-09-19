@@ -1,6 +1,7 @@
 import sys
 
 import cloudpickle
+import pytest
 
 if sys.version_info >= (3, 11):
     from enum import EnumType
@@ -8,7 +9,7 @@ if sys.version_info >= (3, 11):
 from nomenklatura.dataset import Dataset
 
 from ftmq import util
-from ftmq.enums import StrEnum
+from ftmq.enums import Comparators, StrEnum
 
 
 def test_util_make_dataset():
@@ -61,3 +62,10 @@ def test_util_numeric():
     assert util.to_numeric("1,101,000") == 1_101_000
     assert util.to_numeric("1.000,1") == 1000.1
     assert util.to_numeric("foo") is None
+
+
+def test_util_parse_lookup_key():
+    assert util.parse_comparator("foo") == ("foo", Comparators.eq)
+    assert util.parse_comparator("foo__gte") == ("foo", Comparators.gte)
+    with pytest.raises(KeyError):  # unknown operator
+        util.parse_comparator("foo__bar")

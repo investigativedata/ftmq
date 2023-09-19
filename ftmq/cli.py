@@ -11,6 +11,7 @@ from ftmq.io import (
 )
 from ftmq.model.coverage import Collector
 from ftmq.query import Query
+from ftmq.store import get_store
 from ftmq.util import parse_unknown_filters
 
 
@@ -100,7 +101,7 @@ def q(
             include_matchable=schema_include_matchable,
         )
     for prop, value, op in parse_unknown_filters(properties):
-        q = q.where(prop=prop, value=value, operator=op)
+        q = q.where(prop=prop, value=value, comparator=op)
     if len(sort):
         q = q.order_by(*sort, ascending=sort_ascending)
 
@@ -149,6 +150,26 @@ def apply(
     if dataset:
         proxies = apply_datasets(proxies, *dataset, replace=replace_dataset)
     smart_write_proxies(output_uri, proxies, serialize=True)
+
+
+@cli.command("list-datasets")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+def list_datasets(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+):
+    """
+    List datasets within a store
+    """
+    store = get_store(input_uri)
+    catalog = store.get_catalog()
+    datasets = [ds.name for ds in catalog.datasets]
+    smart_write(output_uri, "\n".join(datasets).encode() + b"\n")
 
 
 @cli.command("io")

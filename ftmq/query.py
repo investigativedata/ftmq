@@ -1,38 +1,27 @@
 from collections.abc import Iterable
 from itertools import islice
-from typing import Any, TypedDict, TypeVar
+from typing import Any, TypeVar
 
 from banal import ensure_list, is_listish, is_mapping
 from nomenklatura.entity import CE
 
 from ftmq.aggregations import Aggregation, Aggregator
-from ftmq.enums import Aggregations, Operators, Properties
+from ftmq.enums import Aggregations, Properties
 from ftmq.exceptions import ValidationError
 from ftmq.filters import (
-    Dataset,
+    FILTERS,
     DatasetFilter,
     F,
-    Property,
     PropertyFilter,
-    Schema,
+    ReverseFilter,
     SchemaFilter,
-    Value,
 )
 from ftmq.sql import Sql
 from ftmq.types import CEGenerator
-from ftmq.util import parse_unknown_filters
+from ftmq.util import parse_comparator, parse_unknown_filters
 
 Q = TypeVar("Q", bound="Query")
-L = TypeVar("L", bound="Lookup")
 Slice = TypeVar("Slice", bound=slice)
-
-
-class Lookup(TypedDict):
-    dataset: Dataset | str | None = None
-    schema: Schema | str | None = None
-    prop: Property | str | None = None
-    value: Value | None = None
-    operator: Operators = None
 
 
 class Sort:
@@ -128,8 +117,9 @@ class Query:
         data = {}
         for fi in self.filters:
             for k, v in fi.to_dict().items():
-                if k in data:
-                    data[k] = list(sorted(ensure_list(data[k]) + [v]))
+                current = data.get(k)
+                if is_listish(current):
+                    data[k].append(v)
                 else:
                     data[k] = v
         return data
@@ -156,15 +146,28 @@ class Query:
 
     @property
     def dataset_names(self) -> set[str]:
-        return {str(f) for f in self.datasets}
+        names = set()
+        for f in self.datasets:
+            names.update(ensure_list(f.value))
+        return names
 
     @property
     def schemata(self) -> set[SchemaFilter]:
         return {f for f in self.filters if isinstance(f, SchemaFilter)}
 
     @property
+    def reversed(self) -> set[ReverseFilter]:
+        return {f for f in self.filters if isinstance(f, ReverseFilter)}
+
+    @property
     def properties(self) -> set[PropertyFilter]:
         return {f for f in self.filters if isinstance(f, PropertyFilter)}
+
+    def discard(self, f_cls: F) -> None:
+        filters = list(self.filters)
+        for f in filters:
+            if isinstance(f, f_cls):
+                self.filters.discard(f)
 
     def to_dict(self) -> dict[str, Any]:
         data = self.lookups
@@ -177,40 +180,44 @@ class Query:
             data["aggregations"] = self.get_aggregator().to_dict()
         return data
 
-    def where(self, **lookup: Lookup) -> Q:
+    def where(self, **lookup: dict[str, Any]) -> Q:
         include_descendants = lookup.pop("include_descendants", False)
         include_matchable = lookup.pop("include_matchable", False)
-        dataset = lookup.pop("dataset", [])
-        if dataset is None:  # reset filters
-            for f in self.datasets:
-                self.filters.discard(f)
-        for name in ensure_list(dataset):
-            self.filters.add(DatasetFilter(name))
-        schema = lookup.pop("schema", [])
-        if schema is None:  # reset filters
-            for f in self.schemata:
-                self.filters.discard(f)
-        for name in ensure_list(schema):
-            self.filters.add(
-                SchemaFilter(
-                    name,
-                    include_descendants=include_descendants,
-                    include_matchable=include_matchable,
-                )
-            )
-        if "prop" in lookup:
-            if "value" not in lookup:
+        prop = lookup.pop("prop", None)
+        value = lookup.pop("value", None)
+        comparator = lookup.pop("comparator", None)
+        if prop is not None:
+            if value is None:
                 raise ValidationError("No lookup value specified")
-            f = PropertyFilter(
-                lookup.pop("prop"), lookup.pop("value"), lookup.pop("operator", None)
-            )
+            f = PropertyFilter(prop, value, comparator)
             self.filters.discard(f)  # replace existing property filter with updated one
             self.filters.add(f)
 
+        properties: dict[str, Any] = {}
+        for key, value in lookup.items():
+            meta = False
+            for f_key, f in FILTERS.items():
+                if key.startswith(f_key):
+                    if value is None:
+                        self.discard(f)
+                    else:
+                        key, comparator = parse_comparator(key)
+                        kwargs = {}
+                        if key == "schema":
+                            kwargs = {
+                                "include_matchable": include_matchable,
+                                "include_descendants": include_descendants,
+                            }
+                        self.filters.add(f(value, comparator, **kwargs))
+                    meta = True
+                    break
+            if not meta:
+                properties[key] = value
+
         # parse arbitrary `date_gte=2023` stuff
-        for key, val in lookup.items():
-            for prop, value, operator in parse_unknown_filters((key, val)):
-                f = PropertyFilter(prop, value, operator)
+        for key, val in properties.items():
+            for prop, value, comparator in parse_unknown_filters((key, val)):
+                f = PropertyFilter(prop, value, comparator)
                 self.filters.discard(
                     f
                 )  # replace existing property filter with updated one

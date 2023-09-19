@@ -5,7 +5,24 @@ from ftmq.query import Query
 from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SQLStore, Store, get_store
 
 
+def _run_store_test_implicit(cls: Store, proxies, **kwargs):
+    # implicit catalog from store content
+    store = cls(**kwargs)
+    assert not store.get_catalog().names
+
+    datasets_seen = set()
+    with store.writer() as bulk:
+        for proxy in proxies:
+            if proxy.datasets - datasets_seen:
+                bulk.add_entity(proxy)
+                datasets_seen.update(proxy.datasets)
+
+    assert store.get_catalog().names == {"ec_meetings", "eu_authorities"}
+    return True
+
+
 def _run_store_test(cls: Store, proxies, **kwargs):
+    # explicit catalog
     catalog = Catalog(
         datasets=[Dataset(name="eu_authorities"), Dataset(name="ec_meetings")]
     )
@@ -45,7 +62,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = [e for e in view.entities(q)]
     assert len(res) == 151
     assert "eu_authorities" in res[0].datasets
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     res = [e for e in view.entities(q)]
     assert res[0].schema.name == "Event"
     assert len(res) == 76
@@ -65,7 +82,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     ]
 
     # ordering
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     q = q.order_by("location")
     res = [e for e in view.entities(q)]
     assert len(res) == 76
@@ -76,7 +93,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert res[0].get("location") == ["virtual"]
 
     # slice
-    q = Query().where(schema="Event", prop="date", value=2023, operator="gte")
+    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
     q = q.order_by("location")
     q = q[:10]
     res = [e for e in view.entities(q)]
@@ -88,20 +105,47 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = view.aggregations(q)
     assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
 
+    # reversed
+    entity_id = "eu-tr-09571422185-81"
+    q = Query().where(reverse=entity_id)
+    res = [p for p in view.entities(q)]
+    assert len(res) == 13
+    tested = False
+    for proxy in res:
+        assert entity_id in proxy.get("involved")
+        tested = True
+    assert tested
+
+    q = Query().where(reverse=entity_id, schema="Event")
+    q = q.where(prop="date", value=2022, comparator="gte")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 3
+    q = Query().where(reverse=entity_id, schema="Person")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
+
     return True
 
 
 def test_store_memory(proxies):
+    assert _run_store_test_implicit(MemoryStore, proxies)
     assert _run_store_test(MemoryStore, proxies)
 
 
 def test_store_leveldb(tmp_path, proxies):
     path = tmp_path / "level.db"
+    assert _run_store_test_implicit(MemoryStore, proxies)
+    path = tmp_path / "level2.db"
     assert _run_store_test(LevelDBStore, proxies, path=path)
 
 
 def test_store_sql_sqlite(tmp_path, proxies):
     uri = f"sqlite:///{tmp_path}/test.db"
+    assert _run_store_test_implicit(SQLStore, proxies, uri=uri)
+
+    from nomenklatura.db import get_metadata
+
+    get_metadata.cache_clear()
     assert _run_store_test(SQLStore, proxies, uri=uri)
 
 

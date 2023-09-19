@@ -14,7 +14,7 @@ def test_sql():
         Query()
         .where(dataset="test")
         .where(dataset="other", schema="Event")
-        .where(prop="date", value=2023, operator="gte")
+        .where(prop="date", value=2023, comparator="gte")
     )
     whereclause = """WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)
     AND test_table.schema = :schema_1
@@ -100,7 +100,7 @@ def test_sql():
         Query()
         .where(dataset="test")
         .where(dataset="other", schema="Event")
-        .where(prop="date", value=2023, operator="gte")
+        .where(prop="date", value=2023, comparator="gte")
         .order_by("name", ascending=False)
     )
     assert isinstance(q.sql.statements, Select)
@@ -134,7 +134,7 @@ def test_sql():
         Query()
         .where(dataset="test")
         .where(dataset="other", schema="Event")
-        .where(prop="date", value=2023, operator="gte")
+        .where(prop="date", value=2023, comparator="gte")
     )
     assert str(q[:10].sql.canonical_ids).endswith("LIMIT :param_1")
     assert str(q[1:10].sql.canonical_ids).endswith("LIMIT :param_1 OFFSET :param_2")
@@ -144,7 +144,7 @@ def test_sql():
         Query()
         .where(dataset="test")
         .where(dataset="other", schema="Event")
-        .where(prop="date", value=2023, operator="gte")
+        .where(prop="date", value=2023, comparator="gte")
         .order_by("name")
     )
     assert not str(q[:10].sql.canonical_ids).endswith("LIMIT :param_1")
@@ -173,3 +173,19 @@ def test_sql():
     assert len(q.split("UNION")) == 2
     assert "SELECT 'date', 'max', max(test_table.value) AS max" in q
     assert "SELECT 'amount', 'sum', sum(test_table.value) AS sum" in q
+
+    # reversed
+    q = Query().where(reverse="my_id").where(date=2023, schema="Event")
+    assert _compare_str(
+        str(q.sql.statements.compile(compile_kwargs={"literal_binds": True})),
+        f"""
+        SELECT {fields} FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.schema = 'Event' AND test_table.canonical_id IN
+            (SELECT DISTINCT test_table.canonical_id FROM test_table
+            WHERE test_table.prop_type = 'entity' AND test_table.value = 'my_id' AND test_table.schema = 'Event')
+        AND test_table.prop = 'date' AND test_table.value = '2023')
+        ORDER BY test_table.canonical_id
+        """,
+    )

@@ -127,32 +127,15 @@ The same cli logic applies:
 
 ## Python Library
 
-**NOT IMPLEMENTED YET**
-
 ```python
 from ftmq import Query
 
-q = Query(engine="sqlite") \
+q = Query() \
     .where(dataset="ec_meetings", date__lte=2020) \
     .where(schema="Event") \
     .order_by("date", ascending=False)
 
-# resulting sqlite query:
-str(q)
-"""
-SELECT t.id,
-    t.schema,
-    t.entity,
-    json_extract(t.entity, '$.properties.date') AS date
-FROM ec_meetings t
-WHERE
-    (EXISTS (SELECT 1 FROM json_each(date) WHERE value <= ?)) AND (t.schema = ?)
-ORDER BY date DESC
-"""
-
-# parameterized
-[p for p in q.parameters]
-[2020, 'Event']
+assert q.apply(proxy)
 ```
 
 ## support
