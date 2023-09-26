@@ -51,7 +51,7 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
     datasets = ensure_list(data.pop("datasets", None))
     if dataset is not None:
         if isinstance(dataset, str):
-            dataset = dataset = make_dataset(dataset)
+            dataset = make_dataset(dataset)
         datasets.append(dataset.name)
     elif datasets:
         dataset = datasets[0]
