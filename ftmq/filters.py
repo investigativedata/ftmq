@@ -56,6 +56,11 @@ class Lookup:
             return value < self.value
         if self.comparator == "lte":
             return value <= self.value
+        if self.comparator == "like":
+            return self.value in value
+        if self.comparator == "ilike":
+            return self.value.lower() in value.lower()
+        return False
 
 
 class BaseFilter:

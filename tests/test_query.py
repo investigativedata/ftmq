@@ -158,3 +158,28 @@ def test_query_filter_comparators():
 
     q = Query().where(dataset__startswith="a")
     assert q.to_dict() == {"dataset__startswith": "a"}
+
+
+def test_query_search():
+    q = Query().where(dataset="test", schema="Event", date__gte=2023)
+    q = q.search("meeting")
+    assert q.to_dict() == {
+        "date__gte": "2023",
+        "dataset": "test",
+        "schema": "Event",
+        "search": {
+            "firstName__ilike": "meeting",
+            "middleName__ilike": "meeting",
+            "lastName__ilike": "meeting",
+            "name__ilike": "meeting",
+        },
+    }
+    q = q.search("brussels", ["location"])
+    assert q.to_dict() == {
+        "date__gte": "2023",
+        "dataset": "test",
+        "schema": "Event",
+        "search": {
+            "location__ilike": "brussels",
+        },
+    }

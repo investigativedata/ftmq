@@ -124,6 +124,11 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = [p for p in view.entities(q)]
     assert len(res) == 0
 
+    # search
+    q = Query().where(dataset="eu_authorities").search("agency")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 23
+
     return True
 
 

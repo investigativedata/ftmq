@@ -189,3 +189,29 @@ def test_sql():
         ORDER BY test_table.canonical_id
         """,
     )
+
+
+def test_sql_search_query():
+    q = Query().search("agency", ["name"])
+    assert _compare_str(
+        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
+        """
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
+        """,
+    )
+
+    q = Query().where(dataset="foo", date__gte=2023).search("agency", ["name"])
+    assert _compare_str(
+        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
+        """
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.dataset = 'foo' AND test_table.prop = 'date' AND test_table.value >= '2023' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
+        """,
+    )
