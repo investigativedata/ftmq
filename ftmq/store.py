@@ -17,7 +17,6 @@ from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
-from ftmq.settings import STORE_URI
 from ftmq.types import CE, CEGenerator, PathLike
 
 
@@ -208,7 +207,7 @@ S = TypeVar("S", bound=Store)
 
 @cache
 def get_store(
-    uri: PathLike | None = STORE_URI,
+    uri: PathLike | None = "memory:///",
     catalog: C | None = None,
     dataset: Dataset | str | None = None,
     resolver: Resolver | str | None = None,
