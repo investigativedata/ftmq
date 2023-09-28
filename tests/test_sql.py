@@ -215,3 +215,28 @@ def test_sql_search_query():
         WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
         """,
     )
+
+
+def test_sql_ids():
+    q = Query().where(entity_id="eu-authorities-chafea")
+    assert "WHERE test_table.entity_id = :entity_id_1" in str(q.sql.statements)
+    q = Query().where(canonical_id="eu-authorities-chafea")
+    assert "WHERE test_table.canonical_id = :canonical_id_1" in str(q.sql.statements)
+    q = Query().where(
+        canonical_id="eu-authorities-chafea", canonical_id__startswith="e"
+    )
+    assert (
+        "WHERE test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%')"
+        in str(q.sql.statements)
+    )
+
+    q = q.where(dataset="foo", name="jane")
+    assert _compare_str(
+        """
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE (test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%'))
+            AND test_table.dataset = :dataset_1 AND test_table.prop = :prop_1 AND test_table.value = :value_1
+        """,
+        str(q.sql.canonical_ids),
+    )

@@ -129,6 +129,26 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = [p for p in view.entities(q)]
     assert len(res) == 23
 
+    # ids
+    q = Query().where(entity_id="eu-authorities-chafea")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 1
+    q = Query().where(canonical_id="eu-authorities-chafea")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 1
+    q = Query().where(entity_id="eu-authorities-chafea", dataset="ec_meetings")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
+    q = Query().where(canonical_id="eu-authorities-chafea", dataset="ec_meetings")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
+    q = Query().where(entity_id__startswith="eu-authorities-")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 151
+    q = Query().where(canonical_id__startswith="eu-authorities-")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 151
+
     return True
 
 

@@ -183,3 +183,17 @@ def test_query_search():
             "location__ilike": "brussels",
         },
     }
+
+
+def test_query_ids():
+    q = Query().where(entity_id="e-id")
+    assert q.to_dict() == {"entity_id": "e-id"}
+
+    q = Query().where(canonical_id__startswith="c-")
+    assert q.to_dict() == {"canonical_id__startswith": "c-"}
+
+    q = Query().where(canonical_id="c-id")
+    assert q.to_dict() == {"canonical_id": "c-id"}
+
+    q = Query().where(entity_id__in=["a", "b"], dataset="foo")
+    assert q.to_dict() == {"dataset": "foo", "entity_id__in": {"a", "b"}}

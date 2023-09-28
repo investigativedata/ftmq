@@ -12,6 +12,7 @@ from ftmq.filters import (
     FILTERS,
     DatasetFilter,
     F,
+    IdFilter,
     PropertyFilter,
     ReverseFilter,
     SchemaFilter,
@@ -146,6 +147,10 @@ class Query:
     @property
     def sql(self) -> Sql:
         return Sql(self)
+
+    @property
+    def ids(self) -> set[IdFilter]:
+        return {f for f in self.filters if isinstance(f, IdFilter)}
 
     @property
     def datasets(self) -> set[DatasetFilter]:

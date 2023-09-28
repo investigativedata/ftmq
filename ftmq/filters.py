@@ -1,4 +1,4 @@
-from typing import Any, Iterable, TypeVar
+from typing import Any, Iterable, TypeVar, Union
 
 from banal import as_bool, ensure_list, is_listish
 from followthemoney import model
@@ -64,10 +64,6 @@ class Lookup:
 
 
 class BaseFilter:
-    key: str
-    value: Value
-    lookup: Lookup
-
     def __init__(
         self,
         value: Value,
@@ -77,14 +73,22 @@ class BaseFilter:
             self.comparator = Comparators[comparator or "eq"]
         except KeyError:
             raise ValidationError(f"Invalid comparator `{comparator}`")
-        self.value = self.get_casted_value(value)
-        self.lookup = Lookup(self.comparator, self.value)
+        self.value: Value = self.get_casted_value(value)
+        self.lookup: Lookup = Lookup(self.comparator, self.value)
 
     def __hash__(self) -> int:
-        return hash((self.key, str(self.value)))
+        return hash((self.key, str(self.lookup), str(self.value)))
 
     def __eq__(self, other: Any) -> bool:
         return hash(self) == hash(other)
+
+    def __lt__(self, other: Any) -> bool:
+        # allow ordering (helpful for testing)
+        return hash(self) < hash(other)
+
+    def __gt__(self, other: Any) -> bool:
+        # allow ordering (helpful for testing)
+        return hash(self) > hash(other)
 
     def to_dict(self) -> dict[str, Any]:
         if self.comparator == Lookup.EQUALS:
@@ -191,7 +195,29 @@ class ReverseFilter(BaseFilter):
         return False
 
 
-Filter = DatasetFilter | SchemaFilter | PropertyFilter | ReverseFilter
+class IdFilter(BaseFilter):
+    key = "id"
+
+    def apply(self, proxy: CE) -> bool:
+        return self.lookup.apply(proxy.id)
+
+
+class EntityIdFilter(IdFilter):
+    key = "entity_id"
+
+
+class CanonicalIdFilter(IdFilter):
+    key = "canonical_id"
+
+
+Filter = Union[
+    DatasetFilter,
+    SchemaFilter,
+    PropertyFilter,
+    ReverseFilter,
+    EntityIdFilter,
+    CanonicalIdFilter,
+]
 F = TypeVar("F", bound=Filter)
 
 FILTERS = {
@@ -199,4 +225,6 @@ FILTERS = {
     "schema": SchemaFilter,
     "property": PropertyFilter,
     "reverse": ReverseFilter,
+    "entity_id": EntityIdFilter,
+    "canonical_id": CanonicalIdFilter,
 }
