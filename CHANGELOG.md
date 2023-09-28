@@ -2,6 +2,11 @@
 
 ## CHANGELOG
 
+### 0.3.2 (2023-09-28)
+
+- Implement simple search
+- Add id filters
+
 ### 0.3.0 (2023-09-19)
 
 - Refactor filters to allow comparator lookups for `schema` and `dataset` as well
