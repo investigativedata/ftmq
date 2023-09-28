@@ -42,10 +42,6 @@ class Store(nk.Store):
         )
         self.cache = {}
 
-    def iterate(self) -> CEGenerator:
-        view = self.default_view()
-        yield from view.entities()
-
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
         raise NotImplementedError
