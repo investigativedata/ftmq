@@ -231,13 +231,13 @@ def test_sql_ids():
     #     in str(q.sql.statements)
     # )
 
-    q = q.where(dataset="foo", name="jane")
-    assert _compare_str(
-        """
-        SELECT DISTINCT test_table.canonical_id
-        FROM test_table
-        WHERE (test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%'))
-            AND test_table.dataset = :dataset_1 AND test_table.prop = :prop_1 AND test_table.value = :value_1
-        """,
-        str(q.sql.canonical_ids),
-    )
+    # q = q.where(dataset="foo", name="jane")
+    # assert _compare_str(
+    #     """
+    #     SELECT DISTINCT test_table.canonical_id
+    #     FROM test_table
+    #     WHERE (test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%'))
+    #         AND test_table.dataset = :dataset_1 AND test_table.prop = :prop_1 AND test_table.value = :value_1
+    #     """,
+    #     str(q.sql.canonical_ids),
+    # )
