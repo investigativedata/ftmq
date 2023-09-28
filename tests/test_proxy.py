@@ -185,3 +185,16 @@ def test_proxy_filter_reverse(proxies):
     q = Query().where(reverse=entity_id, schema="Person")
     res = [p for p in q.apply_iter(proxies)]
     assert len(res) == 0
+
+
+def test_proxy_filter_ids(eu_authorities):
+    q = Query().where(entity_id="eu-authorities-chafea")
+    res = [p for p in q.apply_iter(eu_authorities)]
+    assert len(res) == 1
+    assert res[0].id == "eu-authorities-chafea"
+    q = q.where(dataset="gdho")
+    res = [p for p in q.apply_iter(eu_authorities)]
+    assert len(res) == 0
+    q = Query().where(entity_id__startswith="eu-authorities")
+    res = [p for p in q.apply_iter(eu_authorities)]
+    assert len(res) == len(eu_authorities)

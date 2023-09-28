@@ -8,6 +8,7 @@ from banal import ensure_list
 from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
+from normality import slugify
 
 from ftmq.enums import Comparators
 from ftmq.exceptions import ValidationError
@@ -50,7 +51,7 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
     datasets = ensure_list(data.pop("datasets", None))
     if dataset is not None:
         if isinstance(dataset, str):
-            dataset = dataset = make_dataset(dataset)
+            dataset = make_dataset(dataset)
         datasets.append(dataset.name)
     elif datasets:
         dataset = datasets[0]
@@ -103,3 +104,22 @@ def to_numeric(value: str) -> float | int | None:
             return to_numeric(value.replace(",", ""))
         if re.match(NUMERIC_DE, value):
             return to_numeric(value.replace(".", "").replace(",", "."))
+
+
+def join_slug(
+    *parts: str | None,
+    prefix: str | None = None,
+    sep: str = "-",
+    strict: bool = True,
+    max_len: int = 255,
+) -> str | None:
+    sections = [slugify(p, sep=sep) for p in parts]
+    if strict and None in sections:
+        return None
+    texts = [p for p in sections if p is not None]
+    if not len(texts):
+        return None
+    prefix = slugify(prefix, sep=sep)
+    if prefix is not None:
+        texts = [prefix, *texts]
+    return sep.join(texts)[:max_len].strip(sep)

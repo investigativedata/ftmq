@@ -38,9 +38,7 @@ def benchmark(uri: str):
         _ = [p for p in store.iterate()]
 
     view = store.query()
-    q = Query().where(
-        dataset=DATASET, schema="Event", prop="date", value=2023, operator="gte"
-    )
+    q = Query().where(dataset=DATASET, schema="Event", date__gte=2023)
     with measure(prefix, "query"):
         _ = [p for p in view.entities(q)]
 

@@ -44,24 +44,35 @@ class Sql:
         self.table = make_statement_table(self.metadata)
 
     def get_expression(self, column: Column, f: F):
+        value = f.value
+        if f.comparator == Comparators.ilike:
+            value = f"%{value}%"
         op = self.COMPARATORS.get(str(f.comparator), str(f.comparator))
         op = getattr(column, op)
-        return op(f.value)
+        return op(value)
 
     @cached_property
     def clause(self) -> BooleanClauseList:
         clauses = []
+        if self.q.ids:
+            clauses.append(
+                or_(
+                    self.get_expression(self.table.c[f.key], f)
+                    for f in sorted(self.q.ids)
+                )
+            )
         if self.q.datasets:
             clauses.append(
                 or_(
                     self.get_expression(self.table.c.dataset, f)
-                    for f in self.q.datasets
+                    for f in sorted(self.q.datasets)
                 )
             )
         if self.q.schemata:
             clauses.append(
                 or_(
-                    self.get_expression(self.table.c.schema, f) for f in self.q.schemata
+                    self.get_expression(self.table.c.schema, f)
+                    for f in sorted(self.q.schemata)
                 )
             )
         if self.q.reversed:
@@ -70,7 +81,7 @@ class Sql:
                     self.table.c.prop_type == str(registry.entity),
                     self.get_expression(self.table.c.value, f),
                 )
-                for f in self.q.reversed
+                for f in sorted(self.q.reversed)
             )
             rq = select(self.table.c.canonical_id.distinct()).where(
                 and_(rclause, *clauses)
@@ -83,14 +94,31 @@ class Sql:
                         self.table.c.prop == f.key,
                         self.get_expression(self.table.c.value, f),
                     )
-                    for f in self.q.properties
+                    for f in sorted(self.q.properties)
                 )
             )
         return and_(*clauses)
 
     @cached_property
+    def search_clause(self) -> BooleanClauseList | None:
+        if not self.q.search_filters:
+            return
+        return or_(
+            and_(
+                self.table.c.prop == f.key,
+                self.get_expression(self.table.c.value, f),
+            )
+            for f in self.q.search_filters
+        )
+
+    @cached_property
     def canonical_ids(self) -> Select:
         q = select(self.table.c.canonical_id.distinct()).where(self.clause)
+        if self.q.search_filters:
+            search_ids = select(self.table.c.canonical_id.distinct()).where(
+                self.search_clause
+            )
+            q = q.where(self.table.c.canonical_id.in_(search_ids))
         if self.q.sort is None:
             q = q.limit(self.q.limit).offset(self.q.offset)
         return q

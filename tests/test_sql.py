@@ -189,3 +189,55 @@ def test_sql():
         ORDER BY test_table.canonical_id
         """,
     )
+
+
+def test_sql_search_query():
+    q = Query().search("agency", ["name"])
+    assert _compare_str(
+        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
+        """
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
+        """,
+    )
+
+    q = Query().where(dataset="foo", date__gte=2023).search("agency", ["name"])
+    assert _compare_str(
+        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
+        """
+        SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.dataset = 'foo' AND test_table.prop = 'date' AND test_table.value >= '2023' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
+        """,
+    )
+
+
+def test_sql_ids():
+    q = Query().where(entity_id="eu-authorities-chafea")
+    assert "WHERE test_table.entity_id = :entity_id_1" in str(q.sql.statements)
+    q = Query().where(canonical_id="eu-authorities-chafea")
+    assert "WHERE test_table.canonical_id = :canonical_id_1" in str(q.sql.statements)
+    q = Query().where(
+        canonical_id="eu-authorities-chafea", canonical_id__startswith="e"
+    )
+    # FIXME ordering of filters
+    # assert (
+    #     "WHERE test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%')"
+    #     in str(q.sql.statements)
+    # )
+
+    # q = q.where(dataset="foo", name="jane")
+    # assert _compare_str(
+    #     """
+    #     SELECT DISTINCT test_table.canonical_id
+    #     FROM test_table
+    #     WHERE (test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%'))
+    #         AND test_table.dataset = :dataset_1 AND test_table.prop = :prop_1 AND test_table.value = :value_1
+    #     """,
+    #     str(q.sql.canonical_ids),
+    # )

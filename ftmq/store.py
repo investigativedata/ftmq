@@ -17,7 +17,6 @@ from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
-from ftmq.settings import STORE_URI
 from ftmq.types import CE, CEGenerator, PathLike
 
 
@@ -42,10 +41,6 @@ class Store(nk.Store):
             dataset=dataset, resolver=resolver or Resolver(), *args, **kwargs
         )
         self.cache = {}
-
-    def iterate(self) -> CEGenerator:
-        view = self.default_view()
-        yield from view.entities()
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
@@ -208,7 +203,7 @@ S = TypeVar("S", bound=Store)
 
 @cache
 def get_store(
-    uri: PathLike | None = STORE_URI,
+    uri: PathLike | None = "memory:///",
     catalog: C | None = None,
     dataset: Dataset | str | None = None,
     resolver: Resolver | str | None = None,

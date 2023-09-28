@@ -46,7 +46,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     }
     assert store.dataset.leaf_names == {"ec_meetings", "eu_authorities"}
     tested = False
-    for proxy in store.iterate():
+    for proxy in store.default_view().entities():
         assert isinstance(proxy, CompositeEntity)
         tested = True
         break
@@ -123,6 +123,31 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     q = Query().where(reverse=entity_id, schema="Person")
     res = [p for p in view.entities(q)]
     assert len(res) == 0
+
+    # search
+    q = Query().where(dataset="eu_authorities").search("agency")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 23
+
+    # ids
+    q = Query().where(entity_id="eu-authorities-chafea")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 1
+    q = Query().where(canonical_id="eu-authorities-chafea")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 1
+    q = Query().where(entity_id="eu-authorities-chafea", dataset="ec_meetings")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
+    q = Query().where(canonical_id="eu-authorities-chafea", dataset="ec_meetings")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 0
+    q = Query().where(entity_id__startswith="eu-authorities-")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 151
+    q = Query().where(canonical_id__startswith="eu-authorities-")
+    res = [p for p in view.entities(q)]
+    assert len(res) == 151
 
     return True
 

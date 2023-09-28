@@ -51,13 +51,14 @@ def test_query():
     assert q2.dataset_names == {"test"}
 
     q = q.where(prop="date", value=2023, comparator="gte")
-    assert len(q.filters) == 3
+    assert len(q.filters) == 4
     assert (
         q.lookups
         == q.to_dict()  # noqa
         == {  # noqa
             "dataset": "test",
             "schema": "Event",
+            "date": "2023",
             "date__gte": "2023",
         }
     )
@@ -74,11 +75,11 @@ def test_query():
     q = Query().where(prop="date", value=2023)
     assert len(q.filters) == 1
     q = q.where(prop="date", value=2023, comparator="gte")
-    assert len(q.filters) == 1
-    q = q.where(prop="date", value=2024)
     assert len(q.filters) == 2
-    q = q.where(prop="startDate", value=2024)
+    q = q.where(prop="date", value=2024)
     assert len(q.filters) == 3
+    q = q.where(prop="startDate", value=2024)
+    assert len(q.filters) == 4
 
     q = Query().order_by("date")
     assert q.to_dict() == {"order_by": ["date"]}
@@ -158,3 +159,42 @@ def test_query_filter_comparators():
 
     q = Query().where(dataset__startswith="a")
     assert q.to_dict() == {"dataset__startswith": "a"}
+
+
+def test_query_search():
+    q = Query().where(dataset="test", schema="Event", date__gte=2023)
+    q = q.search("meeting")
+    assert q.to_dict() == {
+        "date__gte": "2023",
+        "dataset": "test",
+        "schema": "Event",
+        "search": {
+            "firstName__ilike": "meeting",
+            "middleName__ilike": "meeting",
+            "lastName__ilike": "meeting",
+            "name__ilike": "meeting",
+        },
+    }
+    q = q.search("brussels", ["location"])
+    assert q.to_dict() == {
+        "date__gte": "2023",
+        "dataset": "test",
+        "schema": "Event",
+        "search": {
+            "location__ilike": "brussels",
+        },
+    }
+
+
+def test_query_ids():
+    q = Query().where(entity_id="e-id")
+    assert q.to_dict() == {"entity_id": "e-id"}
+
+    q = Query().where(canonical_id__startswith="c-")
+    assert q.to_dict() == {"canonical_id__startswith": "c-"}
+
+    q = Query().where(canonical_id="c-id")
+    assert q.to_dict() == {"canonical_id": "c-id"}
+
+    q = Query().where(entity_id__in=["a", "b"], dataset="foo")
+    assert q.to_dict() == {"dataset": "foo", "entity_id__in": {"a", "b"}}

@@ -6,12 +6,13 @@ from banal import ensure_list, is_listish, is_mapping
 from nomenklatura.entity import CE
 
 from ftmq.aggregations import Aggregation, Aggregator
-from ftmq.enums import Aggregations, Properties
+from ftmq.enums import Aggregations, Comparators, Properties
 from ftmq.exceptions import ValidationError
 from ftmq.filters import (
     FILTERS,
     DatasetFilter,
     F,
+    IdFilter,
     PropertyFilter,
     ReverseFilter,
     SchemaFilter,
@@ -25,9 +26,6 @@ Slice = TypeVar("Slice", bound=slice)
 
 
 class Sort:
-    values: tuple[str] | None = None
-    ascending: bool | None = True
-
     def __init__(self, values: Iterable[str], ascending: bool | None = True) -> None:
         self.values = tuple(values)
         self.ascending = ascending
@@ -52,21 +50,24 @@ class Sort:
 
 
 class Query:
-    filters: set[F] = set()
-    aggregations: set[Aggregation] = set()
-    aggregator: Aggregator | None = None
-    sort: Sort | None = None
-    slice: Slice | None = None
+    DEFAULT_SEARCH_PROPS = (
+        Properties["name"],
+        Properties["firstName"],
+        Properties["middleName"],
+        Properties["lastName"],
+    )
 
     def __init__(
         self,
         filters: Iterable[F] | None = None,
+        search_filters: Iterable[F] | None = None,
         aggregations: Iterable[Aggregation] | None = None,
         aggregator: Aggregator | None = None,
         sort: Sort | None = None,
         slice: Slice | None = None,
     ):
         self.filters = set(ensure_list(filters))
+        self.search_filters = set(ensure_list(search_filters))
         self.aggregations = set(ensure_list(aggregations))
         self.aggregator = aggregator
         self.sort = sort
@@ -112,10 +113,9 @@ class Query:
                 new_kwargs[key] = new_value
         return self.__class__(**new_kwargs)
 
-    @property
-    def lookups(self) -> dict[str, Any]:
+    def _get_lookups(self, filters: set[F]) -> dict[str, Any]:
         data = {}
-        for fi in self.filters:
+        for fi in filters:
             for k, v in fi.to_dict().items():
                 current = data.get(k)
                 if is_listish(current):
@@ -123,6 +123,14 @@ class Query:
                 else:
                     data[k] = v
         return data
+
+    @property
+    def lookups(self) -> dict[str, Any]:
+        return self._get_lookups(self.filters)
+
+    @property
+    def search_lookups(self) -> dict[str, Any]:
+        return self._get_lookups(self.search_filters)
 
     @property
     def limit(self) -> int | None:
@@ -139,6 +147,10 @@ class Query:
     @property
     def sql(self) -> Sql:
         return Sql(self)
+
+    @property
+    def ids(self) -> set[IdFilter]:
+        return {f for f in self.filters if isinstance(f, IdFilter)}
 
     @property
     def datasets(self) -> set[DatasetFilter]:
@@ -171,6 +183,9 @@ class Query:
 
     def to_dict(self) -> dict[str, Any]:
         data = self.lookups
+        search_data = self.search_lookups
+        if search_data:
+            data["search"] = search_data
         if self.sort:
             data["order_by"] = self.sort.serialize()
         if self.slice:
@@ -225,6 +240,14 @@ class Query:
 
         return self._chain()
 
+    def search(self, q: str, props: Iterable[Properties | str] = None) -> Q:
+        # reset existing search
+        self.search_filters: set[F] = set()
+        props = props or self.DEFAULT_SEARCH_PROPS
+        for prop in props:
+            self.search_filters.add(PropertyFilter(prop, q, Comparators.ilike))
+        return self._chain()
+
     def order_by(self, *values: Iterable[str], ascending: bool | None = True) -> Q:
         self.sort = Sort(values=values, ascending=ascending)
         return self._chain()
@@ -237,10 +260,20 @@ class Query:
     def get_aggregator(self) -> Aggregator:
         return Aggregator(aggregations=self.aggregations)
 
-    def apply(self, proxy: CE) -> bool:
+    def apply_filter(self, proxy: CE) -> bool:
         if not self.filters:
             return True
         return all(f.apply(proxy) for f in self.filters)
+
+    def apply_search(self, proxy: CE) -> bool:
+        if not self.search_filters:
+            return True
+        return any(f.apply(proxy) for f in self.search_filters)
+
+    def apply(self, proxy: CE) -> bool:
+        if self.apply_filter(proxy):
+            return self.apply_search(proxy)
+        return False
 
     def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
         """
