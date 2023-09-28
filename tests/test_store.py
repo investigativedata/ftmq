@@ -46,7 +46,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     }
     assert store.dataset.leaf_names == {"ec_meetings", "eu_authorities"}
     tested = False
-    for proxy in store.iterate():
+    for proxy in store.default_view().entities():
         assert isinstance(proxy, CompositeEntity)
         tested = True
         break
