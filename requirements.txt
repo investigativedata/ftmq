@@ -1,6 +1,3 @@
-absolufy-imports==0.3.1 ; python_version >= "3.10" and python_version < "3.13" \
-    --hash=sha256:49bf7c753a9282006d553ba99217f48f947e3eef09e18a700f8a82f75dc7fc5c \
-    --hash=sha256:c90638a6c0b66826d1fb4880ddc20ef7701af34192c94faf40b95d32b59f9793
 adlfs==2023.9.0 ; python_version >= "3.10" and python_version < "3.13" \
     --hash=sha256:1ce70ffa39f7cffc3efbbd9f79b444958eb5d9de9981442b06e47472d2089d4b \
     --hash=sha256:e2cff62b8128578c6d1b9da1660ad4c8a5a8cb0d491bba416b529563c65dc5d2

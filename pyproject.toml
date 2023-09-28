@@ -57,7 +57,6 @@ moto = "^4.1.11"
 ipdb = "^0.13.13"
 bump2version = "^1.0.1"
 cloudpickle = "^2.2.1"
-absolufy-imports = "^0.3.1"
 pytest-env = "^1.0.0"
 
 
