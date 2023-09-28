@@ -51,13 +51,14 @@ def test_query():
     assert q2.dataset_names == {"test"}
 
     q = q.where(prop="date", value=2023, comparator="gte")
-    assert len(q.filters) == 3
+    assert len(q.filters) == 4
     assert (
         q.lookups
         == q.to_dict()  # noqa
         == {  # noqa
             "dataset": "test",
             "schema": "Event",
+            "date": "2023",
             "date__gte": "2023",
         }
     )
@@ -74,11 +75,11 @@ def test_query():
     q = Query().where(prop="date", value=2023)
     assert len(q.filters) == 1
     q = q.where(prop="date", value=2023, comparator="gte")
-    assert len(q.filters) == 1
-    q = q.where(prop="date", value=2024)
     assert len(q.filters) == 2
-    q = q.where(prop="startDate", value=2024)
+    q = q.where(prop="date", value=2024)
     assert len(q.filters) == 3
+    q = q.where(prop="startDate", value=2024)
+    assert len(q.filters) == 4
 
     q = Query().order_by("date")
     assert q.to_dict() == {"order_by": ["date"]}

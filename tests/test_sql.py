@@ -225,7 +225,7 @@ def test_sql_ids():
     q = Query().where(
         canonical_id="eu-authorities-chafea", canonical_id__startswith="e"
     )
-    # FIXME
+    # FIXME ordering of filters
     # assert (
     #     "WHERE test_table.canonical_id = :canonical_id_1 OR (test_table.canonical_id LIKE :canonical_id_2 || '%')"
     #     in str(q.sql.statements)
