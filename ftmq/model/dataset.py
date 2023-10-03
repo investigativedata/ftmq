@@ -28,7 +28,7 @@ class Publisher(NKModel):
     country: str | None = None
     country_label: str | None = None
     official: bool = False
-    logo_uri: AnyUrl | None = None
+    logo_url: HttpUrl | None = None
 
 
 class Resource(NKModel):
@@ -52,7 +52,7 @@ class Maintainer(BaseModel, RemoteMixin, YamlMixin):
     name: str
     description: str | None = None
     url: HttpUrl | None = None
-    logo_uri: HttpUrl | None = None
+    logo_url: HttpUrl | None = None
 
 
 Catalog = ForwardRef("Catalog")
@@ -77,7 +77,7 @@ class Dataset(NKModel):
 
     # own addition
     git_repo: AnyUrl | None = None
-    uri: AnyUrl | None = None
+    uri: str | None = None
     maintainer: Maintainer | None = None
     catalog: Optional[Catalog] = None
 
@@ -112,8 +112,8 @@ class Catalog(NKModel):
     name: str | None = "default"
     maintainer: Maintainer | None = None
     url: HttpUrl | None = None
-    uri: AnyUrl | None = None
-    logo_uri: AnyUrl | None = None
+    uri: str | None = None
+    logo_url: HttpUrl | None = None
     catalogs: list[Catalog] | None = []
 
     def __init__(self, **data):
