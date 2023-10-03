@@ -91,7 +91,7 @@ class Dataset(NKModel):
         )
         data["catalog"] = data.get("catalog") or Catalog().dict()
         super().__init__(**data)
-        self.prefix = data.get("prefix") or slugify(self.name)
+        self.prefix = self.prefix or data.get("prefix") or slugify(self.name)
         self.coverage = self.coverage or Coverage()
         self.title = self.title or self.name.title()
 
