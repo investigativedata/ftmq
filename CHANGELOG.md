@@ -2,6 +2,10 @@
 
 ## CHANGELOG
 
+### 0.3.3 (2023-10-03)
+
+- Update dependencies
+
 ### 0.3.2 (2023-09-28)
 
 - Implement simple search
