@@ -5,6 +5,7 @@ from typing import Any
 
 import pycountry
 from banal import ensure_list
+from followthemoney.types import registry
 from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
@@ -86,6 +87,20 @@ def get_country_name(alpha2: str) -> str:
         return country.name
     except (LookupError, AttributeError):
         return alpha2
+
+
+@cache
+def get_country_code(value: str | None, splitter: str | None = ",") -> str | None:
+    if not value:
+        return
+    code = registry.country.clean_text(value)
+    if code:
+        return code
+    for token in value.split(splitter):
+        code = registry.country.clean_text(token)
+        if code:
+            return code
+    return
 
 
 NUMERIC_US = re.compile(r"^-?\d+(?:,\d{3})*(?:\.\d+)?$")

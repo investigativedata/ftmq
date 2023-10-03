@@ -11,6 +11,7 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from pydantic import BaseModel as _BaseModel
+from pydantic import validator
 
 from ftmq.types import PathLike
 
@@ -70,6 +71,12 @@ class YamlMixin:
 class BaseModel(_BaseModel):
     def __hash__(self) -> int:
         return hash(repr(self.dict()))
+
+    @validator("*", pre=True)
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
 
 
 class NKModel(RemoteMixin, YamlMixin, BaseModel):

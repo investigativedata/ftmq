@@ -2,12 +2,17 @@
 
 ## CHANGELOG
 
+### 0.3.3 (2023-10-03)
+
+- Update dependencies
+- add `get_country_code` util function
+
 ### 0.3.2 (2023-09-28)
 
 - Implement simple search
 - Add id filters
 
-### 0.3.0 (2023-09-19)
+### 0.3.1 (2023-09-19)
 
 - Refactor filters to allow comparator lookups for `schema` and `dataset` as well
 

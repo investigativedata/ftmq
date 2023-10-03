@@ -69,3 +69,12 @@ def test_util_parse_lookup_key():
     assert util.parse_comparator("foo__gte") == ("foo", Comparators.gte)
     with pytest.raises(KeyError):  # unknown operator
         util.parse_comparator("foo__bar")
+
+
+def test_util_country():
+    assert util.get_country_name("de") == "Germany"
+    assert util.get_country_name("xx") == "xx"
+    assert util.get_country_code("Germany") == "de"
+    assert util.get_country_code("Deutschland") == "de"
+    assert util.get_country_code("Berlin, Deutschland") == "de"
+    assert util.get_country_code("Foo") is None
