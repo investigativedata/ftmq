@@ -306,6 +306,13 @@ def get_store(
         return AlephStore.from_uri(
             uri, catalog=catalog, dataset=dataset, resolver=resolver
         )
+    if "clickhouse" in parsed.scheme:
+        try:
+            from ftm_columnstore.store import get_store as get_cstore
+
+            return get_cstore(uri, catalog, dataset, resolver)
+        except ImportError:
+            pass
     raise NotImplementedError(uri)
 
 
