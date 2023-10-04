@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from functools import cache
 from pathlib import Path
@@ -13,11 +14,15 @@ from sqlalchemy import select
 from ftmq.aggregations import AggregatorResult
 from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
+from ftmq.dedupe import get_resolver
 from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.types import CE, CEGenerator, PathLike
+from ftmq.util import make_dataset
+
+log = logging.getLogger(__name__)
 
 
 class Store(nk.Store):
@@ -40,11 +45,33 @@ class Store(nk.Store):
         super().__init__(
             dataset=dataset, resolver=resolver or Resolver(), *args, **kwargs
         )
-        self.cache = {}
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
         raise NotImplementedError
+
+    def iterate(self) -> CEGenerator:
+        catalog = self.get_catalog()
+        view = self.view(catalog.get_scope())
+        yield from view.entities()
+
+    def resolve(self, dataset: str | Dataset | None = None) -> None:
+        if not self.resolver.edges:
+            return
+        if dataset is not None:
+            if isinstance(dataset, str):
+                dataset = make_dataset(dataset)
+            elif isinstance(dataset, Dataset):
+                dataset = dataset.to_nk()
+            view = self.view(scope=dataset)
+            entities = view.entities()
+        else:
+            entities = self.iterate()
+        for ix, entity in enumerate(entities):
+            if entity.id in self.resolver.nodes:
+                self.update(self.resolver.get_canonical(entity.id))
+            if ix and ix % 10_000 == 0:
+                log.info("Resolving entity %d ..." % ix)
 
 
 class View(nk.base.View):
@@ -211,7 +238,7 @@ def get_store(
     if isinstance(dataset, str):
         dataset = Dataset(name=dataset)
     if isinstance(resolver, (str, Path)):
-        resolver = Resolver.load(resolver)
+        resolver = get_resolver(resolver)
     uri = str(uri)
     parsed = urlparse(uri)
     if parsed.scheme == "memory":

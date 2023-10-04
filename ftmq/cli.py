@@ -1,3 +1,5 @@
+import logging
+
 import click
 import orjson
 from click_default_group import DefaultGroup
@@ -16,8 +18,8 @@ from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
-def cli():
-    pass
+def cli() -> None:
+    logging.basicConfig(level=logging.INFO)
 
 
 @cli.command(
@@ -152,14 +154,19 @@ def apply(
     smart_write_proxies(output_uri, proxies, serialize=True)
 
 
-@cli.command("list-datasets")
+@cli.group()
+def store():
+    pass
+
+
+@store.command("list-datasets")
 @click.option(
     "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
 )
 @click.option(
     "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
 )
-def list_datasets(
+def store_list_datasets(
     input_uri: str | None = "-",
     output_uri: str | None = "-",
 ):
@@ -170,6 +177,53 @@ def list_datasets(
     catalog = store.get_catalog()
     datasets = [ds.name for ds in catalog.datasets]
     smart_write(output_uri, "\n".join(datasets).encode() + b"\n")
+
+
+@store.command("resolve")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="store input uri"
+)
+@click.option(
+    "-o", "--output-uri", default=None, show_default=True, help="output file or uri"
+)
+@click.option(
+    "-r",
+    "--resolver-uri",
+    default=None,
+    show_default=True,
+    help="resolver uri",
+    required=True,
+)
+def store_resolve(
+    input_uri: str | None = "-",
+    output_uri: str | None = None,
+    resolver_uri: str | None = None,
+):
+    """
+    Apply nk resolver to a store
+    """
+    store = get_store(input_uri, resolver=resolver_uri)
+    store.resolve()
+    if output_uri:
+        smart_write_proxies(output_uri, store.iterate(), serialize=True)
+
+
+@store.command("iterate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="store input uri"
+)
+@click.option(
+    "-o", "--output-uri", default=None, show_default=True, help="output file or uri"
+)
+def store_iterate(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+):
+    """
+    Iterate all entities from in to out
+    """
+    store = get_store(input_uri)
+    smart_write_proxies(output_uri, store.iterate(), serialize=True)
 
 
 @cli.command("io")

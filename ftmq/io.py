@@ -126,6 +126,8 @@ def smart_write_proxies(
             for proxy in proxies:
                 ix += 1
                 bulk.add_entity(proxy)
+                if ix % 1_000 == 0:
+                    log.info("Writing proxy %d ..." % ix)
         return ix
 
     with smart_open(uri, sys.stdout.buffer, mode=mode) as fh:
