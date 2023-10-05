@@ -12,6 +12,7 @@ from ftmq.io import (
     smart_write_proxies,
 )
 from ftmq.model.coverage import Collector
+from ftmq.model.dataset import Catalog
 from ftmq.query import Query
 from ftmq.store import get_store
 from ftmq.util import parse_unknown_filters
@@ -152,6 +153,23 @@ def apply(
     if dataset:
         proxies = apply_datasets(proxies, *dataset, replace=replace_dataset)
     smart_write_proxies(output_uri, proxies, serialize=True)
+
+
+@cli.group()
+def catalog():
+    pass
+
+
+@catalog.command("iterate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+def catalog_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
+    catalog = Catalog.from_uri(input_uri)
+    smart_write_proxies(output_uri, catalog.iterate(), serialize=True)
 
 
 @cli.group()

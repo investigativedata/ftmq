@@ -8,10 +8,12 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from normality import slugify
+from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
 
 from ftmq.model.coverage import Coverage
 from ftmq.model.mixins import BaseModel, NKModel, RemoteMixin, YamlMixin
+from ftmq.types import CEGenerator
 
 Frequencies = Literal[tuple(NKCoverage.FREQUENCIES)]
 
@@ -162,6 +164,14 @@ class Catalog(NKModel):
     @classmethod
     def from_names(cls, names: Iterable[set]) -> Catalog:
         return cls(datasets=[Dataset(name=n) for n in names])
+
+    def iterate(self) -> CEGenerator:
+        from ftmq.io import smart_read_proxies  # FIXME
+
+        for dataset in self.datasets:
+            for resource in dataset.resources:
+                if resource.mime_type == FTM:
+                    yield from smart_read_proxies(resource.url)
 
 
 Catalog.update_forward_refs()
