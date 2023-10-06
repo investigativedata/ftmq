@@ -6,7 +6,7 @@ from typing import Any
 import pycountry
 from banal import ensure_list
 from followthemoney.types import registry
-from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
+from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
 from normality import slugify
@@ -18,10 +18,10 @@ from ftmq.types import SGenerator
 
 @cache
 def make_dataset(name: str) -> Dataset:
-    catalog = DataCatalog(
-        Dataset, {"datasets": [{"name": name, "title": name.title()}]}
-    )
-    return catalog.get(name)
+    return Dataset.make({"name": "default", "title": "default"})
+
+
+DefaultDataset = make_dataset("default")
 
 
 def parse_comparator(key: str) -> tuple[str, Comparators]:

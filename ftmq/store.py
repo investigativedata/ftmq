@@ -6,7 +6,7 @@ from typing import Iterable, TypeVar
 from urllib.parse import urlparse
 
 from nomenklatura import store as nk
-from nomenklatura.dataset import DS, DefaultDataset
+from nomenklatura.dataset import DS
 from nomenklatura.db import get_metadata
 from nomenklatura.resolver import Resolver
 from sqlalchemy import select
@@ -20,7 +20,7 @@ from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.types import CE, CEGenerator, PathLike
-from ftmq.util import make_dataset
+from ftmq.util import DefaultDataset, make_dataset
 
 log = logging.getLogger(__name__)
 
