@@ -156,7 +156,8 @@ class Catalog(NKModel):
     @property
     def names(self) -> set:
         names = set()
-        names.update(self.to_nk().names)
+        for dataset in self.datasets:
+            names.add(dataset.name)
         for catalog in self.catalogs:
             names.update(catalog.names)
         return names
