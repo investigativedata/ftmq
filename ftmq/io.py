@@ -1,10 +1,8 @@
 import contextlib
 import logging
-import re
 import sys
 from collections.abc import Iterable
 from typing import Any, Literal
-from urllib.parse import urlparse
 
 import orjson
 from banal import is_listish
@@ -18,8 +16,6 @@ from ftmq.types import CEGenerator, SDict
 from ftmq.util import get_statements, make_dataset, make_proxy
 
 log = logging.getLogger(__name__)
-
-store_uri_re = re.compile(r"memory|leveldb|.*sql.*|https?\+aleph")
 
 
 @contextlib.contextmanager
@@ -71,10 +67,10 @@ def smart_write(uri, content: bytes | str, *args, **kwargs) -> Any:
 
 
 def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
-    uri = str(uri)
-    parsed = urlparse(uri)
-    if store_uri_re.match(parsed.scheme):
+    try:
         return get_store(uri, **kwargs)
+    except NotImplementedError:
+        return
 
 
 def smart_read_proxies(
