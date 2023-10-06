@@ -137,7 +137,11 @@ class Catalog(NKModel):
             yield from catalog.datasets
 
     def get_scope(self) -> NKDataset:
-        catalog = self.to_nk()
+        # FIXME
+        catalog = self.copy()
+        for ds in catalog.datasets:
+            ds.coverage = None
+        catalog = catalog.to_nk()
         return NKDataset(
             catalog,
             {

@@ -37,7 +37,7 @@ class Store(nk.Store):
         if dataset is not None:
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
-            dataset = dataset.to_nk()
+            dataset = make_dataset(dataset.name)
         elif catalog is not None:
             dataset = catalog.get_scope()
         else:
