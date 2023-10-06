@@ -18,7 +18,7 @@ from ftmq.types import SGenerator
 
 @cache
 def make_dataset(name: str) -> Dataset:
-    return Dataset.make({"name": "default", "title": "default"})
+    return Dataset.make({"name": name, "title": name})
 
 
 DefaultDataset = make_dataset("default")
