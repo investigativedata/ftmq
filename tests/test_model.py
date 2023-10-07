@@ -119,7 +119,7 @@ def test_model_catalog_metadata(fixtures_path):
 
 
 def test_model_catalog_iterate(fixtures_path):
-    catalog = Catalog.from_path(fixtures_path / "catalog.yml")
+    catalog = Catalog.from_path(fixtures_path / "catalog_small.yml")
     tested = False
     for proxy in catalog.iterate():
         assert isinstance(proxy, CompositeEntity)
