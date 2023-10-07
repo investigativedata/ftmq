@@ -12,7 +12,7 @@ from ftmq.io import (
     smart_write_proxies,
 )
 from ftmq.model.coverage import Collector
-from ftmq.model.dataset import Catalog
+from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
 from ftmq.util import parse_unknown_filters
@@ -242,6 +242,37 @@ def store_iterate(
     """
     store = get_store(input_uri)
     smart_write_proxies(output_uri, store.iterate(), serialize=True)
+
+
+@cli.command("make-dataset")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+@click.option(
+    "--coverage",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Calculate coverage",
+)
+def make_dataset(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+    coverage: bool | None = False,
+):
+    """
+    Convert dataset YAML specification into json
+    """
+    dataset = Dataset.from_string(smart_read(input_uri))
+    if coverage:
+        collector = Collector()
+        for proxy in dataset.iterate():
+            collector.collect(proxy)
+        dataset.coverage = collector.export()
+    smart_write(output_uri, orjson.dumps(dataset.dict()))
 
 
 @cli.command("io")

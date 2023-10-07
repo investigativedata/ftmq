@@ -100,6 +100,13 @@ class Dataset(NKModel):
     def to_nk(self):
         return self._nk_model(self.catalog.to_nk(), self.dict())
 
+    def iterate(self) -> CEGenerator:
+        from ftmq.io import smart_read_proxies  # FIXME
+
+        for resource in self.resources:
+            if resource.mime_type == FTM:
+                yield from smart_read_proxies(resource.url)
+
 
 Dataset.update_forward_refs()
 
@@ -112,10 +119,14 @@ class Catalog(NKModel):
 
     # own additions
     name: str | None = "default"
+    title: str | None = "Catalog"
+    description: str | None = None
     maintainer: Maintainer | None = None
+    publisher: Publisher | None = None
     url: HttpUrl | None = None
     uri: str | None = None
     logo_url: HttpUrl | None = None
+    git_repo: AnyUrl | None = None
     catalogs: list[Catalog] | None = []
 
     def __init__(self, **data):
@@ -171,12 +182,8 @@ class Catalog(NKModel):
         return cls(datasets=[Dataset(name=n) for n in names])
 
     def iterate(self) -> CEGenerator:
-        from ftmq.io import smart_read_proxies  # FIXME
-
         for dataset in self.datasets:
-            for resource in dataset.resources:
-                if resource.mime_type == FTM:
-                    yield from smart_read_proxies(resource.url)
+            yield from dataset.iterate()
 
 
 Catalog.update_forward_refs()
