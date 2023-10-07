@@ -1,4 +1,5 @@
 import logging
+import os
 from collections import defaultdict
 from functools import cache
 from pathlib import Path
@@ -23,6 +24,8 @@ from ftmq.types import CE, CEGenerator, PathLike
 from ftmq.util import DefaultDataset, clean_dict, make_dataset
 
 log = logging.getLogger(__name__)
+
+MAX_SQL_AGG_GROUPS = int(os.environ.get("MAX_SQL_AGG_GROUPS", 10))
 
 
 class Store(nk.Store):
@@ -171,7 +174,7 @@ class SQLQueryView(View, nk.sql.SQLView):
                         query.sql.get_group_aggregations(prop, group), stream=False
                     ):
                         res["groups"][grouper][func][prop][group] = value
-                    if ix == 9:  # limit to top 10 groups
+                    if ix == MAX_SQL_AGG_GROUPS - 1:  # limit to top 10 groups
                         break
         return clean_dict(res)
 
