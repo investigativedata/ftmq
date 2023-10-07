@@ -67,6 +67,10 @@ def cli() -> None:
 @click.option("--max", multiple=True, help="Properties for max aggregation")
 @click.option("--avg", multiple=True, help="Properties for avg aggregation")
 @click.option(
+    "--count", multiple=True, help="Properties for count (distinct) aggregation"
+)
+@click.option("--group", multiple=True, help="Properties for grouping aggregation")
+@click.option(
     "--aggregation-uri",
     default=None,
     show_default=True,
@@ -89,6 +93,8 @@ def q(
     min: tuple[str] | None = (),
     max: tuple[str] | None = (),
     avg: tuple[str] | None = (),
+    count: tuple[str] | None = (),
+    group: tuple[str] | None = (),
     aggregation_uri: str | None = None,
 ):
     """
@@ -111,11 +117,19 @@ def q(
     if len(dataset) == 1:
         store_dataset = store_dataset or dataset[0]
     aggs = {
-        k: v for k, v in {"sum": sum, "min": min, "max": max, "avg": avg}.items() if v
+        k: v
+        for k, v in {
+            "sum": sum,
+            "min": min,
+            "max": max,
+            "avg": avg,
+            "count": count,
+        }.items()
+        if v
     }
     if aggregation_uri and aggs:
         for func, props in aggs.items():
-            q = q.aggregate(func, *props)
+            q = q.aggregate(func, *props, group=group)
     proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
     if coverage_uri:
         coverage = Collector()

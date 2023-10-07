@@ -68,4 +68,4 @@ Comparators = StrEnum(
     ],
 )
 Frequencies = StrEnum("Frequencies", [f for f in DataCoverage.FREQUENCIES])
-Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg"))
+Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg", "count"))

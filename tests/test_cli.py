@@ -168,3 +168,32 @@ def test_cli_aggregation(fixtures_path: Path):
     assert result.exit_code == 0
     result = orjson.loads(result.output)
     assert result == {"sum": {"amountEur": 40589689.15}}
+
+    result = runner.invoke(
+        cli,
+        [
+            "-i",
+            in_uri,
+            "-o",
+            "/dev/null",
+            "--aggregation-uri",
+            "-",
+            "--max",
+            "name",
+            "--group",
+            "country",
+        ],
+    )
+    assert result.exit_code == 0
+    result = orjson.loads(result.output)
+    assert result == {
+        "max": {"name": "YOC AG"},
+        "country": {
+            "name": {
+                "de": "YOC AG",
+                "cy": "Schoeller Holdings Ltd.",
+                "gb": "Matthias Rath Limited",
+                "lu": "Eurolottoclub AG",
+            }
+        },
+    }

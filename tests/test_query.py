@@ -138,6 +138,17 @@ def test_query_aggregate():
         "amount__null": False,
         "aggregations": {"sum": {"amount", "amountEur"}},
     }
+    q = Query().where(schema="Payment", date__gte=2023, amount__null=False)
+    q = q.aggregate("sum", "amountEur", "amount", group="country")
+    assert q.to_dict() == {
+        "schema": "Payment",
+        "date__gte": "2023",
+        "amount__null": False,
+        "aggregations": {
+            "sum": {"amount", "amountEur"},
+            "groups": {"country": {"sum": {"amount", "amountEur"}}},
+        },
+    }
 
 
 def test_query_reversed():

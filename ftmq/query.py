@@ -252,9 +252,16 @@ class Query:
         self.sort = Sort(values=values, ascending=ascending)
         return self._chain()
 
-    def aggregate(self, func: Aggregations, *props: Properties) -> Q:
+    def aggregate(
+        self,
+        func: Aggregations,
+        *props: Properties,
+        group: Properties | list[Properties] | None = None,
+    ) -> Q:
         for prop in props:
-            self.aggregations.add(Aggregation(func=func, prop=prop))
+            self.aggregations.add(
+                Aggregation(func=func, prop=prop, group_props=ensure_list(group))
+            )
         return self._chain()
 
     def get_aggregator(self) -> Aggregator:
