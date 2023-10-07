@@ -20,7 +20,7 @@ from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.types import CE, CEGenerator, PathLike
-from ftmq.util import DefaultDataset, make_dataset
+from ftmq.util import DefaultDataset, clean_dict, make_dataset
 
 log = logging.getLogger(__name__)
 
@@ -173,8 +173,7 @@ class SQLQueryView(View, nk.sql.SQLView):
                         res["groups"][grouper][func][prop][group] = value
                     if ix == 9:  # limit to top 10 groups
                         break
-
-        return res
+        return clean_dict(res)
 
 
 class MemoryStore(Store, nk.SimpleMemoryStore):

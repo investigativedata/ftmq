@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 
 import cloudpickle
 import pytest
@@ -78,3 +79,12 @@ def test_util_country():
     assert util.get_country_code("Deutschland") == "de"
     assert util.get_country_code("Berlin, Deutschland") == "de"
     assert util.get_country_code("Foo") is None
+
+
+def test_util_clean_dict():
+    assert util.clean_dict(defaultdict(list)) == {}
+    data = defaultdict(list)
+    data["foo"] = [1, 2, 3]
+    data["bar"]
+    assert util.clean_dict(data) == {"foo": [1, 2, 3]}
+    assert util.clean_dict("foo") is None

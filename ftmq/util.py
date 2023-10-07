@@ -4,7 +4,8 @@ from functools import cache
 from typing import Any
 
 import pycountry
-from banal import ensure_list
+from banal import clean_dict as _clean_dict
+from banal import ensure_list, is_mapping
 from followthemoney.types import registry
 from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE, CompositeEntity
@@ -138,3 +139,17 @@ def join_slug(
     if prefix is not None:
         texts = [prefix, *texts]
     return sep.join(texts)[:max_len].strip(sep)
+
+
+def clean_dict(data: Any) -> dict[str, Any]:
+    """
+    strip out defaultdict and ensure str keys (for serialization)
+    """
+    if not is_mapping(data):
+        return
+    return _clean_dict(
+        {
+            str(k): clean_dict(dict(v)) or None if is_mapping(v) else v or None
+            for k, v in data.items()
+        }
+    )
