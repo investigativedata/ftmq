@@ -105,6 +105,11 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = view.aggregations(q)
     assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
 
+    q = Query().aggregate("count", "location", group="location")
+    res = view.aggregations(q)
+    assert res["count"] == {"location": 1281}
+    assert res["groups"]["location"]["count"]["location"]["Brussels"] == 47
+
     # reversed
     entity_id = "eu-tr-09571422185-81"
     q = Query().where(reverse=entity_id)

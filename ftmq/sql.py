@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from followthemoney.model import registry
 from nomenklatura.statement import make_statement_table
+from normality import slugify
 from sqlalchemy import (
     NUMERIC,
     BooleanClauseList,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     Select,
     and_,
     desc,
+    distinct,
     func,
     or_,
     select,
@@ -18,7 +20,7 @@ from sqlalchemy import (
     union_all,
 )
 
-from ftmq.enums import Comparators, PropertyTypes
+from ftmq.enums import Aggregations, Comparators, Properties, PropertyTypes
 from ftmq.exceptions import ValidationError
 from ftmq.filters import F
 
@@ -237,14 +239,68 @@ class Sql:
     def aggregations(self) -> Select:
         qs = []
         for agg in self.q.aggregations:
+            sql_agg = getattr(func, agg.func)
+            sql_agg_value = self.table.c.value
+            if agg.func == Aggregations.count:
+                sql_agg_value = distinct(sql_agg_value)
+            aggregator = sql_agg(sql_agg_value)
             qs.append(
                 select(
                     text(f"'{agg.prop}'"),
                     text(f"'{agg.func}'"),
-                    getattr(func, agg.func)(self.table.c.value),
+                    aggregator,
                 ).where(
                     self.table.c.prop == agg.prop,
                     self.table.c.canonical_id.in_(self.all_canonical_ids),
                 )
             )
         return union_all(*qs)
+
+    def get_groups(self, prop: Properties) -> Select:
+        count = func.count(distinct(self.table.c.canonical_id)).label("count")
+        return (
+            select(self.table.c.value, count)
+            .where(
+                self.table.c.prop == prop,
+                self.table.c.canonical_id.in_(self.all_canonical_ids),
+            )
+            .group_by(self.table.c.value)
+            .order_by(desc(count))
+        )
+
+    def get_group_aggregations(self, grouper: Properties, group: str) -> Select:
+        qs = []
+        for agg in self.q.aggregations:
+            if grouper in agg.group_props:
+                sql_agg = getattr(func, agg.func)
+                sql_agg_value = self.table.c.value
+                if agg.func == Aggregations.count:
+                    sql_agg_value = distinct(sql_agg_value)
+                aggregator = sql_agg(sql_agg_value)
+                inner = select(self.table.c.canonical_id.distinct()).where(
+                    self.table.c.prop == grouper,
+                    self.table.c.value == group,
+                    self.table.c.canonical_id.in_(self.all_canonical_ids),
+                )
+
+                qs.append(
+                    select(
+                        text(f"'{agg.prop}'"),
+                        text(f"'{agg.func}'"),
+                        text(f"'{grouper}'"),
+                        text(f"'{slugify(group)}'"),
+                        aggregator,
+                    ).where(
+                        self.table.c.prop == agg.prop,
+                        self.table.c.canonical_id.in_(inner),
+                    )
+                )
+        return union_all(*qs)
+
+    @cached_property
+    def group_props(self) -> set[Properties]:
+        props: set[Properties] = set()
+        for agg in self.q.aggregations:
+            if agg.group_props:
+                props.update(agg.group_props)
+        return props

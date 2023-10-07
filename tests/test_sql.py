@@ -174,6 +174,35 @@ def test_sql():
     assert "SELECT 'date', 'max', max(test_table.value) AS max" in q
     assert "SELECT 'amount', 'sum', sum(test_table.value) AS sum" in q
 
+    q = Query().aggregate("count", "location")
+    q = str(q.sql.aggregations)
+    assert "SELECT 'location', 'count', count(DISTINCT test_table.value) AS count" in q
+
+    q = Query().where(date=2023)
+    q = q.sql.get_groups("country")
+    res = q.compile(compile_kwargs={"literal_binds": True})
+    assert _compare_str(
+        res,
+        """
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table
+        WHERE test_table.prop = 'country' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'date' AND test_table.value = '2023') GROUP BY test_table.value ORDER BY count DESC
+        """,
+    )
+
+    q = Query().where(schema="Project").aggregate("max", "amountEur", group="country")
+    res = str(q.sql.get_group_aggregations("country", "de"))
+    assert _compare_str(
+        res,
+        """SELECT 'amountEur', 'max', 'country', 'de', max(test_table.value) AS max_1
+    FROM test_table WHERE test_table.prop = :prop_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table
+        WHERE test_table.prop = :prop_2 AND test_table.value = :value_1 AND test_table.canonical_id IN
+            (SELECT DISTINCT test_table.canonical_id FROM test_table WHERE test_table.schema = :schema_1))""",
+    )
+
     # reversed
     q = Query().where(reverse="my_id").where(date=2023, schema="Event")
     assert _compare_str(

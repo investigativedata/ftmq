@@ -51,6 +51,8 @@ def test_agg_groupby(donations):
     proxies = agg.apply(donations)
     _ = [x for x in proxies]
     assert agg.result == {
-        "country": {"name": {"de": 80, "cy": 1, "gb": 1, "lu": 1}},
         "count": {"name": 95},
+        "groups": {
+            "country": {"count": {"name": {"de": 80, "cy": 1, "gb": 1, "lu": 1}}}
+        },
     }

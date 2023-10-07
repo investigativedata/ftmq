@@ -154,10 +154,26 @@ class SQLQueryView(View, nk.sql.SQLView):
             return
         query = self.ensure_scoped_query(query)
         res: AggregatorResult = defaultdict(dict)
+
         for prop, func, value in self.store._execute(
             query.sql.aggregations, stream=False
         ):
             res[func][prop] = value
+
+        if query.sql.group_props:
+            res["groups"] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+            for prop in query.sql.group_props:
+                for ix, row in enumerate(
+                    self.store._execute(query.sql.get_groups(prop), stream=False)
+                ):
+                    group = row[0]
+                    for _, func, grouper, _, value in self.store._execute(
+                        query.sql.get_group_aggregations(prop, group), stream=False
+                    ):
+                        res["groups"][grouper][func][prop][group] = value
+                    if ix == 9:  # limit to top 10 groups
+                        break
+
         return res
 
 

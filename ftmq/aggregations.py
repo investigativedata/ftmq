@@ -97,10 +97,15 @@ class Aggregator(BaseModel):
         return self
 
     def __exit__(self, *args, **kwargs) -> None:
+        self.result["groups"] = defaultdict(lambda: defaultdict(dict))
         for agg in self.aggregations:
             self.result[str(agg.func)][str(agg.prop)] = agg.value
             for group in agg.group_props:
-                self.result[str(group)][str(agg.prop)] = agg.groups[group]
+                self.result["groups"][str(group)][str(agg.func)][
+                    str(agg.prop)
+                ] = agg.groups[group]
+        if not self.result["groups"]:
+            del self.result["groups"]
 
     def apply(self, proxies: CEGenerator) -> CEGenerator:
         for agg in self.aggregations:

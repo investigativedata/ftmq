@@ -188,12 +188,16 @@ def test_cli_aggregation(fixtures_path: Path):
     result = orjson.loads(result.output)
     assert result == {
         "max": {"name": "YOC AG"},
-        "country": {
-            "name": {
-                "de": "YOC AG",
-                "cy": "Schoeller Holdings Ltd.",
-                "gb": "Matthias Rath Limited",
-                "lu": "Eurolottoclub AG",
+        "groups": {
+            "country": {
+                "max": {
+                    "name": {
+                        "de": "YOC AG",
+                        "cy": "Schoeller Holdings Ltd.",
+                        "gb": "Matthias Rath Limited",
+                        "lu": "Eurolottoclub AG",
+                    }
+                }
             }
         },
     }
