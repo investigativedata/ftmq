@@ -47,6 +47,11 @@ def donations():
     return [x for x in smart_read_proxies(FIXTURES_PATH / DONATIONS)]
 
 
+@pytest.fixture(scope="module")
+def ec_meetings():
+    return [x for x in smart_read_proxies(FIXTURES_PATH / FIXTURES[0])]
+
+
 # https://pawamoy.github.io/posts/local-http-server-fake-files-testing-purposes/
 def spawn_and_wait_server():
     process = subprocess.Popen(

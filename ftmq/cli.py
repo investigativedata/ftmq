@@ -15,7 +15,7 @@ from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
-from ftmq.util import parse_unknown_filters
+from ftmq.util import clean_dict, parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
@@ -110,7 +110,7 @@ def q(
             include_matchable=schema_include_matchable,
         )
     for prop, value, op in parse_unknown_filters(properties):
-        q = q.where(prop=prop, value=value, comparator=op)
+        q = q.where(**{f"{prop}__{op}": value})
     if len(sort):
         q = q.order_by(*sort, ascending=sort_ascending)
 
@@ -140,7 +140,9 @@ def q(
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
     if q.aggregator:
-        result = orjson.dumps(q.aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
+        result = orjson.dumps(
+            clean_dict(q.aggregator.result), option=orjson.OPT_APPEND_NEWLINE
+        )
         smart_write(aggregation_uri, result)
 
 

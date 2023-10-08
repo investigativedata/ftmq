@@ -142,7 +142,7 @@ class SQLQueryView(View, nk.sql.SQLView):
             if country is not None:
                 c.countries[country] = count
         coverage = c.export()
-        for start, end in self.store._execute(query.sql.dates, stream=False):
+        for start, end in self.store._execute(query.sql.date_range, stream=False):
             coverage.start = start
             coverage.end = end
 
@@ -166,16 +166,15 @@ class SQLQueryView(View, nk.sql.SQLView):
         if query.sql.group_props:
             res["groups"] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
             for prop in query.sql.group_props:
-                for ix, row in enumerate(
-                    self.store._execute(query.sql.get_groups(prop), stream=False)
+                for row in self.store._execute(
+                    query.sql.get_group_counts(prop, limit=MAX_SQL_AGG_GROUPS),
+                    stream=False,
                 ):
                     group = row[0]
-                    for _, func, grouper, _, value in self.store._execute(
+                    for agg_prop, func, value in self.store._execute(
                         query.sql.get_group_aggregations(prop, group), stream=False
                     ):
-                        res["groups"][grouper][func][prop][group] = value
-                    if ix == MAX_SQL_AGG_GROUPS - 1:  # limit to top 10 groups
-                        break
+                        res["groups"][prop][func][agg_prop][group] = value
         return clean_dict(res)
 
 

@@ -1,7 +1,7 @@
 import statistics
 from collections import defaultdict
 from functools import cache
-from typing import Any, Iterable, TypeAlias
+from typing import Any, Generator, Iterable, Literal, TypeAlias
 
 from banal import ensure_list
 from followthemoney.schema import Schema
@@ -10,10 +10,13 @@ from pydantic import BaseModel
 
 from ftmq.enums import Aggregations, Properties
 from ftmq.types import CE, CEGenerator
-from ftmq.util import to_numeric
+from ftmq.util import clean_dict, to_numeric
 
 Value: TypeAlias = int | float | str
 Values: TypeAlias = list[Value]
+
+META = ("id", "dataset", "schema", "year")
+Meta: TypeAlias = Literal[*META]
 
 
 @cache
@@ -25,11 +28,11 @@ def get_is_numeric(schema: Schema, prop: str) -> bool:
 
 
 class Aggregation(BaseModel):
-    prop: Properties
+    prop: Properties | Meta
     func: Aggregations
     values: Values = []
     value: Value | None = None
-    group_props: list[Properties] | None = []
+    group_props: list[Properties | Meta] | None = []
     grouper: dict[Properties, dict[str, Values]] = defaultdict(
         lambda: defaultdict(list)
     )
@@ -53,15 +56,31 @@ class Aggregation(BaseModel):
         if self.func == "count":
             return len(set(values))
 
+    def get_proxy_values(
+        self, proxy: CE, prop: Properties | Meta | None = None
+    ) -> Generator[str, None, None]:
+        prop = prop or self.prop
+        if prop == "id":
+            yield proxy.id
+        elif prop == "dataset":
+            yield from proxy.datasets
+        elif prop == "schema":
+            yield proxy.schema.name
+        elif prop == "year":
+            for value in proxy.get_type_values(registry.date):
+                yield value[:4]
+        else:
+            yield from proxy.get(prop, quiet=True)
+
     def collect(self, proxy: CE) -> CE:
         is_numeric = get_is_numeric(proxy.schema, self.prop)
-        for value in proxy.get(self.prop, quiet=True):
+        for value in self.get_proxy_values(proxy):
             if is_numeric:
                 value = to_numeric(value)
             if value is not None:
                 self.values.append(value)
                 for prop in self.group_props:
-                    for g in proxy.get(prop, quiet=True):
+                    for g in self.get_proxy_values(proxy, prop):
                         self.grouper[prop][g].append(value)
         return proxy
 
@@ -104,8 +123,7 @@ class Aggregator(BaseModel):
                 self.result["groups"][str(group)][str(agg.func)][
                     str(agg.prop)
                 ] = agg.groups[group]
-        if not self.result["groups"]:
-            del self.result["groups"]
+        self.result = clean_dict(self.result)
 
     def apply(self, proxies: CEGenerator) -> CEGenerator:
         for agg in self.aggregations:
@@ -133,6 +151,4 @@ class Aggregator(BaseModel):
             data[str(agg.func)].add(str(agg.prop))
             for group in agg.group_props:
                 data["groups"][str(group)][str(agg.func)].add(str(agg.prop))
-        if not data["groups"]:
-            del data["groups"]
-        return dict(data)
+        return clean_dict(data)

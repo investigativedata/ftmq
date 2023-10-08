@@ -2,8 +2,8 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from followthemoney.model import registry
+from followthemoney.types import PropertyType
 from nomenklatura.statement import make_statement_table
-from normality import slugify
 from sqlalchemy import (
     NUMERIC,
     BooleanClauseList,
@@ -20,7 +20,14 @@ from sqlalchemy import (
     union_all,
 )
 
-from ftmq.enums import Aggregations, Comparators, Properties, PropertyTypes
+from ftmq.aggregations import Meta
+from ftmq.enums import (
+    Aggregations,
+    Comparators,
+    Properties,
+    PropertyTypes,
+    PropertyTypesMap,
+)
 from ftmq.exceptions import ValidationError
 from ftmq.filters import F
 
@@ -44,10 +51,15 @@ class Sql:
         self.q = q
         self.metadata = MetaData()
         self.table = make_statement_table(self.metadata)
+        self.META_COLUMNS = {
+            "id": self.table.c.canonical_id,
+            "dataset": self.table.c.dataset,
+            "schema": self.table.c.schema,
+        }
 
     def get_expression(self, column: Column, f: F):
         value = f.value
-        if f.comparator == Comparators.ilike:
+        if f.comparator in (Comparators.ilike, Comparators.like):
             value = f"%{value}%"
         op = self.COMPARATORS.get(str(f.comparator), str(f.comparator))
         op = getattr(column, op)
@@ -146,7 +158,7 @@ class Sql:
                 )
             prop = self.q.sort.values[0]
             value = self.table.c.value
-            if PropertyTypes[prop].value == registry.number:
+            if PropertyTypesMap[prop].value == registry.number:
                 value = func.cast(self.table.c.value, NUMERIC)
             inner = (
                 select(
@@ -191,48 +203,63 @@ class Sql:
             .where(self.clause)
         )
 
+    def _get_lookup_column(self, field: PropertyTypes | Properties | Meta) -> Column:
+        if field in self.META_COLUMNS:
+            return self.META_COLUMNS[field]
+        if isinstance(field, PropertyType):
+            return self.table.c.prop_type
+        if field in Properties:
+            return self.table.c.prop
+        if field in PropertyTypes:
+            return self.table.c.prop_type
+        raise NotImplementedError("Unknown field: `%s`" % field)
+
+    def get_group_counts(
+        self, group: PropertyTypes | Properties | Meta, limit: int | None = None
+    ) -> Select:
+        count = func.count(self.table.c.canonical_id.distinct()).label("count")
+        column = self._get_lookup_column(group)
+        group = str(group)
+        if group in self.META_COLUMNS:
+            grouper = column
+            where = self.clause
+        else:
+            grouper = self.table.c.value
+            where = and_(
+                column == group, self.table.c.canonical_id.in_(self.all_canonical_ids)
+            )
+        return (
+            select(grouper, count)
+            .where(where)
+            .group_by(grouper)
+            .order_by(desc(count))
+            .limit(limit)
+        )
+
     @cached_property
     def datasets(self) -> Select:
-        return (
-            select(
-                self.table.c.dataset, func.count(self.table.c.canonical_id.distinct())
-            )
-            .where(self.clause)
-            .group_by(self.table.c.dataset)
-        )
+        return self.get_group_counts("dataset")
 
     @cached_property
     def schemata(self) -> Select:
-        return (
-            select(
-                self.table.c.schema, func.count(self.table.c.canonical_id.distinct())
-            )
-            .where(self.clause)
-            .group_by(self.table.c.schema)
-        )
+        return self.get_group_counts("schema")
+
+    @cached_property
+    def countries(self) -> Select:
+        return self.get_group_counts(registry.country)
 
     @cached_property
     def dates(self) -> Select:
+        return self.get_group_counts(registry.date)
+
+    @cached_property
+    def date_range(self) -> Select:
         return select(
             func.min(self.table.c.value),
             func.max(self.table.c.value),
         ).where(
             self.table.c.prop_type == "date",
             self.table.c.canonical_id.in_(self.all_canonical_ids),
-        )
-
-    @cached_property
-    def countries(self) -> Select:
-        return (
-            select(
-                self.table.c.value,
-                func.count(self.table.c.canonical_id.distinct()),
-            )
-            .where(
-                self.table.c.prop_type == "country",
-                self.table.c.canonical_id.in_(self.all_canonical_ids),
-            )
-            .group_by(self.table.c.value)
         )
 
     @cached_property
@@ -256,39 +283,40 @@ class Sql:
             )
         return union_all(*qs)
 
-    def get_groups(self, prop: Properties) -> Select:
-        count = func.count(distinct(self.table.c.canonical_id)).label("count")
-        return (
-            select(self.table.c.value, count)
-            .where(
-                self.table.c.prop == prop,
-                self.table.c.canonical_id.in_(self.all_canonical_ids),
-            )
-            .group_by(self.table.c.value)
-            .order_by(desc(count))
-        )
+    def _get_grouping_where(
+        self, grouper: PropertyTypes | Properties | Meta, value: str
+    ) -> BooleanClauseList:
+        column = self._get_lookup_column(grouper)
+        clauses = [self.table.c.canonical_id.in_(self.all_canonical_ids)]
+        if grouper in Properties:
+            clauses.extend([column == str(grouper), self.table.c.value == value])
+            return clauses
+        clauses.append(column == value)
+        return clauses
 
-    def get_group_aggregations(self, grouper: Properties, group: str) -> Select:
+    def get_group_aggregations(
+        self, grouper: PropertyTypes | Properties | Meta, group: str
+    ) -> Select:
         qs = []
         for agg in self.q.aggregations:
             if grouper in agg.group_props:
+                if agg.prop in self.META_COLUMNS:
+                    sql_agg_value = self._get_lookup_column(agg.prop)
+                else:
+                    sql_agg_value = self.table.c.value
                 sql_agg = getattr(func, agg.func)
-                sql_agg_value = self.table.c.value
                 if agg.func == Aggregations.count:
                     sql_agg_value = distinct(sql_agg_value)
                 aggregator = sql_agg(sql_agg_value)
+
                 inner = select(self.table.c.canonical_id.distinct()).where(
-                    self.table.c.prop == grouper,
-                    self.table.c.value == group,
-                    self.table.c.canonical_id.in_(self.all_canonical_ids),
+                    *self._get_grouping_where(grouper, group)
                 )
 
                 qs.append(
                     select(
                         text(f"'{agg.prop}'"),
                         text(f"'{agg.func}'"),
-                        text(f"'{grouper}'"),
-                        text(f"'{slugify(group)}'"),
                         aggregator,
                     ).where(
                         self.table.c.prop == agg.prop,
@@ -298,7 +326,7 @@ class Sql:
         return union_all(*qs)
 
     @cached_property
-    def group_props(self) -> set[Properties]:
+    def group_props(self) -> set[Properties | PropertyTypes | Meta]:
         props: set[Properties] = set()
         for agg in self.q.aggregations:
             if agg.group_props:

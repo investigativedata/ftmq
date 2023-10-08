@@ -105,10 +105,29 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = view.aggregations(q)
     assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
 
-    q = Query().aggregate("count", "location", group="location")
+    q = Query().aggregate("count", "id", group="location")
     res = view.aggregations(q)
-    assert res["count"] == {"location": 1281}
-    assert res["groups"]["location"]["count"]["location"]["Brussels"] == 47
+    assert res["groups"]["location"]["count"]["id"]["Brussels"] == 19090
+
+    q = Query().where(dataset="ec_meetings").aggregate("count", "id", group="schema")
+    res = view.aggregations(q)
+    assert res == {
+        "groups": {
+            "schema": {
+                "count": {
+                    "id": {
+                        "Address": 1281,
+                        "PublicBody": 103,
+                        "Event": 34975,
+                        "Membership": 791,
+                        "Person": 791,
+                        "Organization": 7097,
+                    }
+                }
+            }
+        },
+        "count": {"id": 45038},
+    }
 
     # reversed
     entity_id = "eu-tr-09571422185-81"
