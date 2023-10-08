@@ -41,7 +41,7 @@ def test_util_str_enum():
 
 
 def test_util_unknown_filters():
-    res = (("country", "de", None), ("name", "alice", None))
+    res = (("country", "de", Comparators.eq), ("name", "alice", Comparators.eq))
     args = ("--country", "de", "--name", "alice")
     assert tuple(util.parse_unknown_filters(args)) == res
     args = ("--country=de", "--name=alice")
@@ -52,7 +52,7 @@ def test_util_unknown_filters():
     assert tuple(util.parse_unknown_filters(args)) == ()
 
     args = ("--country", "de", "--year__gte", "2023")
-    res = (("country", "de", None), ("year", "2023", "gte"))
+    res = (("country", "de", Comparators.eq), ("year", "2023", Comparators.gte))
     assert tuple(util.parse_unknown_filters(args)) == res
 
 
