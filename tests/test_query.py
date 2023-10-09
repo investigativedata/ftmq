@@ -139,7 +139,7 @@ def test_query_aggregate():
         "aggregations": {"sum": {"amount", "amountEur"}},
     }
     q = Query().where(schema="Payment", date__gte=2023, amount__null=False)
-    q = q.aggregate("sum", "amountEur", "amount", group="country")
+    q = q.aggregate("sum", "amountEur", "amount", groups="country")
     assert q.to_dict() == {
         "schema": "Payment",
         "date__gte": "2023",
