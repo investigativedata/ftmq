@@ -69,3 +69,4 @@ Comparators = StrEnum(
 )
 Frequencies = StrEnum("Frequencies", [f for f in DataCoverage.FREQUENCIES])
 Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg", "count"))
+Fields = StrEnum("Fields", ["id", "dataset", "schema", "year"])

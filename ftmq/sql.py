@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 
 from followthemoney.model import registry
 from followthemoney.types import PropertyType
@@ -20,10 +20,10 @@ from sqlalchemy import (
     union_all,
 )
 
-from ftmq.aggregations import Meta
 from ftmq.enums import (
     Aggregations,
     Comparators,
+    Fields,
     Properties,
     PropertyTypes,
     PropertyTypesMap,
@@ -33,6 +33,9 @@ from ftmq.filters import F
 
 if TYPE_CHECKING:
     from ftmq.query import Q
+
+
+Field: TypeAlias = Properties | PropertyTypes | Fields
 
 
 class Sql:
@@ -203,20 +206,18 @@ class Sql:
             .where(self.clause)
         )
 
-    def _get_lookup_column(self, field: PropertyTypes | Properties | Meta) -> Column:
+    def _get_lookup_column(self, field: Field) -> Column:
         if field in self.META_COLUMNS:
             return self.META_COLUMNS[field]
         if isinstance(field, PropertyType):
             return self.table.c.prop_type
         if field in Properties:
             return self.table.c.prop
-        if field in PropertyTypes:
+        if field in PropertyTypes or field == Fields.year:
             return self.table.c.prop_type
         raise NotImplementedError("Unknown field: `%s`" % field)
 
-    def get_group_counts(
-        self, group: PropertyTypes | Properties | Meta, limit: int | None = None
-    ) -> Select:
+    def get_group_counts(self, group: Field, limit: int | None = None) -> Select:
         count = func.count(self.table.c.canonical_id.distinct()).label("count")
         column = self._get_lookup_column(group)
         group = str(group)
@@ -283,20 +284,24 @@ class Sql:
             )
         return union_all(*qs)
 
-    def _get_grouping_where(
-        self, grouper: PropertyTypes | Properties | Meta, value: str
-    ) -> BooleanClauseList:
+    def _get_grouping_where(self, grouper: Field, value: str) -> BooleanClauseList:
         column = self._get_lookup_column(grouper)
         clauses = [self.table.c.canonical_id.in_(self.all_canonical_ids)]
         if grouper in Properties:
             clauses.extend([column == str(grouper), self.table.c.value == value])
             return clauses
+        if grouper == Fields.year:
+            clauses.extend(
+                [
+                    column == str(registry.date),
+                    func.substring(self.table.c.value, 1, 4) == str(value),
+                ]
+            )
+            return clauses
         clauses.append(column == value)
         return clauses
 
-    def get_group_aggregations(
-        self, grouper: PropertyTypes | Properties | Meta, group: str
-    ) -> Select:
+    def get_group_aggregations(self, grouper: Field, group: str) -> Select:
         qs = []
         for agg in self.q.aggregations:
             if grouper in agg.group_props:
@@ -326,8 +331,8 @@ class Sql:
         return union_all(*qs)
 
     @cached_property
-    def group_props(self) -> set[Properties | PropertyTypes | Meta]:
-        props: set[Properties] = set()
+    def group_props(self) -> set[Field]:
+        props: set[Field] = set()
         for agg in self.q.aggregations:
             if agg.group_props:
                 props.update(agg.group_props)

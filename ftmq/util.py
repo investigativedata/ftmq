@@ -153,3 +153,12 @@ def clean_dict(data: Any) -> dict[str, Any]:
             for k, v in data.items()
         }
     )
+
+
+def get_year(value: Any) -> int | None:
+    if not value:
+        return
+    try:
+        return int(str(value)[:4])
+    except ValueError:
+        return

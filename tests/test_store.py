@@ -105,11 +105,11 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = view.aggregations(q)
     assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
 
-    q = Query().aggregate("count", "id", group="location")
+    q = Query().aggregate("count", "id", groups="location")
     res = view.aggregations(q)
     assert res["groups"]["location"]["count"]["id"]["Brussels"] == 19090
 
-    q = Query().where(dataset="ec_meetings").aggregate("count", "id", group="schema")
+    q = Query().where(dataset="ec_meetings").aggregate("count", "id", groups="schema")
     res = view.aggregations(q)
     assert res == {
         "groups": {
@@ -122,6 +122,29 @@ def _run_store_test(cls: Store, proxies, **kwargs):
                         "Membership": 791,
                         "Person": 791,
                         "Organization": 7097,
+                    }
+                }
+            }
+        },
+        "count": {"id": 45038},
+    }
+    q = Query().where(dataset="ec_meetings").aggregate("count", "id", groups="year")
+    res = view.aggregations(q)
+    assert res == {
+        "groups": {
+            "year": {
+                "count": {
+                    "id": {
+                        "2014": 550,
+                        "2015": 6691,
+                        "2016": 5199,
+                        "2017": 4047,
+                        "2018": 3873,
+                        "2019": 2321,
+                        "2020": 4640,
+                        "2021": 4079,
+                        "2022": 3499,
+                        "2023": 76,
                     }
                 }
             }

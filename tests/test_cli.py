@@ -106,6 +106,7 @@ def test_cli_coverage(fixtures_path: Path):
     assert orjson.loads(result.output) == {
         "start": "2014-11-12",
         "end": "2023-01-20",
+        "years": [2014, 2023],
         "frequency": "unknown",
         "schemata": [
             {
@@ -180,7 +181,7 @@ def test_cli_aggregation(fixtures_path: Path):
             "-",
             "--max",
             "name",
-            "--group",
+            "--groups",
             "country",
         ],
     )

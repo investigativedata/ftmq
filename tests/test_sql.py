@@ -211,8 +211,9 @@ def test_sql():
     q = (
         Query()
         .where(dataset="test", schema="Project")
-        .aggregate("max", "amountEur", group="country")
+        .aggregate("max", "amountEur", groups="country")
     )
+    assert q.sql.group_props == {"country"}
     res = q.sql.get_group_aggregations("country", "de").compile(
         compile_kwargs={"literal_binds": True}
     )
@@ -226,6 +227,27 @@ def test_sql():
         WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
         FROM test_table
         WHERE test_table.dataset = 'test' AND test_table.schema = 'Project') AND test_table.prop = 'country' AND test_table.value = 'de')
+        """,
+    )
+    q = (
+        Query()
+        .where(dataset="test", schema="Project")
+        .aggregate("max", "amountEur", groups=["country", "year", "dataset"])
+    )
+    assert q.sql.group_props == {"country", "year", "dataset"}
+    res = q.sql.get_group_aggregations("year", 2023).compile(
+        compile_kwargs={"literal_binds": True}
+    )
+    assert _compare_str(
+        res,
+        """
+        SELECT 'amountEur', 'max', max(test_table.value) AS max_1
+        FROM test_table
+        WHERE test_table.prop = 'amountEur' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.dataset = 'test' AND test_table.schema = 'Project') AND test_table.prop_type = 'date' AND substring(test_table.value, 1, 4) = '2023')
         """,
     )
 

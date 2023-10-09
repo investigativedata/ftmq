@@ -1,5 +1,6 @@
 import sys
 from collections import defaultdict
+from datetime import datetime
 
 import cloudpickle
 import pytest
@@ -88,3 +89,11 @@ def test_util_clean_dict():
     data["bar"]
     assert util.clean_dict(data) == {"foo": [1, 2, 3]}
     assert util.clean_dict("foo") is None
+
+
+def test_util_get_year():
+    assert util.get_year(None) is None
+    assert util.get_year("2023") == 2023
+    assert util.get_year(2020) == 2020
+    assert util.get_year(datetime.now()) >= 2023
+    assert util.get_year("2000-01") == 2000

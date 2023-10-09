@@ -15,6 +15,7 @@ def test_coverage(fixtures_path: Path):
     result = {
         "start": start,
         "end": end,
+        "years": (2014, 2023),
         "frequency": "unknown",
         "schemata": [
             {

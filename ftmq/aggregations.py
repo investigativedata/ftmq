@@ -1,22 +1,19 @@
 import statistics
 from collections import defaultdict
 from functools import cache
-from typing import Any, Generator, Iterable, Literal, TypeAlias
+from typing import Any, Generator, Iterable, TypeAlias
 
 from banal import ensure_list
 from followthemoney.schema import Schema
 from followthemoney.types import registry
 from pydantic import BaseModel
 
-from ftmq.enums import Aggregations, Properties
+from ftmq.enums import Aggregations, Fields, Properties
 from ftmq.types import CE, CEGenerator
 from ftmq.util import clean_dict, to_numeric
 
 Value: TypeAlias = int | float | str
 Values: TypeAlias = list[Value]
-
-META = ("id", "dataset", "schema", "year")
-Meta: TypeAlias = Literal[*META]
 
 
 @cache
@@ -28,11 +25,11 @@ def get_is_numeric(schema: Schema, prop: str) -> bool:
 
 
 class Aggregation(BaseModel):
-    prop: Properties | Meta
+    prop: Properties | Fields
     func: Aggregations
     values: Values = []
     value: Value | None = None
-    group_props: list[Properties | Meta] | None = []
+    group_props: list[Properties | Fields] | None = []
     grouper: dict[Properties, dict[str, Values]] = defaultdict(
         lambda: defaultdict(list)
     )
@@ -57,16 +54,16 @@ class Aggregation(BaseModel):
             return len(set(values))
 
     def get_proxy_values(
-        self, proxy: CE, prop: Properties | Meta | None = None
+        self, proxy: CE, prop: Properties | Fields | None = None
     ) -> Generator[str, None, None]:
         prop = prop or self.prop
-        if prop == "id":
+        if prop == Fields.id:
             yield proxy.id
-        elif prop == "dataset":
+        elif prop == Fields.dataset:
             yield from proxy.datasets
-        elif prop == "schema":
+        elif prop == Fields.schema:
             yield proxy.schema.name
-        elif prop == "year":
+        elif prop == Fields.year:
             for value in proxy.get_type_values(registry.date):
                 yield value[:4]
         else:

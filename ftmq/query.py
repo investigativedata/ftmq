@@ -256,11 +256,11 @@ class Query:
         self,
         func: Aggregations,
         *props: Properties,
-        group: Properties | list[Properties] | None = None,
+        groups: Properties | list[Properties] | None = None,
     ) -> Q:
         for prop in props:
             self.aggregations.add(
-                Aggregation(func=func, prop=prop, group_props=ensure_list(group))
+                Aggregation(func=func, prop=prop, group_props=ensure_list(groups))
             )
         return self._chain()
 
