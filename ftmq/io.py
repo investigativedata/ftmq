@@ -20,14 +20,16 @@ log = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def smart_open(
-    uri: str | None = None,
+    uri: str,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
     *args,
     **kwargs,
 ):
     is_buffer = False
     kwargs["mode"] = kwargs.get("mode", "rb")
-    if uri and uri != "-":
+    if not uri:
+        raise ValueError("Missing uri")
+    if uri != "-":
         fh = open(uri, *args, **kwargs)
     else:
         fh = sys_io
@@ -112,6 +114,8 @@ def smart_write_proxies(
     **store_kwargs,
 ) -> int:
     ix = 0
+    if proxies is None:  # FIXME how could this happen
+        return ix
 
     store = smart_get_store(uri, **store_kwargs)
     if store is not None:
