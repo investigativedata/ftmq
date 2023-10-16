@@ -1,9 +1,10 @@
 import pytest
+from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from nomenklatura.entity import CompositeEntity
 from pydantic import ValidationError
 
 from ftmq.model import Catalog, Coverage, Dataset, Publisher, Resource
-from ftmq.model.dataset import NKCatalog, NKCoverage, NKDataset, NKPublisher, NKResource
+from ftmq.model.dataset import NKCatalog, NKDataset, NKPublisher, NKResource
 
 
 def test_model_publisher():
