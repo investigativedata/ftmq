@@ -106,6 +106,7 @@ def test_cli_coverage(fixtures_path: Path):
     assert orjson.loads(result.output) == {
         "start": "2014-11-12",
         "end": "2023-01-20",
+        "years": [2014, 2023],
         "frequency": "unknown",
         "schemata": [
             {
@@ -168,3 +169,36 @@ def test_cli_aggregation(fixtures_path: Path):
     assert result.exit_code == 0
     result = orjson.loads(result.output)
     assert result == {"sum": {"amountEur": 40589689.15}}
+
+    result = runner.invoke(
+        cli,
+        [
+            "-i",
+            in_uri,
+            "-o",
+            "/dev/null",
+            "--aggregation-uri",
+            "-",
+            "--max",
+            "name",
+            "--groups",
+            "country",
+        ],
+    )
+    assert result.exit_code == 0
+    result = orjson.loads(result.output)
+    assert result == {
+        "max": {"name": "YOC AG"},
+        "groups": {
+            "country": {
+                "max": {
+                    "name": {
+                        "de": "YOC AG",
+                        "cy": "Schoeller Holdings Ltd.",
+                        "gb": "Matthias Rath Limited",
+                        "lu": "Eurolottoclub AG",
+                    }
+                }
+            }
+        },
+    }

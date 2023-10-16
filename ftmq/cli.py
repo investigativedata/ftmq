@@ -1,3 +1,5 @@
+import logging
+
 import click
 import orjson
 from click_default_group import DefaultGroup
@@ -10,14 +12,15 @@ from ftmq.io import (
     smart_write_proxies,
 )
 from ftmq.model.coverage import Collector
+from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
-from ftmq.util import parse_unknown_filters
+from ftmq.util import clean_dict, parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
-def cli():
-    pass
+def cli() -> None:
+    logging.basicConfig(level=logging.INFO)
 
 
 @cli.command(
@@ -64,6 +67,10 @@ def cli():
 @click.option("--max", multiple=True, help="Properties for max aggregation")
 @click.option("--avg", multiple=True, help="Properties for avg aggregation")
 @click.option(
+    "--count", multiple=True, help="Properties for count (distinct) aggregation"
+)
+@click.option("--groups", multiple=True, help="Properties for grouping aggregation")
+@click.option(
     "--aggregation-uri",
     default=None,
     show_default=True,
@@ -86,6 +93,8 @@ def q(
     min: tuple[str] | None = (),
     max: tuple[str] | None = (),
     avg: tuple[str] | None = (),
+    count: tuple[str] | None = (),
+    groups: tuple[str] | None = (),
     aggregation_uri: str | None = None,
 ):
     """
@@ -101,18 +110,26 @@ def q(
             include_matchable=schema_include_matchable,
         )
     for prop, value, op in parse_unknown_filters(properties):
-        q = q.where(prop=prop, value=value, comparator=op)
+        q = q.where(**{f"{prop}__{op}": value})
     if len(sort):
         q = q.order_by(*sort, ascending=sort_ascending)
 
     if len(dataset) == 1:
         store_dataset = store_dataset or dataset[0]
     aggs = {
-        k: v for k, v in {"sum": sum, "min": min, "max": max, "avg": avg}.items() if v
+        k: v
+        for k, v in {
+            "sum": sum,
+            "min": min,
+            "max": max,
+            "avg": avg,
+            "count": count,
+        }.items()
+        if v
     }
     if aggregation_uri and aggs:
         for func, props in aggs.items():
-            q = q.aggregate(func, *props)
+            q = q.aggregate(func, *props, groups=groups)
     proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
     if coverage_uri:
         coverage = Collector()
@@ -123,7 +140,9 @@ def q(
         coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(coverage_uri, coverage)
     if q.aggregator:
-        result = orjson.dumps(q.aggregator.result, option=orjson.OPT_APPEND_NEWLINE)
+        result = orjson.dumps(
+            clean_dict(q.aggregator.result), option=orjson.OPT_APPEND_NEWLINE
+        )
         smart_write(aggregation_uri, result)
 
 
@@ -152,14 +171,36 @@ def apply(
     smart_write_proxies(output_uri, proxies, serialize=True)
 
 
-@cli.command("list-datasets")
+@cli.group()
+def catalog():
+    pass
+
+
+@catalog.command("iterate")
 @click.option(
     "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
 )
 @click.option(
     "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
 )
-def list_datasets(
+def catalog_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
+    catalog = Catalog.from_uri(input_uri)
+    smart_write_proxies(output_uri, catalog.iterate(), serialize=True)
+
+
+@cli.group()
+def store():
+    pass
+
+
+@store.command("list-datasets")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+def store_list_datasets(
     input_uri: str | None = "-",
     output_uri: str | None = "-",
 ):
@@ -170,6 +211,84 @@ def list_datasets(
     catalog = store.get_catalog()
     datasets = [ds.name for ds in catalog.datasets]
     smart_write(output_uri, "\n".join(datasets).encode() + b"\n")
+
+
+@store.command("resolve")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="store input uri"
+)
+@click.option(
+    "-o", "--output-uri", default=None, show_default=True, help="output file or uri"
+)
+@click.option(
+    "-r",
+    "--resolver-uri",
+    default=None,
+    show_default=True,
+    help="resolver uri",
+    required=True,
+)
+def store_resolve(
+    input_uri: str | None = "-",
+    output_uri: str | None = None,
+    resolver_uri: str | None = None,
+):
+    """
+    Apply nk resolver to a store
+    """
+    store = get_store(input_uri, resolver=resolver_uri)
+    store.resolve()
+    if output_uri:
+        smart_write_proxies(output_uri, store.iterate(), serialize=True)
+
+
+@store.command("iterate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="store input uri"
+)
+@click.option(
+    "-o", "--output-uri", default=None, show_default=True, help="output file or uri"
+)
+def store_iterate(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+):
+    """
+    Iterate all entities from in to out
+    """
+    store = get_store(input_uri)
+    smart_write_proxies(output_uri, store.iterate(), serialize=True)
+
+
+@cli.command("make-dataset")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+@click.option(
+    "--coverage",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Calculate coverage",
+)
+def make_dataset(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+    coverage: bool | None = False,
+):
+    """
+    Convert dataset YAML specification into json
+    """
+    dataset = Dataset.from_string(smart_read(input_uri))
+    if coverage:
+        collector = Collector()
+        for proxy in dataset.iterate():
+            collector.collect(proxy)
+        dataset.coverage = collector.export()
+    smart_write(output_uri, orjson.dumps(dataset.dict()))
 
 
 @cli.command("io")

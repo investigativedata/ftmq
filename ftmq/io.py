@@ -1,10 +1,8 @@
 import contextlib
 import logging
-import re
 import sys
 from collections.abc import Iterable
 from typing import Any, Literal
-from urllib.parse import urlparse
 
 import orjson
 from banal import is_listish
@@ -19,19 +17,19 @@ from ftmq.util import get_statements, make_dataset, make_proxy
 
 log = logging.getLogger(__name__)
 
-store_uri_re = re.compile(r"memory|leveldb|.*sql.*|https?\+aleph")
-
 
 @contextlib.contextmanager
 def smart_open(
-    uri: str | None = None,
+    uri: str,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
     *args,
     **kwargs,
 ):
     is_buffer = False
     kwargs["mode"] = kwargs.get("mode", "rb")
-    if uri and uri != "-":
+    if not uri:
+        raise ValueError("Missing uri")
+    if uri != "-":
         fh = open(uri, *args, **kwargs)
     else:
         fh = sys_io
@@ -71,10 +69,10 @@ def smart_write(uri, content: bytes | str, *args, **kwargs) -> Any:
 
 
 def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
-    uri = str(uri)
-    parsed = urlparse(uri)
-    if store_uri_re.match(parsed.scheme):
+    try:
         return get_store(uri, **kwargs)
+    except NotImplementedError:
+        return
 
 
 def smart_read_proxies(
@@ -116,6 +114,8 @@ def smart_write_proxies(
     **store_kwargs,
 ) -> int:
     ix = 0
+    if proxies is None:  # FIXME how could this happen
+        return ix
 
     store = smart_get_store(uri, **store_kwargs)
     if store is not None:
@@ -126,6 +126,8 @@ def smart_write_proxies(
             for proxy in proxies:
                 ix += 1
                 bulk.add_entity(proxy)
+                if ix % 1_000 == 0:
+                    log.info("Writing proxy %d ..." % ix)
         return ix
 
     with smart_open(uri, sys.stdout.buffer, mode=mode) as fh:

@@ -56,9 +56,10 @@ def test_sql():
     assert _compare_str(
         q.sql.datasets,
         f"""
-        SELECT test_table.dataset, count(DISTINCT test_table.canonical_id) AS count_1
+        SELECT test_table.dataset, count(DISTINCT test_table.canonical_id) AS count
         FROM test_table {whereclause}
         GROUP BY test_table.dataset
+        ORDER BY count DESC
         """,
     )
 
@@ -66,9 +67,10 @@ def test_sql():
     assert _compare_str(
         q.sql.schemata,
         f"""
-        SELECT test_table.schema, count(DISTINCT test_table.canonical_id) AS count_1
+        SELECT test_table.schema, count(DISTINCT test_table.canonical_id) AS count
         FROM test_table {whereclause}
         GROUP BY test_table.schema
+        ORDER BY count DESC
         """,
     )
 
@@ -76,17 +78,31 @@ def test_sql():
     assert _compare_str(
         q.sql.countries,
         f"""
-        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count_1
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
         FROM test_table
         WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
         (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
         GROUP BY test_table.value
+        ORDER BY count DESC
         """,
     )
 
     assert isinstance(q.sql.dates, Select)
     assert _compare_str(
         q.sql.dates,
+        f"""
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
+        GROUP BY test_table.value
+        ORDER BY count DESC
+        """,
+    )
+
+    assert isinstance(q.sql.date_range, Select)
+    assert _compare_str(
+        q.sql.date_range,
         f"""
         SELECT min(test_table.value) AS min_1, max(test_table.value) AS max_1
         FROM test_table
@@ -173,6 +189,67 @@ def test_sql():
     assert len(q.split("UNION")) == 2
     assert "SELECT 'date', 'max', max(test_table.value) AS max" in q
     assert "SELECT 'amount', 'sum', sum(test_table.value) AS sum" in q
+
+    q = Query().aggregate("count", "location")
+    q = str(q.sql.aggregations)
+    assert "SELECT 'location', 'count', count(DISTINCT test_table.value) AS count" in q
+
+    q = Query().where(date=2023)
+    q = q.sql.get_group_counts("country")
+    res = q.compile(compile_kwargs={"literal_binds": True})
+    assert _compare_str(
+        res,
+        """
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table
+        WHERE test_table.prop = 'country' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.prop = 'date' AND test_table.value = '2023') GROUP BY test_table.value ORDER BY count DESC
+        """,
+    )
+
+    q = (
+        Query()
+        .where(dataset="test", schema="Project")
+        .aggregate("max", "amountEur", groups="country")
+    )
+    assert q.sql.group_props == {"country"}
+    res = q.sql.get_group_aggregations("country", "de").compile(
+        compile_kwargs={"literal_binds": True}
+    )
+    assert _compare_str(
+        res,
+        """
+        SELECT 'amountEur', 'max', max(test_table.value) AS max_1
+        FROM test_table
+        WHERE test_table.prop = 'amountEur' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.dataset = 'test' AND test_table.schema = 'Project') AND test_table.prop = 'country' AND test_table.value = 'de')
+        """,
+    )
+    q = (
+        Query()
+        .where(dataset="test", schema="Project")
+        .aggregate("max", "amountEur", groups=["country", "year", "dataset"])
+    )
+    assert q.sql.group_props == {"country", "year", "dataset"}
+    res = q.sql.get_group_aggregations("year", 2023).compile(
+        compile_kwargs={"literal_binds": True}
+    )
+    assert _compare_str(
+        res,
+        """
+        SELECT 'amountEur', 'max', max(test_table.value) AS max_1
+        FROM test_table
+        WHERE test_table.prop = 'amountEur' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
+        FROM test_table
+        WHERE test_table.dataset = 'test' AND test_table.schema = 'Project') AND test_table.prop_type = 'date' AND substring(test_table.value, 1, 4) = '2023')
+        """,
+    )
 
     # reversed
     q = Query().where(reverse="my_id").where(date=2023, schema="Event")

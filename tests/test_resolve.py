@@ -1,14 +1,10 @@
-from nomenklatura.judgement import Judgement
-from nomenklatura.resolver import Resolver
-
+from ftmq.dedupe import get_resolver
 from ftmq.store import get_store
 from ftmq.util import make_proxy
 
 
-def test_resolve():
-    resolver = Resolver()
-    resolver.decide("a", "b", Judgement.POSITIVE)
-    resolver.decide("a", "c", Judgement.NEGATIVE)
+def test_resolve(fixtures_path):
+    resolver = get_resolver(fixtures_path / "resolver.ijson")
 
     entities = [
         {
@@ -36,7 +32,7 @@ def test_resolve():
         for entity in entities:
             bulk.add_entity(make_proxy(entity))
 
-    store.update(store.resolver.get_canonical("a"))
+    store.resolve()
 
     catalog = store.get_catalog()
     assert catalog.names == {"dataset1", "dataset2"}

@@ -1,8 +1,10 @@
 import pytest
+from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
+from nomenklatura.entity import CompositeEntity
 from pydantic import ValidationError
 
 from ftmq.model import Catalog, Coverage, Dataset, Publisher, Resource
-from ftmq.model.dataset import NKCatalog, NKCoverage, NKDataset, NKPublisher, NKResource
+from ftmq.model.dataset import NKCatalog, NKDataset, NKPublisher, NKResource
 
 
 def test_model_publisher():
@@ -115,3 +117,13 @@ def test_model_catalog_metadata(fixtures_path):
         assert len(c["datasets"]) == 0
         looped = True
     assert looped
+
+
+def test_model_catalog_iterate(fixtures_path):
+    catalog = Catalog.from_path(fixtures_path / "catalog_small.yml")
+    tested = False
+    for proxy in catalog.iterate():
+        assert isinstance(proxy, CompositeEntity)
+        tested = True
+        break
+    assert tested

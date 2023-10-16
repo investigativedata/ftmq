@@ -2,6 +2,12 @@
 
 ## CHANGELOG
 
+### 0.3.4 (2023-10-16)
+
+- Add group based aggregation, aggregate by year
+- Add some util functions from downstream dependencies
+- Update dependencies
+
 ### 0.3.3 (2023-10-03)
 
 - Update dependencies

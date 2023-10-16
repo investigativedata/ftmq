@@ -56,12 +56,18 @@ class Collector:
         self.end.update(proxy.get(Properties.date, quiet=True))
 
     def export(self) -> "Coverage":
+        start = min(self.start) if self.start else None
+        end = max(self.end) if self.end else None
         return Coverage(
-            start=min(self.start) if self.start else None,
-            end=max(self.end) if self.end else None,
+            start=start,
+            end=end,
             schemata=[Schema(name=k, count=v) for k, v in self.schemata.items()],
             countries=[Country(code=k, count=v) for k, v in self.countries.items()],
             entities=self.schemata.total(),
+            years=(
+                start[:4] if start else None,
+                end[:4] if end else None,
+            ),
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -91,6 +97,7 @@ class Coverage(NKModel):
     schemata: list[Schema] | None = []
     countries: list[Country] | None = []
     entities: int = 0
+    years: tuple[int | None, int | None] | None = (None, None)
 
     def __enter__(self):
         self._collector = Collector()
@@ -101,6 +108,7 @@ class Coverage(NKModel):
         self._collector = None
         self.start = res.start
         self.end = res.end
+        self.years = res.years
         self.schemata = res.schemata
         self.entities = res.entities
         self.countries = res.countries

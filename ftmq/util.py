@@ -1,12 +1,14 @@
 import re
 from collections.abc import Generator, Iterable
-from functools import cache
+from functools import cache, lru_cache
 from typing import Any
 
 import pycountry
-from banal import ensure_list
+from banal import clean_dict as _clean_dict
+from banal import ensure_list, is_mapping
 from followthemoney.types import registry
-from nomenklatura.dataset import DataCatalog, Dataset, DefaultDataset
+from followthemoney.util import make_entity_id, sanitize_text
+from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
 from normality import slugify
@@ -18,10 +20,10 @@ from ftmq.types import SGenerator
 
 @cache
 def make_dataset(name: str) -> Dataset:
-    catalog = DataCatalog(
-        Dataset, {"datasets": [{"name": name, "title": name.title()}]}
-    )
-    return catalog.get(name)
+    return Dataset.make({"name": name, "title": name})
+
+
+DefaultDataset = make_dataset("default")
 
 
 def parse_comparator(key: str) -> tuple[str, Comparators]:
@@ -45,7 +47,7 @@ def parse_unknown_filters(
             value = next(filters)
 
         prop, *op = prop.split("__")
-        yield prop, value, op[0] if op else None
+        yield prop, value, op[0] if op else Comparators.eq
 
 
 def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE:
@@ -138,3 +140,72 @@ def join_slug(
     if prefix is not None:
         texts = [prefix, *texts]
     return sep.join(texts)[:max_len].strip(sep)
+
+
+def clean_dict(data: Any) -> dict[str, Any]:
+    """
+    strip out defaultdict and ensure str keys (for serialization)
+    """
+    if not is_mapping(data):
+        return
+    return _clean_dict(
+        {
+            str(k): clean_dict(dict(v)) or None if is_mapping(v) else v or None
+            for k, v in data.items()
+        }
+    )
+
+
+def get_year(value: Any) -> int | None:
+    if not value:
+        return
+    try:
+        return int(str(value)[:4])
+    except ValueError:
+        return
+
+
+@lru_cache(1024)
+def clean_string(value: Any) -> str | None:
+    """
+    Convert a value to None or a sanitized string without linebreaks
+    """
+    value = sanitize_text(value)
+    if value is None:
+        return
+    return " ".join(value.split())
+
+
+@lru_cache(1024)
+def clean_name(value: Any) -> str | None:
+    """
+    Clean a value and only return it if it is a "name" in the sense of, doesn't
+    contain exclusively of special chars
+    """
+    value = clean_string(value)
+    if slugify(value) is None:
+        return
+    return value
+
+
+@lru_cache(1024)
+def fingerprint(value: Any) -> str | None:
+    """
+    Create a stable but simplified string or None from input that can be used
+    to generate ids (to mimic `fingerprints.generate` which is unstable for IDs
+    as its algorithm could change)
+    """
+    value = clean_name(value)
+    if value is None:
+        return
+    return " ".join(sorted(set(slugify(value).split("-"))))
+
+
+@lru_cache(1024)
+def string_id(value: Any) -> str | None:
+    return make_entity_id(clean_name(value))
+
+
+@lru_cache(1024)
+def fingerprint_id(value: Any) -> str | None:
+    return make_entity_id(fingerprint(value))

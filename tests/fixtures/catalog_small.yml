@@ -1,0 +1,2 @@
+datasets:
+  - uri: http://localhost:8000/datasets/eu_authorities.json

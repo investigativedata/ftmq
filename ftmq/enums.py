@@ -43,9 +43,9 @@ def StrEnum(name: str, values: Iterable[Any]) -> Enum:
 
 
 Schemata = StrEnum("Schemata", [k for k in model.schemata.keys()])
-Properties = StrEnum("Properties", [n for n in {p.name for p in model.properties}])
-PropertyTypes = {p.name: p.type for p in model.properties}
-PropertyTypes = Enum("PropertyTypes", PropertyTypes.items())
+Properties = StrEnum("Properties", {p.name for p in model.properties})
+PropertyTypes = StrEnum("PropertyTypes", {p.type for p in model.properties})
+PropertyTypesMap = Enum("PropertyTypesMap", {p.name: p.type for p in model.properties})
 Comparators = StrEnum(
     "Comparators",
     [
@@ -68,4 +68,32 @@ Comparators = StrEnum(
     ],
 )
 Frequencies = StrEnum("Frequencies", [f for f in DataCoverage.FREQUENCIES])
-Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg"))
+Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg", "count"))
+Fields = StrEnum("Fields", ["id", "dataset", "schema", "year"])
+
+# aleph
+Categories = StrEnum(
+    "Categories",
+    (
+        "news",
+        "leak",
+        "land",
+        "gazette",
+        "court",
+        "company",
+        "sanctions",
+        "procurement",
+        "finance",
+        "grey",
+        "library",
+        "license",
+        "regulatory",
+        "poi",
+        "customs",
+        "census",
+        "transport",
+        "casefile",
+        "other",
+        "casefile",
+    ),
+)

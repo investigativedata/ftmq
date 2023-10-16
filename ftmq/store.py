@@ -1,3 +1,5 @@
+import logging
+import os
 from collections import defaultdict
 from functools import cache
 from pathlib import Path
@@ -5,7 +7,7 @@ from typing import Iterable, TypeVar
 from urllib.parse import urlparse
 
 from nomenklatura import store as nk
-from nomenklatura.dataset import DS, DefaultDataset
+from nomenklatura.dataset import DS
 from nomenklatura.db import get_metadata
 from nomenklatura.resolver import Resolver
 from sqlalchemy import select
@@ -13,11 +15,18 @@ from sqlalchemy import select
 from ftmq.aggregations import AggregatorResult
 from ftmq.aleph import AlephStore as _AlephStore
 from ftmq.aleph import AlephView, parse_uri
+from ftmq.dedupe import get_resolver
+from ftmq.enums import Fields
 from ftmq.exceptions import ValidationError
 from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.types import CE, CEGenerator, PathLike
+from ftmq.util import DefaultDataset, clean_dict, get_year, make_dataset
+
+log = logging.getLogger(__name__)
+
+MAX_SQL_AGG_GROUPS = int(os.environ.get("MAX_SQL_AGG_GROUPS", 10))
 
 
 class Store(nk.Store):
@@ -32,7 +41,7 @@ class Store(nk.Store):
         if dataset is not None:
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
-            dataset = dataset.to_nk()
+            dataset = make_dataset(dataset.name)
         elif catalog is not None:
             dataset = catalog.get_scope()
         else:
@@ -40,14 +49,40 @@ class Store(nk.Store):
         super().__init__(
             dataset=dataset, resolver=resolver or Resolver(), *args, **kwargs
         )
-        self.cache = {}
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
         raise NotImplementedError
 
+    def iterate(self) -> CEGenerator:
+        catalog = self.get_catalog()
+        view = self.view(catalog.get_scope())
+        yield from view.entities()
+
+    def resolve(self, dataset: str | Dataset | None = None) -> None:
+        if not self.resolver.edges:
+            return
+        if dataset is not None:
+            if isinstance(dataset, str):
+                dataset = make_dataset(dataset)
+            elif isinstance(dataset, Dataset):
+                dataset = dataset.to_nk()
+            view = self.view(scope=dataset)
+            entities = view.entities()
+        else:
+            entities = self.iterate()
+        for ix, entity in enumerate(entities):
+            if entity.id in self.resolver.nodes:
+                self.update(self.resolver.get_canonical(entity.id))
+            if ix and ix % 10_000 == 0:
+                log.info("Resolving entity %d ..." % ix)
+
 
 class View(nk.base.View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cache = {}
+
     def entities(self, query: Q | None = None) -> CEGenerator:
         view = self.store.view(self.scope)
         if query:
@@ -64,15 +99,24 @@ class View(nk.base.View):
                     yield adjacent
 
     def coverage(self, query: Q | None = None) -> Coverage:
+        key = f"cov-{hash(query)}"
+        if key in self._cache:
+            return self._cache[key]
         c = Coverage()
         c.apply(self.entities(query))
+        self._cache[key] = c
         return c
 
     def aggregations(self, query: Q) -> AggregatorResult | None:
         if not query.aggregations:
             return
+        key = f"agg-{hash(query)}"
+        if key in self._cache:
+            return self._cache[key]
         aggregator = query.apply_aggregations(self.entities(query))
-        return dict(aggregator.result)
+        res = dict(aggregator.result)
+        self._cache[key] = res
+        return res
 
 
 class MemoryQueryView(View, nk.memory.MemoryView):
@@ -105,6 +149,10 @@ class SQLQueryView(View, nk.sql.SQLView):
 
     def coverage(self, query: Q | None = None) -> Coverage:
         query = self.ensure_scoped_query(query or Query())
+        key = f"cov-{hash(query)}"
+        if key in self._cache:
+            return self._cache[key]
+
         c = Collector()
         for schema, count in self.store._execute(query.sql.schemata, stream=False):
             c.schemata[schema] = count
@@ -112,25 +160,53 @@ class SQLQueryView(View, nk.sql.SQLView):
             if country is not None:
                 c.countries[country] = count
         coverage = c.export()
-        for start, end in self.store._execute(query.sql.dates, stream=False):
+        for start, end in self.store._execute(query.sql.date_range, stream=False):
             coverage.start = start
             coverage.end = end
+            coverage.years = (get_year(start), get_year(end))
 
         for res in self.store._execute(query.sql.count, stream=False):
             for count in res:
                 coverage.entities = count
                 break
+        self._cache[key] = coverage
         return coverage
 
     def aggregations(self, query: Q) -> AggregatorResult | None:
         if not query.aggregations:
             return
         query = self.ensure_scoped_query(query)
+        key = f"agg-{hash(query)}"
+        if key in self._cache:
+            return self._cache[key]
         res: AggregatorResult = defaultdict(dict)
+
         for prop, func, value in self.store._execute(
             query.sql.aggregations, stream=False
         ):
             res[func][prop] = value
+
+        if query.sql.group_props:
+            res["groups"] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+            for prop in query.sql.group_props:
+                if prop == Fields.year:
+                    start, end = self.coverage(query).years
+                    groups = range(start, end + 1)
+                else:
+                    groups = [
+                        r[0]
+                        for r in self.store._execute(
+                            query.sql.get_group_counts(prop, limit=MAX_SQL_AGG_GROUPS),
+                            stream=False,
+                        )
+                    ]
+                for group in groups:
+                    for agg_prop, func, value in self.store._execute(
+                        query.sql.get_group_aggregations(prop, group), stream=False
+                    ):
+                        res["groups"][prop][func][agg_prop][group] = value
+        res = clean_dict(res)
+        self._cache[key] = res
         return res
 
 
@@ -211,7 +287,7 @@ def get_store(
     if isinstance(dataset, str):
         dataset = Dataset(name=dataset)
     if isinstance(resolver, (str, Path)):
-        resolver = Resolver.load(resolver)
+        resolver = get_resolver(resolver)
     uri = str(uri)
     parsed = urlparse(uri)
     if parsed.scheme == "memory":

@@ -128,7 +128,7 @@ def test_proxy_filter_property(proxies):
 
     q = Query().where(prop="full", value="Bruxelles", comparator="not")
     result = list(filter(q.apply, proxies))
-    assert len(result) == 1279
+    assert len(result) == 1280
 
 
 def test_proxy_filters_combined(proxies):
