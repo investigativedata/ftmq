@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, ForwardRef, Iterable, Literal, Optional, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
-from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
@@ -11,11 +10,13 @@ from normality import slugify
 from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
 
+from ftmq.enums import Categories, Frequencies
 from ftmq.model.coverage import Coverage
 from ftmq.model.mixins import BaseModel, NKModel, RemoteMixin, YamlMixin
 from ftmq.types import CEGenerator
 
-Frequencies = Literal[tuple(NKCoverage.FREQUENCIES)]
+Frequencies = Literal[tuple(Frequencies)]
+Categories = Literal[tuple(Categories)]
 
 C = TypeVar("C", bound="Catalog")
 DS = TypeVar("DS", bound="Dataset")
@@ -72,12 +73,16 @@ class Dataset(NKModel):
     url: HttpUrl | None = None
     updated_at: datetime | None = None
     version: str | None = None
-    category: str | None = None
+    category: Categories | None = None
     publisher: Publisher | None = None
     coverage: Coverage | None = None
     resources: list[Resource] | None = []
 
-    # own addition
+    # own addition / aleph
+    countries: list[str] | None = []
+    info_url: HttpUrl | None = None
+    data_url: HttpUrl | None = None
+
     git_repo: AnyUrl | None = None
     uri: str | None = None
     maintainer: Maintainer | None = None
