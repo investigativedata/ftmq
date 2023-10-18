@@ -47,7 +47,10 @@ def parse_unknown_filters(
             value = next(filters)
 
         prop, *op = prop.split("__")
-        yield prop, value, op[0] if op else Comparators.eq
+        op = op[0] if op else Comparators.eq
+        if op == Comparators["in"]:
+            value = value.split(",")
+        yield prop, value, op
 
 
 def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE:
