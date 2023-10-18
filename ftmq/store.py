@@ -90,13 +90,13 @@ class View(nk.base.View):
         else:
             yield from view.entities()
 
-    def get_adjacents(self, proxies: Iterable[CE]) -> CEGenerator:
-        seen = set()
+    def get_adjacents(self, proxies: Iterable[CE]) -> set[CE]:
+        seen: set[CE] = set()
         for proxy in proxies:
             for _, adjacent in self.get_adjacent(proxy):
                 if adjacent.id not in seen:
-                    seen.add(adjacent.id)
-                    yield adjacent
+                    seen.add(adjacent)
+        return seen
 
     def coverage(self, query: Q | None = None) -> Coverage:
         key = f"cov-{hash(query)}"
@@ -191,7 +191,10 @@ class SQLQueryView(View, nk.sql.SQLView):
             for prop in query.sql.group_props:
                 if prop == Fields.year:
                     start, end = self.coverage(query).years
-                    groups = range(start, end + 1)
+                    if start or end:
+                        groups = range(start or end, (end or start) + 1)
+                    else:
+                        groups = []
                 else:
                     groups = [
                         r[0]
