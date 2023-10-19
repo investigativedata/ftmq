@@ -1,6 +1,7 @@
 from collections import Counter
 from typing import Any
 
+from banal import ensure_list
 from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from pydantic import PrivateAttr
@@ -98,6 +99,11 @@ class Coverage(NKModel):
     countries: list[Country] | None = []
     entities: int = 0
     years: tuple[int | None, int | None] | None = (None, None)
+
+    def __init__(self, **data):
+        if len(ensure_list(data.get("years"))) != 2:
+            data["years"] = None
+        super().__init__(**data)
 
     def __enter__(self):
         self._collector = Collector()
