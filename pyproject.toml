@@ -25,7 +25,7 @@ ftmq = "ftmq.cli:cli"
 
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.11,<3.12"
 banal = "^1.0.6"
 followthemoney = "^3.5.4"
 nomenklatura = "<3.5"
