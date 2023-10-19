@@ -12,7 +12,7 @@ a json file/stream or using a SQL backend via
 It also provides a `Query` class that can be used in other libs to work with
 SQL queries or api queries.
 
-**Minimum Python version: 3.10**
+**Minimum Python version: 3.11**
 
 ## Installation
 
