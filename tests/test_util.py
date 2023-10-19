@@ -97,3 +97,17 @@ def test_util_get_year():
     assert util.get_year(2020) == 2020
     assert util.get_year(datetime.now()) >= 2023
     assert util.get_year("2000-01") == 2000
+
+    assert util.clean_string(" foo\n bar") == "foo bar"
+    assert util.clean_string(None) is None
+    assert util.clean_string("") is None
+    assert util.clean_string("  ") is None
+    assert util.clean_name("  foo\n bar") == "foo bar"
+    assert util.clean_name("- - . *") is None
+
+    assert util.fingerprint("Mrs. Jane Doe") == "doe jane mrs"
+    assert util.fingerprint("Mrs. Jane Mrs. Doe") == "doe jane mrs"
+    assert util.fingerprint("#") is None
+    assert util.fingerprint(" ") is None
+    assert util.fingerprint("") is None
+    assert util.fingerprint(None) is None
