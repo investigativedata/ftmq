@@ -22,7 +22,7 @@ SGenerator: TypeAlias = Generator[S, None, None]
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
 
-Schemata: TypeAlias = Literal[(s.name for s in enums.Schemata)]
+Schemata: TypeAlias = Literal[tuple(s.name for s in enums.Schemata)]
 Properties: TypeAlias = Literal[tuple(p.name for p in enums.Properties)]
 Frequencies: TypeAlias = Literal[tuple(f.name for f in enums.Frequencies)]
 
