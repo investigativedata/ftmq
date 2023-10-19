@@ -45,6 +45,7 @@ sqlalchemy = "^2.0.21"
 alephclient = "^2.3.6"
 pycountry = "^22.3.5"
 fingerprints = "<1.2"
+urllib3 = "^1.26.18"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.2"
