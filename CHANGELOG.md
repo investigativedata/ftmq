@@ -2,6 +2,10 @@
 
 ## CHANGELOG
 
+### 0.3.5 (2023-10-19)
+
+- Bugfixes
+
 ### 0.3.4 (2023-10-16)
 
 - Add group based aggregation, aggregate by year

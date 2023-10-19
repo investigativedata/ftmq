@@ -7,7 +7,7 @@ from typing import Any, Literal, TypeAlias
 from nomenklatura.entity import CE
 from nomenklatura.statement.statement import S
 
-from ftmq.enums import Frequencies, Properties, Schemata
+from ftmq import enums
 
 # a string-keyed dict
 SDict: TypeAlias = dict[str, Any]
@@ -22,9 +22,9 @@ SGenerator: TypeAlias = Generator[S, None, None]
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
 
-Schemata: TypeAlias = Literal[tuple(s.name for s in Schemata)]
-Properties: TypeAlias = Literal[tuple(p.name for p in Properties)]
-Frequencies: TypeAlias = Literal[tuple(f.name for f in Frequencies)]
+Schemata: TypeAlias = Literal[(s.name for s in enums.Schemata)]
+Properties: TypeAlias = Literal[tuple(p.name for p in enums.Properties)]
+Frequencies: TypeAlias = Literal[tuple(f.name for f in enums.Frequencies)]
 
 PathLike: TypeAlias = str | os.PathLike[str] | Path
 DateLike: TypeAlias = date | datetime

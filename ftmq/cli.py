@@ -4,6 +4,7 @@ import click
 import orjson
 from click_default_group import DefaultGroup
 
+from ftmq.aggregate import aggregate
 from ftmq.io import (
     apply_datasets,
     smart_read,
@@ -303,3 +304,24 @@ def io(input_uri: str | None = "-", output_uri: str | None = "-"):
     Generic cli wrapper around ftmq.io.smart_open
     """
     smart_write(output_uri, smart_read(input_uri))
+
+
+@cli.command("aggregate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+@click.option("--downgrade", is_flag=True, default=False, show_default=True)
+def cli_aggregate(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+    downgrade: bool | None = False,
+):
+    """
+    In-memory aggregation of entities, allowing to merge entities with a common
+    parent schema (as opposed to standard `ftm aggregate`)
+    """
+    proxies = aggregate(smart_read_proxies(input_uri), downgrade=downgrade)
+    smart_write_proxies(output_uri, proxies, serialize=True)
