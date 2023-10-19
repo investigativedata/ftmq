@@ -93,17 +93,14 @@ def smart_read_proxies(
         yield from view.entities(query)
         return
 
-    with smart_open(uri, sys.stdin.buffer, mode=mode) as fh:
-
-        def _iter():
-            while line := fh.readline():
-                data = orjson.loads(line)
-                if serialize or query:
-                    data = make_proxy(data)
-                yield data
-
+    lines = smart_read(uri, stream=True)
+    lines = (orjson.loads(line) for line in lines)
+    if serialize or query:
         q = query or Query()
-        yield from q.apply_iter(_iter())
+        proxies = (make_proxy(line) for line in lines)
+        yield from q.apply_iter(proxies)
+    else:
+        yield from lines
 
 
 def smart_write_proxies(
