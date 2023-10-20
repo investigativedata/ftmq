@@ -312,7 +312,7 @@ def get_store(
 
             return get_cstore(uri, catalog, dataset, resolver)
         except ImportError:
-            pass
+            raise NotImplementedError(f"Install `ftm-columnstore` to use `{uri}`")
     raise NotImplementedError(uri)
 
 

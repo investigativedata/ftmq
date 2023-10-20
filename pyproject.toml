@@ -62,6 +62,10 @@ cloudpickle = ">=2.2.1,<4.0.0"
 pytest-env = "^1.0.0"
 
 
+
+[tool.poetry.group.clickhouse.dependencies]
+ftm-columnstore = "^0.2.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
