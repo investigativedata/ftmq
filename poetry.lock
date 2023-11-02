@@ -940,13 +940,13 @@ pyflakes = ">=3.1.0,<3.2.0"
 
 [[package]]
 name = "followthemoney"
-version = "3.5.4"
+version = "3.5.5"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "followthemoney-3.5.4-py2.py3-none-any.whl", hash = "sha256:6838beb11d3973f9ad39a042d07481f6973cfb1725021f3204fb77b038898f30"},
-    {file = "followthemoney-3.5.4.tar.gz", hash = "sha256:024d3b4ad97aba7090836b717580f403eef1a0c0cd4b6a1ab58f56b1db666ea0"},
+    {file = "followthemoney-3.5.5-py2.py3-none-any.whl", hash = "sha256:f84f4880fabee1f397e7d72e690991b991d5602adbc8ad9733f6591f00097de1"},
+    {file = "followthemoney-3.5.5.tar.gz", hash = "sha256:4bd96fdfbec0fc27a3b26cf6eeb7394c8ef9a07890f817fb4c2895965b57397b"},
 ]
 
 [package.dependencies]
@@ -956,7 +956,7 @@ click = ">=8.0,<9.0.0"
 countrynames = ">=1.13.0,<2.0.0"
 fingerprints = ">=1.0.1,<2.0.0"
 languagecodes = ">=1.1.0,<2.0.0"
-networkx = ">=2.5,<3.2"
+networkx = ">=2.5,<3.3"
 normality = ">=2.4.0,<3.0.0"
 openpyxl = ">=3.0.5,<4.0.0"
 orjson = ">=3.7,<4.0"
