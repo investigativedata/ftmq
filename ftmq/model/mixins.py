@@ -11,7 +11,7 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from pydantic import BaseModel as _BaseModel
-from pydantic import validator
+from pydantic import ConfigDict, field_validator
 
 from ftmq.types import PathLike
 
@@ -72,7 +72,8 @@ class BaseModel(_BaseModel):
     def __hash__(self) -> int:
         return hash(repr(self.dict()))
 
-    @validator("*", pre=True)
+    @field_validator("*", mode="before")
+    @classmethod
     def empty_str_to_none(cls, v):
         if v == "":
             return None
@@ -80,14 +81,17 @@ class BaseModel(_BaseModel):
 
 
 class NKModel(RemoteMixin, YamlMixin, BaseModel):
-    class Config:
-        json_encoders = {
+    # TODO[pydantic]: The following keys were removed: `json_encoders`.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
+    model_config = ConfigDict(
+        json_encoders={
             NKCatalog: lambda x: x.to_dict(),
             NKDataset: lambda x: x.to_dict(),
             NKPublisher: lambda x: x.to_dict(),
             NKCoverage: lambda x: x.to_dict(),
             NKResource: lambda x: x.to_dict(),
         }
+    )
 
     def to_nk(self) -> NKCatalog | NKCoverage | NKDataset | NKPublisher | NKResource:
         return self._nk_model(self.dict())

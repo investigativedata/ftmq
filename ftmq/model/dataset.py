@@ -113,9 +113,6 @@ class Dataset(NKModel):
                 yield from smart_read_proxies(resource.url)
 
 
-Dataset.update_forward_refs()
-
-
 class Catalog(NKModel):
     _nk_model = NKCatalog
 
@@ -191,4 +188,5 @@ class Catalog(NKModel):
             yield from dataset.iterate()
 
 
+Dataset.update_forward_refs()
 Catalog.update_forward_refs()

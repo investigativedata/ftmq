@@ -28,7 +28,7 @@ class Schema(BaseModel):
 class Country(BaseModel):
     code: str
     count: int
-    label: str | None
+    label: str | None = None
 
     def __init__(self, **data):
         data["label"] = get_country_name(data["code"])
