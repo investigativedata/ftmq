@@ -89,21 +89,22 @@ class Dataset(NKModel):
     catalog: Optional[Catalog] = None
 
     def __init__(self, **data):
-        Catalog.update_forward_refs()
-        Dataset.update_forward_refs()
+        # FIXME
+        Catalog.model_rebuild()
+        Dataset.model_rebuild()
         if "include" in data:  # legacy behaviour
             data["uri"] = data.pop("include", None)
         data["updated_at"] = data.get("updated_at") or datetime.utcnow().replace(
             microsecond=0
         )
-        data["catalog"] = data.get("catalog") or Catalog().dict()
+        data["catalog"] = data.get("catalog") or Catalog().model_dump()
         super().__init__(**data)
         self.prefix = self.prefix or data.get("prefix") or slugify(self.name)
         self.coverage = self.coverage or Coverage()
         self.title = self.title or self.name.title()
 
     def to_nk(self):
-        return self._nk_model(self.catalog.to_nk(), self.dict())
+        return self._nk_model(self.catalog.to_nk(), self.model_dump())
 
     def iterate(self) -> CEGenerator:
         from ftmq.io import smart_read_proxies  # FIXME
@@ -111,9 +112,6 @@ class Dataset(NKModel):
         for resource in self.resources:
             if resource.mime_type == FTM:
                 yield from smart_read_proxies(resource.url)
-
-
-Dataset.update_forward_refs()
 
 
 class Catalog(NKModel):
@@ -140,7 +138,7 @@ class Catalog(NKModel):
         super().__init__(**data)
 
     def to_nk(self):
-        return self._nk_model(NKDataset, self.dict())
+        return self._nk_model(NKDataset, self.model_dump())
 
     def get(self, name: str) -> Dataset | None:
         for dataset in self.datasets:
@@ -154,7 +152,7 @@ class Catalog(NKModel):
 
     def get_scope(self) -> NKDataset:
         # FIXME
-        catalog = self.copy()
+        catalog = self.model_copy()
         for ds in catalog.datasets:
             ds.coverage = None
         catalog = catalog.to_nk()
@@ -168,10 +166,10 @@ class Catalog(NKModel):
         )
 
     def metadata(self) -> dict[str, Any]:
-        catalog = self.copy()
+        catalog = self.model_copy()
         catalog.datasets = []
         catalog.catalogs = [c.metadata() for c in self.catalogs]
-        return catalog.dict()
+        return catalog.model_dump()
 
     @property
     def names(self) -> set:
@@ -191,4 +189,5 @@ class Catalog(NKModel):
             yield from dataset.iterate()
 
 
-Catalog.update_forward_refs()
+Dataset.model_rebuild()
+Catalog.model_rebuild()

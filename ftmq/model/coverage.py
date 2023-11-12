@@ -4,7 +4,6 @@ from typing import Any
 from banal import ensure_list
 from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
-from pydantic import PrivateAttr
 
 from ftmq.enums import Properties
 from ftmq.model.mixins import BaseModel, NKModel
@@ -28,19 +27,38 @@ class Schema(BaseModel):
 class Country(BaseModel):
     code: str
     count: int
-    label: str | None
+    label: str | None = None
 
     def __init__(self, **data):
         data["label"] = get_country_name(data["code"])
         super().__init__(**data)
 
 
-class Collector:
-    schemata: Counter = None
-    countries: Counter = None
-    start: set[DateLike] = None
-    end: set[DateLike] = None
+class Coverage(NKModel):
+    _nk_model = NKCoverage
 
+    start: DateLike | None = None
+    end: DateLike | None = None
+    frequency: Frequencies | None = "unknown"
+
+    # own additions:
+    schemata: list[Schema] | None = []
+    countries: list[Country] | None = []
+    entities: int = 0
+    years: tuple[int | None, int | None] | None = (None, None)
+
+    def __init__(self, **data):
+        if len(ensure_list(data.get("years"))) != 2:
+            data["years"] = None
+        super().__init__(**data)
+
+    def to_nk(self) -> NKCoverage:
+        data = self.model_dump()
+        data["countries"] = [c["code"] for c in data["countries"]]
+        return NKCoverage(data)
+
+
+class Collector:
     def __init__(self):
         self.schemata = Counter()
         self.countries = Counter()
@@ -73,7 +91,7 @@ class Collector:
 
     def to_dict(self) -> dict[str, Any]:
         data = self.export()
-        return data.dict()
+        return data.model_dump()
 
     def apply(self, proxies: CEGenerator) -> CEGenerator:
         """
@@ -85,51 +103,7 @@ class Collector:
             self.collect(proxy)
             yield proxy
 
-
-class Coverage(NKModel):
-    _nk_model = NKCoverage
-    _collector: Collector | None = PrivateAttr()
-
-    start: DateLike | None = None
-    end: DateLike | None = None
-    frequency: Frequencies | None = "unknown"
-
-    # own additions:
-    schemata: list[Schema] | None = []
-    countries: list[Country] | None = []
-    entities: int = 0
-    years: tuple[int | None, int | None] | None = (None, None)
-
-    def __init__(self, **data):
-        if len(ensure_list(data.get("years"))) != 2:
-            data["years"] = None
-        super().__init__(**data)
-
-    def __enter__(self):
-        self._collector = Collector()
-        return self._collector
-
-    def __exit__(self, *args, **kwargs):
-        res = self._collector.export()
-        self._collector = None
-        self.start = res.start
-        self.end = res.end
-        self.years = res.years
-        self.schemata = res.schemata
-        self.entities = res.entities
-        self.countries = res.countries
-
-    def apply(self, proxies: CEGenerator) -> "Coverage":
-        """
-        Generate coverage from an input stream of proxies
-        """
-        if self._collector is None:
-            self._collector = Collector()
+    def collect_many(self, proxies: CEGenerator) -> Coverage:
         for proxy in proxies:
-            self._collector.collect(proxy)
-        self.__exit__()
-
-    def to_nk(self) -> NKCoverage:
-        data = self.dict()
-        data["countries"] = [c["code"] for c in data["countries"]]
-        return NKCoverage(data)
+            self.collect(proxy)
+        return self.export()

@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 @contextlib.contextmanager
 def smart_open(
-    uri: str,
+    uri: Any,
     sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
     *args,
     **kwargs,
@@ -29,6 +29,7 @@ def smart_open(
     kwargs["mode"] = kwargs.get("mode", "rb")
     if not uri:
         raise ValueError("Missing uri")
+    uri = str(uri)
     if uri != "-":
         fh = open(uri, *args, **kwargs)
     else:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.4.0"
+version = "0.5.0"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -28,7 +28,6 @@ ftmq = "ftmq.cli:cli"
 python = ">=3.11,<3.12"
 banal = "^1.0.6"
 followthemoney = "^3.5.4"
-nomenklatura = "<3.5"
 orjson = "^3.9.7"
 PyICU = "^2.11"
 click = "^8.1.7"
@@ -36,7 +35,7 @@ click-default-group = "^1.2.2"
 cryptography = "^41.0.4"
 certifi = "^2023.7.22"
 scipy = "^1.11.3"
-pydantic = ">=1.10.0,<2.0.0"
+pydantic = "^2.4.2"
 fsspec = "^2023.9.2"
 s3fs = "^2023.9.2"
 gcsfs = "^2023.9.2"
@@ -44,8 +43,8 @@ adlfs = "^2023.9.0"
 sqlalchemy = "^2.0.21"
 alephclient = "^2.3.6"
 pycountry = "^22.3.5"
-fingerprints = "<1.2"
 urllib3 = "^1.26.18"
+nomenklatura = "^3.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.2"
@@ -60,6 +59,7 @@ ipdb = "^0.13.13"
 bump2version = "^1.0.1"
 cloudpickle = ">=2.2.1,<4.0.0"
 pytest-env = "^1.0.0"
+bump-pydantic = "^0.7.0"
 
 
 [build-system]

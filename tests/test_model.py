@@ -10,14 +10,14 @@ from ftmq.model.dataset import NKCatalog, NKDataset, NKPublisher, NKResource
 def test_model_publisher():
     p = Publisher(name="Test", url="https://example.org/")
     assert p.name == NKPublisher(p.dict()).name
-    assert p.url == NKPublisher(p.dict()).url
+    assert str(p.url) == NKPublisher(p.dict()).url
     assert isinstance(p.to_nk(), NKPublisher)
 
 
 def test_model_resource():
     r = Resource(name="entities.ftm.json", url="https://example.com/entities.ftm.json")
     assert r.name == NKResource(r.dict()).name
-    assert r.url == NKResource(r.dict()).url
+    assert str(r.url) == NKResource(r.dict()).url
     assert r.size == NKResource(r.dict()).size == 0
     assert isinstance(r.to_nk(), NKResource)
 
@@ -85,14 +85,14 @@ def test_model_catalog_full(fixtures_path):
     catalog = Catalog.from_path(fixtures_path / "catalog_full.yml")
     assert catalog.name == "Test Catalog"
     assert catalog.maintainer.name == "investigraph"
-    assert catalog.maintainer.url == "https://investigraph.dev"
+    assert str(catalog.maintainer.url) == "https://investigraph.dev/"
     assert len(catalog.datasets) == 1
     assert catalog.datasets[0].name == "eutr"
     assert len(list(catalog.get_datasets())) == 17
     assert len(catalog.names) == 17
 
     o_catalog = catalog.catalogs[1]
-    assert o_catalog.url == "https://opensanctions.org"
+    assert str(o_catalog.url) == "https://opensanctions.org/"
     assert o_catalog.maintainer.name == "OpenSanctions"
     assert o_catalog.maintainer.description == "OpenSanctions is cool"
 

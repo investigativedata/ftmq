@@ -11,7 +11,7 @@ from nomenklatura.dataset.dataset import Dataset as NKDataset
 from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
 from nomenklatura.dataset.resource import DataResource as NKResource
 from pydantic import BaseModel as _BaseModel
-from pydantic import validator
+from pydantic import field_validator
 
 from ftmq.types import PathLike
 
@@ -41,11 +41,11 @@ class RemoteMixin:
         """
         if data.get("uri"):
             remote = self.from_uri(data["uri"])
-            data = {**remote.dict(), **data}
+            data = {**remote.model_dump(), **data}
         super().__init__(**data)
 
     @classmethod
-    def from_uri(cls, uri: str) -> "RemoteMixin":
+    def from_uri(cls, uri: str) -> _BaseModel:
         data = cached_from_uri(uri)
         return cls(**data)
 
@@ -70,9 +70,10 @@ class YamlMixin:
 
 class BaseModel(_BaseModel):
     def __hash__(self) -> int:
-        return hash(repr(self.dict()))
+        return hash(repr(self.model_dump()))
 
-    @validator("*", pre=True)
+    @field_validator("*", mode="before")
+    @classmethod
     def empty_str_to_none(cls, v):
         if v == "":
             return None
@@ -80,17 +81,9 @@ class BaseModel(_BaseModel):
 
 
 class NKModel(RemoteMixin, YamlMixin, BaseModel):
-    class Config:
-        json_encoders = {
-            NKCatalog: lambda x: x.to_dict(),
-            NKDataset: lambda x: x.to_dict(),
-            NKPublisher: lambda x: x.to_dict(),
-            NKCoverage: lambda x: x.to_dict(),
-            NKResource: lambda x: x.to_dict(),
-        }
-
     def to_nk(self) -> NKCatalog | NKCoverage | NKDataset | NKPublisher | NKResource:
-        return self._nk_model(self.dict())
+        return self._nk_model(self.model_dump())
 
-    def __getattr__(self, attr: str, default: Any | None = None) -> Any:
-        return getattr(self.to_nk(), attr, default)
+    def to_dict(self) -> dict[str, Any]:
+        data = self.to_nk()
+        return data.to_dict()

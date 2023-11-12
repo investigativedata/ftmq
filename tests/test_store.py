@@ -70,9 +70,11 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     # coverage
     q = Query().where(dataset="eu_authorities")
     coverage = view.coverage(q)
-    assert coverage.countries == [{"code": "eu", "label": "eu", "count": 151}]
+    assert [c.model_dump() for c in coverage.countries] == [
+        {"code": "eu", "label": "eu", "count": 151}
+    ]
     assert coverage.entities == 151
-    assert coverage.schemata == [
+    assert [s.model_dump() for s in coverage.schemata] == [
         {
             "name": "PublicBody",
             "label": "Public body",
