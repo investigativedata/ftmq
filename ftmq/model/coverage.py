@@ -67,7 +67,7 @@ class Collector:
 
     def to_dict(self) -> dict[str, Any]:
         data = self.export()
-        return data.dict()
+        return data.model_dump()
 
     def apply(self, proxies: CEGenerator) -> CEGenerator:
         """
@@ -109,6 +109,6 @@ class Coverage(NKModel):
         self.__exit__()
 
     def to_nk(self) -> NKCoverage:
-        data = self.dict()
+        data = self.model_dump()
         data["countries"] = [c["code"] for c in data["countries"]]
         return NKCoverage(data)

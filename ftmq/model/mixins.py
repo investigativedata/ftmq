@@ -41,11 +41,11 @@ class RemoteMixin:
         """
         if data.get("uri"):
             remote = self.from_uri(data["uri"])
-            data = {**remote.dict(), **data}
+            data = {**remote.model_dump(), **data}
         super().__init__(**data)
 
     @classmethod
-    def from_uri(cls, uri: str) -> "RemoteMixin":
+    def from_uri(cls, uri: str) -> _BaseModel:
         data = cached_from_uri(uri)
         return cls(**data)
 
@@ -70,7 +70,7 @@ class YamlMixin:
 
 class BaseModel(_BaseModel):
     def __hash__(self) -> int:
-        return hash(repr(self.dict()))
+        return hash(repr(self.model_dump()))
 
     @field_validator("*", mode="before")
     @classmethod
@@ -82,4 +82,8 @@ class BaseModel(_BaseModel):
 
 class NKModel(RemoteMixin, YamlMixin, BaseModel):
     def to_nk(self) -> NKCatalog | NKCoverage | NKDataset | NKPublisher | NKResource:
-        return self._nk_model(self.dict())
+        return self._nk_model(self.model_dump())
+
+    def to_dict(self) -> dict[str, Any]:
+        data = self.to_nk()
+        return data.to_dict()
