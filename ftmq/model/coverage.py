@@ -4,7 +4,6 @@ from typing import Any
 from banal import ensure_list
 from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
-from pydantic import PrivateAttr
 
 from ftmq.enums import Properties
 from ftmq.model.mixins import BaseModel, NKModel
@@ -36,11 +35,6 @@ class Country(BaseModel):
 
 
 class Collector:
-    schemata: Counter = None
-    countries: Counter = None
-    start: set[DateLike] = None
-    end: set[DateLike] = None
-
     def __init__(self):
         self.schemata = Counter()
         self.countries = Counter()
@@ -88,7 +82,6 @@ class Collector:
 
 class Coverage(NKModel):
     _nk_model = NKCoverage
-    _collector: Collector | None = PrivateAttr()
 
     start: DateLike | None = None
     end: DateLike | None = None
@@ -104,20 +97,6 @@ class Coverage(NKModel):
         if len(ensure_list(data.get("years"))) != 2:
             data["years"] = None
         super().__init__(**data)
-
-    def __enter__(self):
-        self._collector = Collector()
-        return self._collector
-
-    def __exit__(self, *args, **kwargs):
-        res = self._collector.export()
-        self._collector = None
-        self.start = res.start
-        self.end = res.end
-        self.years = res.years
-        self.schemata = res.schemata
-        self.entities = res.entities
-        self.countries = res.countries
 
     def apply(self, proxies: CEGenerator) -> "Coverage":
         """

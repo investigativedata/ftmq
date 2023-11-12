@@ -6,9 +6,9 @@ from ftmq.model.coverage import Collector, Coverage
 
 
 def test_coverage(fixtures_path: Path):
-    with Coverage() as c:
-        for proxy in smart_read_proxies(fixtures_path / "ec_meetings.ftm.json"):
-            c.collect(proxy)
+    c = Collector()
+    for proxy in smart_read_proxies(fixtures_path / "ec_meetings.ftm.json"):
+        c.collect(proxy)
 
     start = date(2014, 11, 12)
     end = date(2023, 1, 20)

@@ -99,22 +99,21 @@ Print coverage to stdout (and filtered entities to nowhere):
 Within code:
 
 ```python
-from ftmq.coverage import Coverage
+from ftmq.coverage import Collector
 
 fragments = [...]
 buffer = {}
 
-coverage = Coverage({"frequency": "unknown"})
-with coverage as cx:
-    for proxy in fragments:
-        if proxy.id in buffer:
-            buffer[proxy.id].merge(proxy)
-        else:
-            buffer[proxy.id] = proxy
-            # here collect stats:
-            cx.collect(proxy)
+c = Collector()
+for proxy in fragments:
+    if proxy.id in buffer:
+        buffer[proxy.id].merge(proxy)
+    else:
+        buffer[proxy.id] = proxy
+        # here collect stats:
+        c.collect(proxy)
 
-stats = coverage.dict()
+coverage = c.export()
 ```
 
 ### ftmstore (database read)
