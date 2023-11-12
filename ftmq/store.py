@@ -102,10 +102,10 @@ class View(nk.base.View):
         key = f"cov-{hash(query)}"
         if key in self._cache:
             return self._cache[key]
-        c = Coverage()
-        c.apply(self.entities(query))
-        self._cache[key] = c
-        return c
+        c = Collector()
+        cov = c.collect_many(self.entities(query))
+        self._cache[key] = cov
+        return cov
 
     def aggregations(self, query: Q) -> AggregatorResult | None:
         if not query.aggregations:
