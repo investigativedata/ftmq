@@ -5,6 +5,7 @@ from moto import mock_s3
 from nomenklatura.entity import CE, CompositeEntity
 
 from ftmq.io import (
+    SmartHandler,
     apply_datasets,
     make_proxy,
     smart_read,
@@ -127,3 +128,18 @@ def test_io_store(tmp_path, eu_authorities):
     assert res == 151
     res = [p for p in smart_read_proxies(uri, dataset="eu_authorities")]
     assert len(res) == 151
+
+
+@mock_s3
+def test_io_smart_handler(fixtures_path: Path):
+    with SmartHandler(fixtures_path / "ec_meetings.ftm.json", stream=True) as h:
+        line = h.readline()
+        assert isinstance(orjson.loads(line), dict)
+
+    setup_s3()
+    uri = "s3://ftmq/content"
+    content = b"foo"
+    with SmartHandler(uri, mode="wb") as h:
+        h.write(content)
+
+    assert smart_read(uri) == content
