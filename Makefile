@@ -1,3 +1,5 @@
+all: clean install test
+
 install:
 	poetry install --with dev
 
