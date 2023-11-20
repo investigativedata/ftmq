@@ -2392,19 +2392,19 @@ setuptools = "*"
 
 [[package]]
 name = "nomenklatura"
-version = "3.8.0"
+version = "3.8.5"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.8.0-py3-none-any.whl", hash = "sha256:b2c7a722f2326ba0b3d998d6cd734d7198166b8ec46c819d6fec8c6bf8f29874"},
-    {file = "nomenklatura-3.8.0.tar.gz", hash = "sha256:d91738ddcf9b93764bba6e1145e89288acbc1ec5501d38d1cd20059c885af3c8"},
+    {file = "nomenklatura-3.8.5-py3-none-any.whl", hash = "sha256:e820769e71c969ffff10ec729877bb36618ce4c70b93492940b88c744f0e893c"},
+    {file = "nomenklatura-3.8.5.tar.gz", hash = "sha256:8233b8cad7661743cf91737d356968a55499fefd47e69a5ff533423c9d89cfcf"},
 ]
 
 [package.dependencies]
 click = "<9.0.0"
 fingerprints = ">=1.2.0,<2.0.0"
-followthemoney = ">=3.3.0,<4.0.0"
+followthemoney = ">=3.5.6,<4.0.0"
 jellyfish = ">=1.0.0,<2.0.0"
 lxml = ">4.0.0,<5.0.0"
 plyvel = "<2.0.0"
