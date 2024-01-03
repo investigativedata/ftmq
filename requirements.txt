@@ -152,9 +152,9 @@ boto3==1.33.13 ; python_version >= "3.11" and python_version < "3.12" \
 botocore==1.33.13 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:aeadccf4b7c674c7d47e713ef34671b834bc3e89723ef96d994409c9f54666e6 \
     --hash=sha256:fb577f4cb175605527458b04571451db1bd1a2036976b626206036acd4496617
-bump-pydantic==0.7.0 ; python_version >= "3.11" and python_version < "3.12" \
-    --hash=sha256:c74d88550225b6c413b3b87e750d04054a2234724b0cc5592011502ac994ff7e \
-    --hash=sha256:f8920da00302b4883eb255b15a12ccc536859ace1437099815f525573b5b3840
+bump-pydantic==0.8.0 ; python_version >= "3.11" and python_version < "3.12" \
+    --hash=sha256:6092e61930e85619e74eeb04131b4387feda16f02d8bb2e3cf9507fa492c69e9 \
+    --hash=sha256:6cbb4deb5869a69baa5a477f28f3e2d8fb09b687e114c018bd54470590ae7bf7
 bump2version==1.0.1 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:37f927ea17cde7ae2d7baf832f8e80ce3777624554a653006c9144f8017fe410 \
     --hash=sha256:762cb2bfad61f4ec8e2bdf452c7c267416f8c70dd9ecb1653fd0bbb01fa936e6
@@ -1363,8 +1363,9 @@ pyasn1==0.5.1 ; python_version >= "3.11" and python_version < "3.12" \
 pycodestyle==2.11.1 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:41ba0e7afc9752dfb53ced5489e89f8186be00e599e712660695b7a75ff2663f \
     --hash=sha256:44fe31000b2d866f2e41841b18528a505fbd7fef9017b04eff4e2648a0fadc67
-pycountry==22.3.5 ; python_version >= "3.11" and python_version < "3.12" \
-    --hash=sha256:b2163a246c585894d808f18783e19137cb70a0c18fb36748dc01fc6f109c1646
+pycountry==23.12.11 ; python_version >= "3.11" and python_version < "3.12" \
+    --hash=sha256:00569d82eaefbc6a490a311bfa84a9c571cff9ddbf8b0a4f4e7b4f868b4ad925 \
+    --hash=sha256:2ff91cff4f40ff61086e773d61e72005fe95de4a57bfc765509db05695dc50ab
 pycparser==2.21 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9 \
     --hash=sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206
