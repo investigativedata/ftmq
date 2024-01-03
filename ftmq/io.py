@@ -17,55 +17,89 @@ from ftmq.util import get_statements, make_dataset, make_proxy
 
 log = logging.getLogger(__name__)
 
+DEFAULT_MODE = "rb"
+
+
+def _get_sysio(mode: str | None = DEFAULT_MODE) -> Literal[sys.stdin, sys.stdout]:
+    if mode.startswith("r"):
+        return sys.stdin
+    return sys.stdout
+
+
+class SmartHandler:
+    def __init__(
+        self,
+        uri: Any,
+        *args,
+        **kwargs,
+    ) -> None:
+        if not uri:
+            raise ValueError("Missing uri")
+        self.uri = str(uri)
+        self.args = args
+        kwargs["mode"] = kwargs.get("mode", DEFAULT_MODE)
+        self.sys_io = _get_sysio(kwargs["mode"])
+        if kwargs["mode"].endswith("b"):
+            self.sys_io = self.sys_io.buffer
+        self.kwargs = kwargs
+        self.is_buffer = self.uri == "-"
+        self.handler = None
+
+    def open(self):
+        if self.is_buffer:
+            self.handler = self.sys_io
+        else:
+            handler = open(self.uri, *self.args, **self.kwargs)
+            self.handler = handler.open()
+        return self.handler
+
+    def close(self):
+        if not self.is_buffer:
+            self.handler.close()
+
+    def __enter__(self):
+        return self.open()
+
+    def __exit__(self, *args, **kwargs) -> None:
+        self.close()
+
 
 @contextlib.contextmanager
 def smart_open(
     uri: Any,
-    sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
+    mode: str | None = None,
     *args,
     **kwargs,
 ):
-    is_buffer = False
-    kwargs["mode"] = kwargs.get("mode", "rb")
-    if not uri:
-        raise ValueError("Missing uri")
-    uri = str(uri)
-    if uri != "-":
-        fh = open(uri, *args, **kwargs)
+    if mode is not None:
+        kwargs["mode"] = mode
     else:
-        fh = sys_io
-        is_buffer = True
-
+        kwargs["mode"] = kwargs.get("mode", DEFAULT_MODE)
+    handler = SmartHandler(uri, *args, **kwargs)
     try:
-        if is_buffer:
-            yield fh
-        else:
-            yield fh.open()
+        yield handler.open()
     finally:
-        if not is_buffer:
-            fh.close()
+        handler.close()
 
 
 def _smart_stream(uri, *args, **kwargs) -> Any:
-    kwargs["mode"] = kwargs.get("mode", "rb")
-    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
+    with smart_open(uri, *args, **kwargs) as fh:
         while line := fh.readline():
             yield line
 
 
 def smart_read(uri, *args, **kwargs) -> Any:
-    kwargs["mode"] = kwargs.get("mode", "rb")
     stream = kwargs.pop("stream", False)
     if stream:
         return _smart_stream(uri, *args, **kwargs)
 
-    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
+    with smart_open(uri, *args, **kwargs) as fh:
         return fh.read()
 
 
 def smart_write(uri, content: bytes | str, *args, **kwargs) -> Any:
     kwargs["mode"] = kwargs.get("mode", "wb")
-    with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
+    with smart_open(uri, *args, **kwargs) as fh:
         fh.write(content)
 
 
@@ -78,7 +112,7 @@ def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
 
 def smart_read_proxies(
     uri: PathLike | Iterable[PathLike],
-    mode: str | None = "rb",
+    mode: str | None = DEFAULT_MODE,
     serialize: bool | None = True,
     query: Query | None = None,
     **store_kwargs,
@@ -128,7 +162,7 @@ def smart_write_proxies(
                     log.info("Writing proxy %d ..." % ix)
         return ix
 
-    with smart_open(uri, sys.stdout.buffer, mode=mode) as fh:
+    with smart_open(uri, mode=mode) as fh:
         for proxy in proxies:
             ix += 1
             if serialize:

@@ -76,10 +76,6 @@ def http_server():
     return
 
 
-# Mock s3 for fsspec
-# https://github.com/aio-libs/aiobotocore/issues/755
-
-
 def setup_s3(with_fixtures: bool | None = False):
     s3 = boto3.resource("s3", region_name="us-east-1")
     s3.create_bucket(Bucket="ftmq")
@@ -87,6 +83,10 @@ def setup_s3(with_fixtures: bool | None = False):
         client = boto3.client("s3")
         for f in FIXTURES:
             client.upload_file(FIXTURES_PATH / f, "ftmq", f)
+
+
+# Mock s3 for fsspec
+# https://github.com/aio-libs/aiobotocore/issues/755
 
 
 class MockAWSResponse(aiobotocore.awsrequest.AioAWSResponse):
@@ -128,6 +128,8 @@ class MockHttpClientResponse(aiohttp.client_reqrep.ClientResponse):
         self.content = MagicMock(aiohttp.StreamReader)
         self.content.read = read
         self.response = response
+
+        self._loop = None
 
     @property
     def raw_headers(self) -> Any:

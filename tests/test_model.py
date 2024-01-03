@@ -3,32 +3,33 @@ from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 from nomenklatura.entity import CompositeEntity
 from pydantic import ValidationError
 
-from ftmq.model import Catalog, Coverage, Dataset, Publisher, Resource
+from ftmq.model import Catalog, Coverage, Dataset, Entity, Publisher, Resource
 from ftmq.model.dataset import NKCatalog, NKDataset, NKPublisher, NKResource
+from ftmq.util import make_proxy
 
 
 def test_model_publisher():
     p = Publisher(name="Test", url="https://example.org/")
-    assert p.name == NKPublisher(p.dict()).name
-    assert str(p.url) == NKPublisher(p.dict()).url
+    assert p.name == NKPublisher(p.model_dump()).name
+    assert str(p.url) == NKPublisher(p.model_dump()).url
     assert isinstance(p.to_nk(), NKPublisher)
 
 
 def test_model_resource():
     r = Resource(name="entities.ftm.json", url="https://example.com/entities.ftm.json")
-    assert r.name == NKResource(r.dict()).name
-    assert str(r.url) == NKResource(r.dict()).url
-    assert r.size == NKResource(r.dict()).size == 0
+    assert r.name == NKResource(r.model_dump()).name
+    assert str(r.url) == NKResource(r.model_dump()).url
+    assert r.size == NKResource(r.model_dump()).size == 0
     assert isinstance(r.to_nk(), NKResource)
 
 
 def test_model_coverage():
     c = Coverage()
     assert c.frequency == "unknown"
-    assert c.frequency == NKCoverage(c.dict()).frequency
+    assert c.frequency == NKCoverage(c.model_dump()).frequency
     assert isinstance(c.to_nk(), NKCoverage)
     c = Coverage(frequency="weekly")
-    assert c.frequency == NKCoverage(c.dict()).frequency
+    assert c.frequency == NKCoverage(c.model_dump()).frequency
     with pytest.raises(ValidationError):
         Coverage(frequency="foo")
 
@@ -38,8 +39,8 @@ def test_model_dataset():
     assert isinstance(d.to_nk(), NKDataset)
     assert d.title == "Test-Dataset"
     assert d.prefix == "test-dataset"
-    assert d.name == NKDataset(d.catalog.to_nk(), d.dict()).name
-    assert d.title == NKDataset(d.catalog.to_nk(), d.dict()).title
+    assert d.name == NKDataset(d.catalog.to_nk(), d.model_dump()).name
+    assert d.title == NKDataset(d.catalog.to_nk(), d.model_dump()).title
 
     d = Dataset(name="test-dataset", prefix="td")
     assert d.prefix == "td"
@@ -127,3 +128,23 @@ def test_model_catalog_iterate(fixtures_path):
         tested = True
         break
     assert tested
+
+
+def test_model_proxy():
+    data = {
+        "id": "foo-1",
+        "schema": "LegalEntity",
+        "properties": {"name": ["Jane Doe"]},
+    }
+    entity = Entity(**data)
+    proxy = make_proxy(data)
+    assert entity.to_proxy() == proxy == Entity.from_proxy(proxy).to_proxy()
+
+    data["properties"]["addressEntity"] = "addr"
+    address = {
+        "id": "addr",
+        "schema": "Address",
+    }
+    adjacents = [make_proxy(address)]
+    entity = Entity.from_proxy(make_proxy(data), adjacents=adjacents)
+    assert isinstance(entity.properties["addressEntity"][0], Entity)
