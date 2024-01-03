@@ -446,17 +446,17 @@ crt = ["awscrt (==0.16.26)"]
 
 [[package]]
 name = "bump-pydantic"
-version = "0.7.0"
+version = "0.8.0"
 description = "Convert Pydantic from V1 to V2 ♻"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bump_pydantic-0.7.0-py3-none-any.whl", hash = "sha256:f8920da00302b4883eb255b15a12ccc536859ace1437099815f525573b5b3840"},
-    {file = "bump_pydantic-0.7.0.tar.gz", hash = "sha256:c74d88550225b6c413b3b87e750d04054a2234724b0cc5592011502ac994ff7e"},
+    {file = "bump_pydantic-0.8.0-py3-none-any.whl", hash = "sha256:6cbb4deb5869a69baa5a477f28f3e2d8fb09b687e114c018bd54470590ae7bf7"},
+    {file = "bump_pydantic-0.8.0.tar.gz", hash = "sha256:6092e61930e85619e74eeb04131b4387feda16f02d8bb2e3cf9507fa492c69e9"},
 ]
 
 [package.dependencies]
-libcst = "*"
+libcst = ">=0.4.2"
 rich = "*"
 typer = ">=0.7.0"
 typing-extensions = "*"
@@ -4173,4 +4173,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "e696575d26406c05b74271ac7260b72bfcae52155f316334520908857ccb2fc0"
+content-hash = "a077cc1dfc66d8f3eee5048a176227d6e93cd3ddfe52c790d878dabc3d4205f7"
