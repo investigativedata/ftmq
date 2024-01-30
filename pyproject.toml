@@ -44,7 +44,7 @@ sqlalchemy = "^2.0.25"
 alephclient = "^2.3.6"
 pycountry = "^23.12.11"
 urllib3 = "<2"
-nomenklatura = "<3.9"
+nomenklatura = "<3.11"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
