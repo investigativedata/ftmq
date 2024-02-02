@@ -3,6 +3,7 @@ import logging
 import click
 import orjson
 from anystore.io import smart_read, smart_write
+from anystore.util import clean_dict
 from click_default_group import DefaultGroup
 
 from ftmq.aggregate import aggregate
@@ -11,7 +12,7 @@ from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
-from ftmq.util import clean_dict, parse_unknown_filters
+from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
