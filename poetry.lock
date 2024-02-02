@@ -2,13 +2,13 @@
 
 [[package]]
 name = "adlfs"
-version = "2023.12.0"
+version = "2024.1.0"
 description = "Access Azure Datalake Gen1 with fsspec and dask"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "adlfs-2023.12.0-py3-none-any.whl", hash = "sha256:da6e391afd002c7bb1b75dcc286b78fdf5dbf29aca0f984462033df6311b4e7e"},
-    {file = "adlfs-2023.12.0.tar.gz", hash = "sha256:a590694ed9f5a45741e82bff8bcf88c30a790da949310817330b5e7992b8a9e9"},
+    {file = "adlfs-2024.1.0-py3-none-any.whl", hash = "sha256:7f5982785c7af34da879463ab2a046b0875116c83f97ed3b810e956244276764"},
+    {file = "adlfs-2024.1.0.tar.gz", hash = "sha256:bece62abb8aa29e3a3dd2a5453de61133f481d743b6f65aab01ca1c1a0157b4c"},
 ]
 
 [package.dependencies]
@@ -215,6 +215,34 @@ sniffio = ">=1.1"
 doc = ["Sphinx (>=7)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
 test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.17)"]
 trio = ["trio (>=0.23)"]
+
+[[package]]
+name = "anystore"
+version = "0.0.2"
+description = "Store and cache things anywhere"
+optional = false
+python-versions = ">=3.11,<4"
+files = [
+    {file = "anystore-0.0.2-py3-none-any.whl", hash = "sha256:4f58f7821050115dc0d65efcc5f8620e03bfdaaea8a3fa72fc3744eea617b082"},
+    {file = "anystore-0.0.2.tar.gz", hash = "sha256:2f50dfd858cd86c7f827a40d359820150480c76bd5d59d6e0c54e872071f8a22"},
+]
+
+[package.dependencies]
+adlfs = ">=2024.1.0,<2025.0.0"
+banal = ">=1.0.6,<2.0.0"
+cloudpickle = ">=3.0.0,<4.0.0"
+fakeredis = ">=2.20.1,<3.0.0"
+fsspec = ">=2023.12.2,<2024.0.0"
+gcsfs = ">=2023.12.2.post1,<2024.0.0"
+orjson = ">=3.9.12,<4.0.0"
+pyaml = ">=23.12.0,<24.0.0"
+pydantic = ">=2.6.0,<3.0.0"
+pydantic-settings = ">=2.1.0,<3.0.0"
+redis = ">=5.0.1,<6.0.0"
+rich = ">=13.7.0,<14.0.0"
+s3fs = ">=2023.12.2,<2024.0.0"
+sqlalchemy = ">=2.0.25,<3.0.0"
+typer = ">=0.9.0,<0.10.0"
 
 [[package]]
 name = "asttokens"
@@ -918,6 +946,28 @@ files = [
 
 [package.extras]
 tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipython", "littleutils", "pytest", "rich"]
+
+[[package]]
+name = "fakeredis"
+version = "2.21.0"
+description = "Python implementation of redis API, can be used for testing purposes."
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "fakeredis-2.21.0-py3-none-any.whl", hash = "sha256:dcea37c57a1aaf39bed1227aea20de052fb19dc030ccac3f8a73324b2ec90cee"},
+    {file = "fakeredis-2.21.0.tar.gz", hash = "sha256:1b3ff9c068e39c43725f2373b105228cd03e6a50fc79a5698e852b7601b1201b"},
+]
+
+[package.dependencies]
+redis = ">=4"
+sortedcontainers = ">=2,<3"
+
+[package.extras]
+bf = ["pyprobables (>=0.6,<0.7)"]
+cf = ["pyprobables (>=0.6,<0.7)"]
+json = ["jsonpath-ng (>=1.6,<2.0)"]
+lua = ["lupa (>=1.14,<3.0)"]
+probabilistic = ["pyprobables (>=0.6,<0.7)"]
 
 [[package]]
 name = "filelock"
@@ -2823,6 +2873,23 @@ files = [
 tests = ["pytest"]
 
 [[package]]
+name = "pyaml"
+version = "23.12.0"
+description = "PyYAML-based module to produce a bit more pretty and readable YAML-serialized data"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyaml-23.12.0-py3-none-any.whl", hash = "sha256:90407d74c95a55d9b41d3860fcc1759640444d2795df748a328d077bc4f58393"},
+    {file = "pyaml-23.12.0.tar.gz", hash = "sha256:ce6f648efdfb1b3a5579f8cedb04facf0fa1e8f64846b639309b585bb322b4e5"},
+]
+
+[package.dependencies]
+PyYAML = "*"
+
+[package.extras]
+anchors = ["unidecode"]
+
+[[package]]
 name = "pyasn1"
 version = "0.5.1"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -2991,6 +3058,21 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+name = "pydantic-settings"
+version = "2.1.0"
+description = "Settings management using Pydantic"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pydantic_settings-2.1.0-py3-none-any.whl", hash = "sha256:7621c0cb5d90d1140d2f0ef557bdf03573aac7035948109adf2574770b77605a"},
+    {file = "pydantic_settings-2.1.0.tar.gz", hash = "sha256:26b1492e0a24755626ac5e6d715e9077ab7ad4fb5f19a8b7ed7011d52f36141c"},
+]
+
+[package.dependencies]
+pydantic = ">=2.3.0"
+python-dotenv = ">=0.21.0"
+
+[[package]]
 name = "pyflakes"
 version = "3.1.0"
 description = "passive checker of Python programs"
@@ -3128,6 +3210,20 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "1.0.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-levenshtein"
@@ -3671,6 +3767,17 @@ python-versions = ">=3.7"
 files = [
     {file = "sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},
     {file = "sniffio-1.3.0.tar.gz", hash = "sha256:e60305c5e5d314f5389259b7f22aaa33d8f7dee49763119234af3755c55b9101"},
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 
 [[package]]
