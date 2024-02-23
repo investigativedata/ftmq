@@ -218,13 +218,13 @@ trio = ["trio (>=0.23)"]
 
 [[package]]
 name = "anystore"
-version = "0.0.2"
+version = "0.0.4"
 description = "Store and cache things anywhere"
 optional = false
 python-versions = ">=3.11,<4"
 files = [
-    {file = "anystore-0.0.2-py3-none-any.whl", hash = "sha256:4f58f7821050115dc0d65efcc5f8620e03bfdaaea8a3fa72fc3744eea617b082"},
-    {file = "anystore-0.0.2.tar.gz", hash = "sha256:2f50dfd858cd86c7f827a40d359820150480c76bd5d59d6e0c54e872071f8a22"},
+    {file = "anystore-0.0.4-py3-none-any.whl", hash = "sha256:624b923a0331167df3139079709b8b6a61d4ced712a3dffe3116c0d52cce3798"},
+    {file = "anystore-0.0.4.tar.gz", hash = "sha256:42a7a9d1011cadb5015367320d75c2a1e3a3b3a0ab7562846b76c88ad409fdf4"},
 ]
 
 [package.dependencies]
