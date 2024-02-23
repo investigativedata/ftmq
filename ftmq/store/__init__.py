@@ -34,7 +34,7 @@ class Store(nk.Store):
     def __init__(
         self,
         catalog: C | None = None,
-        dataset: Dataset | None = None,
+        dataset: Dataset | str | None = None,
         resolver: Resolver | None = None,
         **kwargs,
     ) -> None:
@@ -64,7 +64,7 @@ class Store(nk.Store):
             if isinstance(dataset, str):
                 dataset = make_dataset(dataset)
             elif isinstance(dataset, Dataset):
-                dataset = dataset.to_nk()
+                dataset = make_dataset(dataset.name)
             view = self.view(scope=dataset)
             entities = view.entities()
         else:
@@ -118,10 +118,6 @@ class View(nk.base.View):
 
 
 class MemoryQueryView(View, nk.memory.MemoryView):
-    pass
-
-
-class LevelDBQueryView(View, nk.level.LevelDBView):
     pass
 
 
@@ -220,20 +216,6 @@ class MemoryStore(Store, nk.SimpleMemoryStore):
         return MemoryQueryView(self, scope, external=external)
 
 
-class LevelDBStore(Store, nk.LevelDBStore):
-    def get_catalog(self) -> C:
-        names: set[str] = set()
-        with self.db.iterator(prefix=b"e:", include_value=False) as it:
-            for k in it:
-                _, _, dataset = k.decode("utf-8").split(":", 2)
-                names.add(dataset)
-        return Catalog.from_names(names)
-
-    def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
-        scope = scope or self.dataset
-        return LevelDBQueryView(self, scope, external=external)
-
-
 class SQLStore(Store, nk.SQLStore):
     def get_catalog(self) -> C:
         q = select(self.table.c.dataset).distinct()
@@ -296,7 +278,19 @@ def get_store(
     if parsed.scheme == "leveldb":
         path = uri.replace("leveldb://", "")
         path = Path(path).absolute()
-        return LevelDBStore(catalog, dataset, path=path, resolver=resolver)
+        try:
+            from ftmq.store.level import LevelDBStore
+
+            return LevelDBStore(catalog, dataset, path=path, resolver=resolver)
+        except ImportError:
+            raise ImportError("Can not load LevelDBStore. Install `plyvel`")
+    if parsed.scheme == "redis":
+        try:
+            from ftmq.store.redis import RedisStore
+
+            return RedisStore(catalog, dataset, path=path, resolver=resolver)
+        except ImportError:
+            raise ImportError("Can not load RedisStore. Install `redis`")
     if "sql" in parsed.scheme:
         get_metadata.cache_clear()
         return SQLStore(catalog, dataset, uri=uri, resolver=resolver)
@@ -307,4 +301,4 @@ def get_store(
     raise NotImplementedError(uri)
 
 
-__all__ = ["get_store", "S", "LevelDBStore", "MemoryStore", "SQLStore"]
+__all__ = ["get_store", "S", "MemoryStore", "SQLStore"]

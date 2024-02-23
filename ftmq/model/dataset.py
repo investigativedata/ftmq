@@ -11,6 +11,7 @@ from ftmq.enums import Categories, Frequencies
 from ftmq.model.coverage import Coverage
 from ftmq.model.mixins import BaseModel
 from ftmq.types import CEGenerator, SDict
+from ftmq.util import make_dataset
 
 Frequencies = Literal[tuple(Frequencies)]
 Categories = Literal[tuple(Categories)]
@@ -125,8 +126,11 @@ class Catalog(BaseModel):
                 return dataset
 
     def get_scope(self) -> NKDataset:
+        # FIXME clarify
         return NKDataset(
-            NKCatalog(NKDataset, {}),
+            NKCatalog(
+                NKDataset, {"datasets": [make_dataset(n).to_dict() for n in self.names]}
+            ),
             {
                 "name": slugify(self.name),
                 "title": self.name.title(),
@@ -146,5 +150,5 @@ class Catalog(BaseModel):
         return names
 
     @classmethod
-    def from_names(cls, names: Iterable[set]) -> Self:
+    def from_names(cls, names: Iterable[str]) -> Self:
         return cls(datasets=[Dataset(name=n) for n in names])
