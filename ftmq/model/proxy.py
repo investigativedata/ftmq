@@ -1,6 +1,6 @@
 from typing import Any, Iterable, TypeAlias, Union
 
-from followthemoney.model import registry
+from followthemoney.types import registry
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ftmq.types import CE
@@ -12,12 +12,12 @@ Properties: TypeAlias = dict[str, list[Union[str, "Entity"]]]
 class Entity(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    id: str = Field(..., example="NK-A7z....")
-    caption: str = Field(..., example="John Doe")
-    schema_: str = Field(..., example="LegalEntity", alias="schema")
-    properties: Properties = Field(..., example={"name": ["John Doe"]})
-    datasets: list[str] = Field([], example=["us_ofac_sdn"])
-    referents: list[str] = Field([], example=["ofac-1234"])
+    id: str = Field(..., examples=["NK-A7z...."])
+    caption: str = Field(..., examples=["John Doe"])
+    schema_: str = Field(..., examples=["LegalEntity"], alias="schema")
+    properties: Properties = Field(..., examples=[{"name": ["John Doe"]}])
+    datasets: list[str] = Field([], examples=[["us_ofac_sdn"]])
+    referents: list[str] = Field([], examples=[["ofac-1234"]])
 
     @classmethod
     def from_proxy(cls, entity: CE, adjacents: Iterable[CE] | None = None) -> "Entity":

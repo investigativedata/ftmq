@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import cache
 from typing import Any, Generator, Iterable, TypeAlias
 
+from anystore.util import clean_dict
 from banal import ensure_list
 from followthemoney.schema import Schema
 from followthemoney.types import registry
@@ -10,7 +11,7 @@ from pydantic import BaseModel
 
 from ftmq.enums import Aggregations, Fields, Properties
 from ftmq.types import CE, CEGenerator
-from ftmq.util import clean_dict, to_numeric
+from ftmq.util import to_numeric
 
 Value: TypeAlias = int | float | str
 Values: TypeAlias = list[Value]

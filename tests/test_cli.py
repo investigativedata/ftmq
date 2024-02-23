@@ -141,16 +141,6 @@ def test_cli_coverage(fixtures_path: Path):
     }
 
 
-def test_cli_io(fixtures_path: Path):
-    in_uri = str(fixtures_path / "eu_authorities.ftm.json")
-    result = runner.invoke(cli, ["io", "-i", in_uri])
-    assert result.exit_code == 0
-    lines = _get_lines(result.output)
-    assert len(lines) == 151
-    proxy = make_proxy(orjson.loads(lines[0]))
-    assert isinstance(proxy, CompositeEntity)
-
-
 def test_cli_aggregation(fixtures_path: Path):
     in_uri = str(fixtures_path / "donations.ijson")
     result = runner.invoke(

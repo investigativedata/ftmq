@@ -82,15 +82,6 @@ def test_util_country():
     assert util.get_country_code("Foo") is None
 
 
-def test_util_clean_dict():
-    assert util.clean_dict(defaultdict(list)) == {}
-    data = defaultdict(list)
-    data["foo"] = [1, 2, 3]
-    data["bar"]
-    assert util.clean_dict(data) == {"foo": [1, 2, 3]}
-    assert util.clean_dict("foo") is None
-
-
 def test_util_get_year():
     assert util.get_year(None) is None
     assert util.get_year("2023") == 2023

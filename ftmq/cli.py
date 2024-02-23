@@ -2,21 +2,17 @@ import logging
 
 import click
 import orjson
+from anystore.io import smart_read, smart_write
+from anystore.util import clean_dict
 from click_default_group import DefaultGroup
 
 from ftmq.aggregate import aggregate
-from ftmq.io import (
-    apply_datasets,
-    smart_read,
-    smart_read_proxies,
-    smart_write,
-    smart_write_proxies,
-)
+from ftmq.io import apply_datasets, smart_read_proxies, smart_write_proxies
 from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
-from ftmq.util import clean_dict, parse_unknown_filters
+from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
@@ -290,20 +286,6 @@ def make_dataset(
             collector.collect(proxy)
         dataset.coverage = collector.export()
     smart_write(output_uri, orjson.dumps(dataset.dict()))
-
-
-@cli.command("io")
-@click.option(
-    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
-)
-@click.option(
-    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
-)
-def io(input_uri: str | None = "-", output_uri: str | None = "-"):
-    """
-    Generic cli wrapper around ftmq.io.smart_open
-    """
-    smart_write(output_uri, smart_read(input_uri))
 
 
 @cli.command("aggregate")

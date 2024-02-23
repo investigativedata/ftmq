@@ -2,7 +2,11 @@ from nomenklatura.entity import CompositeEntity
 
 from ftmq.model import Catalog, Dataset
 from ftmq.query import Query
-from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SQLStore, Store, get_store
+from ftmq.store import AlephStore, MemoryStore, SQLStore, Store, get_store
+from ftmq.store.level import LevelDBStore
+from ftmq.util import make_dataset
+
+# from ftmq.store.redis import RedisStore
 
 
 def _run_store_test_implicit(cls: Store, proxies, **kwargs):
@@ -53,7 +57,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert tested
 
     view = store.default_view()
-    ds = Dataset(name="eu_authorities").to_nk()
+    ds = make_dataset("eu_authorities")
     view = store.view(ds)
     assert len([e for e in view.entities()]) == 151
 

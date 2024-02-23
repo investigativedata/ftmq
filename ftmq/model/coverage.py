@@ -3,10 +3,9 @@ from typing import Any
 
 from banal import ensure_list
 from followthemoney import model
-from nomenklatura.dataset.coverage import DataCoverage as NKCoverage
 
 from ftmq.enums import Properties
-from ftmq.model.mixins import BaseModel, NKModel
+from ftmq.model.mixins import BaseModel
 from ftmq.types import CE, CEGenerator, DateLike, Frequencies
 from ftmq.util import get_country_name
 
@@ -34,14 +33,10 @@ class Country(BaseModel):
         super().__init__(**data)
 
 
-class Coverage(NKModel):
-    _nk_model = NKCoverage
-
+class Coverage(BaseModel):
     start: DateLike | None = None
     end: DateLike | None = None
     frequency: Frequencies | None = "unknown"
-
-    # own additions:
     schemata: list[Schema] | None = []
     countries: list[Country] | None = []
     entities: int = 0
@@ -51,11 +46,6 @@ class Coverage(NKModel):
         if len(ensure_list(data.get("years"))) != 2:
             data["years"] = None
         super().__init__(**data)
-
-    def to_nk(self) -> NKCoverage:
-        data = self.model_dump()
-        data["countries"] = [c["code"] for c in data["countries"]]
-        return NKCoverage(data)
 
 
 class Collector:
