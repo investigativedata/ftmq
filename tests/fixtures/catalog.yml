@@ -1,8 +1,10 @@
 datasets:
-  - uri: http://localhost:8000/datasets/eu_transparency_register.json
-  - uri: http://localhost:8000/datasets/ec_meetings.json
-  - uri: http://localhost:8000/datasets/eu_fts.json
-  - uri: http://localhost:8000/datasets/eu_authorities.json
-  - uri: http://localhost:8000/datasets/eu_meps.json
-  - uri: http://localhost:8000/datasets/eu_cor_members.json
-  - uri: http://localhost:8000/datasets/eu_fsf.json
+  - from_uri: http://localhost:8000/datasets/eu_transparency_register.json
+    maintainer:
+      name: "||)·|()"
+  - from_uri: http://localhost:8000/datasets/ec_meetings.json
+  - from_uri: http://localhost:8000/datasets/eu_fts.json
+  - from_uri: http://localhost:8000/datasets/eu_authorities.json
+  - from_uri: http://localhost:8000/datasets/eu_meps.json
+  - from_uri: http://localhost:8000/datasets/eu_cor_members.json
+  - from_uri: http://localhost:8000/datasets/eu_fsf.json
