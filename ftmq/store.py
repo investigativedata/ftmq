@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable, TypeVar
 from urllib.parse import urlparse
 
+from anystore.util import clean_dict
 from nomenklatura import store as nk
 from nomenklatura.dataset import DS
 from nomenklatura.db import get_metadata
@@ -22,7 +23,7 @@ from ftmq.model.coverage import Collector, Coverage
 from ftmq.model.dataset import C, Catalog, Dataset
 from ftmq.query import Q, Query
 from ftmq.types import CE, CEGenerator, PathLike
-from ftmq.util import DefaultDataset, clean_dict, get_year, make_dataset
+from ftmq.util import DefaultDataset, get_year, make_dataset
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +36,6 @@ class Store(nk.Store):
         catalog: C | None = None,
         dataset: Dataset | None = None,
         resolver: Resolver | None = None,
-        *args,
         **kwargs,
     ) -> None:
         if dataset is not None:
@@ -46,9 +46,7 @@ class Store(nk.Store):
             dataset = catalog.get_scope()
         else:
             dataset = DefaultDataset
-        super().__init__(
-            dataset=dataset, resolver=resolver or Resolver(), *args, **kwargs
-        )
+        super().__init__(dataset=dataset, resolver=resolver or Resolver(), **kwargs)
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
