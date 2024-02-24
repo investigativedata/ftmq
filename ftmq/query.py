@@ -195,7 +195,7 @@ class Query:
             data["aggregations"] = self.get_aggregator().to_dict()
         return data
 
-    def where(self, **lookup: dict[str, Any]) -> Q:
+    def where(self, **lookup: Any) -> Q:
         include_descendants = lookup.pop("include_descendants", False)
         include_matchable = lookup.pop("include_matchable", False)
         prop = lookup.pop("prop", None)

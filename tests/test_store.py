@@ -71,14 +71,14 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert res[0].schema.name == "Event"
     assert len(res) == 76
 
-    # coverage
+    # stats
     q = Query().where(dataset="eu_authorities")
-    coverage = view.coverage(q)
-    assert [c.model_dump() for c in coverage.countries] == [
+    stats = view.stats(q)
+    assert [c.model_dump() for c in stats.things.countries] == [
         {"code": "eu", "label": "eu", "count": 151}
     ]
-    assert coverage.entities == 151
-    assert [s.model_dump() for s in coverage.schemata] == [
+    assert stats.entity_count == 151
+    assert [s.model_dump() for s in stats.things.schemata] == [
         {
             "name": "PublicBody",
             "label": "Public body",

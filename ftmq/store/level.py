@@ -1,8 +1,8 @@
-from nomenklatura import store as nk
+from nomenklatura.dataset import DS
 from nomenklatura.store import level
 
 from ftmq.model import Catalog
-from ftmq.store import CE, DS, Store, View
+from ftmq.store.base import Store, View
 
 
 class LevelDBQueryView(View, level.LevelDBView):
@@ -18,6 +18,8 @@ class LevelDBStore(Store, level.LevelDBStore):
                 names.add(dataset)
         return Catalog.from_names(names)
 
-    def query(self, scope: DS | None = None, external: bool = False) -> nk.View[DS, CE]:
+    def query(
+        self, scope: DS | None = None, external: bool = False
+    ) -> LevelDBQueryView:
         scope = scope or self.dataset
         return LevelDBQueryView(self, scope, external=external)

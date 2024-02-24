@@ -8,7 +8,7 @@ from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
 
 from ftmq.enums import Categories, Frequencies
-from ftmq.model.coverage import Coverage
+from ftmq.model.coverage import Coverage, DatasetStats, Schemata
 from ftmq.model.mixins import BaseModel
 from ftmq.types import CEGenerator, SDict
 from ftmq.util import make_dataset
@@ -66,7 +66,11 @@ class Dataset(BaseModel):
     category: Categories | None = None
     publisher: Publisher | None = None
     coverage: Coverage | None = None
+    things: Schemata | None = None
+    intervals: Schemata | None = None
+    entity_count: int | None = 0
     resources: list[Resource] | None = []
+    index_url: AnyUrl | None = None
 
     # own addition / aleph
     catalog: str | None = None
@@ -93,6 +97,12 @@ class Dataset(BaseModel):
         for resource in self.resources:
             if resource.mime_type == FTM:
                 yield from smart_read_proxies(resource.url)
+
+    def apply_stats(self, stats: DatasetStats) -> None:
+        self.entity_count = stats.entity_count
+        self.coverage = stats.coverage
+        self.things = stats.things
+        self.intervals = stats.intervals
 
 
 def ensure_dataset(data: SDict | Dataset) -> Dataset:

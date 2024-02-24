@@ -99,45 +99,55 @@ def test_cli_apply(fixtures_path: Path):
 
 def test_cli_coverage(fixtures_path: Path):
     in_uri = str(fixtures_path / "ec_meetings.ftm.json")
-    result = runner.invoke(
-        cli, ["-i", in_uri, "-o", "/dev/null", "--coverage-uri", "-"]
-    )
+    result = runner.invoke(cli, ["-i", in_uri, "-o", "/dev/null", "--stats-uri", "-"])
     assert result.exit_code == 0
     assert orjson.loads(result.output) == {
-        "start": "2014-11-12",
-        "end": "2023-01-20",
-        "years": [2014, 2023],
-        "frequency": "unknown",
-        "schemata": [
-            {
-                "name": "Address",
-                "count": 1281,
-                "label": "Address",
-                "plural": "Addresses",
-            },
-            {
-                "name": "PublicBody",
-                "count": 103,
-                "label": "Public body",
-                "plural": "Public bodies",
-            },
-            {"name": "Event", "count": 34975, "label": "Event", "plural": "Events"},
-            {
-                "name": "Membership",
-                "count": 791,
-                "label": "Membership",
-                "plural": "Memberships",
-            },
-            {"name": "Person", "count": 791, "label": "Person", "plural": "People"},
-            {
-                "name": "Organization",
-                "count": 7097,
-                "label": "Organization",
-                "plural": "Organizations",
-            },
-        ],
-        "countries": [{"code": "eu", "count": 103, "label": "eu"}],
-        "entities": 45038,
+        "coverage": {
+            "start": "2014-11-12",
+            "end": "2023-01-20",
+            "frequency": "unknown",
+            "countries": ["eu"],
+            "schedule": None,
+        },
+        "things": {
+            "total": 44247,
+            "countries": [{"code": "eu", "count": 103, "label": "eu"}],
+            "schemata": [
+                {
+                    "name": "Address",
+                    "count": 1281,
+                    "label": "Address",
+                    "plural": "Addresses",
+                },
+                {
+                    "name": "PublicBody",
+                    "count": 103,
+                    "label": "Public body",
+                    "plural": "Public bodies",
+                },
+                {"name": "Event", "count": 34975, "label": "Event", "plural": "Events"},
+                {"name": "Person", "count": 791, "label": "Person", "plural": "People"},
+                {
+                    "name": "Organization",
+                    "count": 7097,
+                    "label": "Organization",
+                    "plural": "Organizations",
+                },
+            ],
+        },
+        "intervals": {
+            "total": 791,
+            "countries": [],
+            "schemata": [
+                {
+                    "name": "Membership",
+                    "count": 791,
+                    "label": "Membership",
+                    "plural": "Memberships",
+                }
+            ],
+        },
+        "entity_count": 45038,
     }
 
 
