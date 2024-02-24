@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import orjson
-from moto import mock_s3
+from moto import mock_aws
 from nomenklatura.entity import CE, CompositeEntity
 
 from ftmq.io import apply_datasets, make_proxy, smart_read_proxies, smart_write_proxies
@@ -47,7 +47,7 @@ def test_io_write_stdout(capsys, proxies: list[CE]):
     assert isinstance(proxy, CompositeEntity)
 
 
-@mock_s3
+@mock_aws
 def test_io_s3(proxies: list[CE]):
     setup_s3()
     uri = "s3://ftmq/entities.json"
