@@ -8,6 +8,7 @@ from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
 
 from ftmq.query import Query
+from ftmq.store import Store, get_store
 from ftmq.types import CEGenerator, SDict
 from ftmq.util import get_statements, make_dataset, make_proxy
 
