@@ -1,8 +1,7 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, TypeAlias
 
-from followthemoney.model import registry
-from followthemoney.types import PropertyType
+from followthemoney.types import PropertyType, registry
 from nomenklatura.statement import make_statement_table
 from sqlalchemy import (
     NUMERIC,
@@ -24,9 +23,11 @@ from ftmq.enums import (
     Aggregations,
     Comparators,
     Fields,
+    Intervals,
     Properties,
     PropertyTypes,
     PropertyTypesMap,
+    Things,
 )
 from ftmq.exceptions import ValidationError
 from ftmq.filters import F
@@ -217,7 +218,12 @@ class Sql:
             return self.table.c.prop_type
         raise NotImplementedError("Unknown field: `%s`" % field)
 
-    def get_group_counts(self, group: Field, limit: int | None = None) -> Select:
+    def get_group_counts(
+        self,
+        group: Field,
+        limit: int | None = None,
+        extra_where: BooleanClauseList | None = None,
+    ) -> Select:
         count = func.count(self.table.c.canonical_id.distinct()).label("count")
         column = self._get_lookup_column(group)
         group = str(group)
@@ -229,6 +235,8 @@ class Sql:
             where = and_(
                 column == group, self.table.c.canonical_id.in_(self.all_canonical_ids)
             )
+        if extra_where is not None:
+            where = and_(where, extra_where)
         return (
             select(grouper, count)
             .where(where)
@@ -248,6 +256,39 @@ class Sql:
     @cached_property
     def countries(self) -> Select:
         return self.get_group_counts(registry.country)
+
+    @cached_property
+    def countries_flat(self) -> Select:
+        return select(self.table.c.value.distinct()).where(
+            and_(
+                self.table.c.prop_type == registry.country,
+                self.table.c.canonical_id.in_(self.all_canonical_ids),
+            )
+        )
+
+    @cached_property
+    def things(self) -> Select:
+        return self.get_group_counts(
+            "schema", extra_where=self.table.c.schema.in_(Things)
+        )
+
+    @cached_property
+    def things_countries(self) -> Select:
+        return self.get_group_counts(
+            registry.country, extra_where=self.table.c.schema.in_(Things)
+        )
+
+    @cached_property
+    def intervals(self) -> Select:
+        return self.get_group_counts(
+            "schema", extra_where=self.table.c.schema.in_(Intervals)
+        )
+
+    @cached_property
+    def intervals_countries(self) -> Select:
+        return self.get_group_counts(
+            registry.country, extra_where=self.table.c.schema.in_(Intervals)
+        )
 
     @cached_property
     def dates(self) -> Select:

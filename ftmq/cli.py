@@ -2,21 +2,17 @@ import logging
 
 import click
 import orjson
+from anystore.io import smart_write
+from anystore.util import clean_dict
 from click_default_group import DefaultGroup
 
 from ftmq.aggregate import aggregate
-from ftmq.io import (
-    apply_datasets,
-    smart_read,
-    smart_read_proxies,
-    smart_write,
-    smart_write_proxies,
-)
+from ftmq.io import apply_datasets, smart_read_proxies, smart_write_proxies
 from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
-from ftmq.util import clean_dict, parse_unknown_filters
+from ftmq.util import parse_unknown_filters
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
@@ -52,10 +48,10 @@ def cli() -> None:
     show_default=True,
 )
 @click.option(
-    "--coverage-uri",
+    "--stats-uri",
     default=None,
     show_default=True,
-    help="If specified, print coverage information to this uri",
+    help="If specified, print statistic coverage information to this uri",
 )
 @click.option(
     "--store-dataset",
@@ -88,7 +84,7 @@ def q(
     sort: tuple[str] | None = None,
     sort_ascending: bool | None = True,
     properties: tuple[str] | None = (),
-    coverage_uri: str | None = None,
+    stats_uri: str | None = None,
     store_dataset: str | None = None,
     sum: tuple[str] | None = (),
     min: tuple[str] | None = (),
@@ -132,14 +128,14 @@ def q(
         for func, props in aggs.items():
             q = q.aggregate(func, *props, groups=groups)
     proxies = smart_read_proxies(input_uri, dataset=store_dataset, query=q)
-    if coverage_uri:
-        coverage = Collector()
-        proxies = coverage.apply(proxies)
+    if stats_uri:
+        stats = Collector()
+        proxies = stats.apply(proxies)
     smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
-    if coverage_uri:
-        coverage = coverage.export()
-        coverage = orjson.dumps(coverage.dict(), option=orjson.OPT_APPEND_NEWLINE)
-        smart_write(coverage_uri, coverage)
+    if stats_uri:
+        stats = stats.export()
+        stats = orjson.dumps(stats.dict(), option=orjson.OPT_APPEND_NEWLINE)
+        smart_write(stats_uri, stats)
     if q.aggregator:
         result = orjson.dumps(
             clean_dict(q.aggregator.result), option=orjson.OPT_APPEND_NEWLINE
@@ -173,6 +169,23 @@ def apply(
 
 
 @cli.group()
+def dataset():
+    pass
+
+
+@dataset.command("iterate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+def dataset_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
+    dataset = Dataset._from_uri(input_uri)
+    smart_write_proxies(output_uri, dataset.iterate(), serialize=True)
+
+
+@cli.group()
 def catalog():
     pass
 
@@ -185,7 +198,7 @@ def catalog():
     "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
 )
 def catalog_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
-    catalog = Catalog.from_uri(input_uri)
+    catalog = Catalog._from_uri(input_uri)
     smart_write_proxies(output_uri, catalog.iterate(), serialize=True)
 
 
@@ -269,41 +282,26 @@ def store_iterate(
     "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
 )
 @click.option(
-    "--coverage",
+    "--stats",
     is_flag=True,
     default=False,
     show_default=True,
-    help="Calculate coverage",
+    help="Calculate stats",
 )
 def make_dataset(
     input_uri: str | None = "-",
     output_uri: str | None = "-",
-    coverage: bool | None = False,
+    stats: bool | None = False,
 ):
     """
-    Convert dataset YAML specification into json
+    Convert dataset YAML specification into json and optionally calculate statistics
     """
-    dataset = Dataset.from_string(smart_read(input_uri))
-    if coverage:
+    dataset = Dataset._from_uri(input_uri)
+    if stats:
         collector = Collector()
-        for proxy in dataset.iterate():
-            collector.collect(proxy)
-        dataset.coverage = collector.export()
-    smart_write(output_uri, orjson.dumps(dataset.dict()))
-
-
-@cli.command("io")
-@click.option(
-    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
-)
-@click.option(
-    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
-)
-def io(input_uri: str | None = "-", output_uri: str | None = "-"):
-    """
-    Generic cli wrapper around ftmq.io.smart_open
-    """
-    smart_write(output_uri, smart_read(input_uri))
+        statistics = collector.collect_many(dataset.iterate())
+        dataset.apply_stats(statistics)
+    smart_write(output_uri, dataset.model_dump_json().encode())
 
 
 @cli.command("aggregate")

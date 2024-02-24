@@ -1,8 +1,0 @@
-datasets:
-  - include: http://localhost:8000/datasets/eu_transparency_register.json
-  - include: http://localhost:8000/datasets/ec_meetings.json
-  - include: http://localhost:8000/datasets/eu_fts.json
-  - include: http://localhost:8000/datasets/eu_authorities.json
-  - include: http://localhost:8000/datasets/eu_meps.json
-  - include: http://localhost:8000/datasets/eu_cor_members.json
-  - include: http://localhost:8000/datasets/eu_fsf.json

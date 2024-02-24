@@ -1,6 +1,5 @@
-from collections.abc import Iterable
 from enum import Enum, EnumMeta
-from typing import Any
+from typing import Any, Iterable
 
 from followthemoney import model
 from nomenklatura.dataset.coverage import DataCoverage
@@ -43,6 +42,10 @@ def StrEnum(name: str, values: Iterable[Any]) -> Enum:
 
 
 Schemata = StrEnum("Schemata", [k for k in model.schemata.keys()])
+Things = StrEnum("Things", [k for k, s in model.schemata.items() if s.is_a("Thing")])
+Intervals = StrEnum(
+    "Intervals", [k for k, s in model.schemata.items() if s.is_a("Interval")]
+)
 Properties = StrEnum("Properties", {p.name for p in model.properties})
 PropertyTypes = StrEnum("PropertyTypes", {p.type for p in model.properties})
 PropertyTypesMap = Enum("PropertyTypesMap", {p.name: p.type for p in model.properties})
@@ -67,7 +70,7 @@ Comparators = StrEnum(
         "endswith",
     ],
 )
-Frequencies = StrEnum("Frequencies", [f for f in DataCoverage.FREQUENCIES])
+Frequencies = StrEnum("Frequencies", DataCoverage.FREQUENCIES)
 Aggregations = StrEnum("Aggregations", ("min", "max", "sum", "avg", "count"))
 Fields = StrEnum("Fields", ["id", "dataset", "schema", "year"])
 

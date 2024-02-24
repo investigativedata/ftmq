@@ -74,6 +74,30 @@ def test_sql():
         """,
     )
 
+    assert isinstance(q.sql.things, Select)
+    assert _compare_str(
+        q.sql.things,
+        f"""
+        SELECT test_table.schema, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table {whereclause}
+        AND test_table.schema IN (__[POSTCOMPILE_schema_2])
+        GROUP BY test_table.schema
+        ORDER BY count DESC
+        """,
+    )
+
+    assert isinstance(q.sql.intervals, Select)
+    assert _compare_str(
+        q.sql.intervals,
+        f"""
+        SELECT test_table.schema, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table {whereclause}
+        AND test_table.schema IN (__[POSTCOMPILE_schema_2])
+        GROUP BY test_table.schema
+        ORDER BY count DESC
+        """,
+    )
+
     assert isinstance(q.sql.countries, Select)
     assert _compare_str(
         q.sql.countries,
@@ -84,6 +108,46 @@ def test_sql():
         (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
         GROUP BY test_table.value
         ORDER BY count DESC
+        """,
+    )
+
+    assert isinstance(q.sql.things_countries, Select)
+    assert _compare_str(
+        q.sql.things_countries,
+        f"""
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
+        AND test_table.schema IN (__[POSTCOMPILE_schema_2])
+        GROUP BY test_table.value
+        ORDER BY count DESC
+        """,
+    )
+
+    assert isinstance(q.sql.intervals_countries, Select)
+    assert _compare_str(
+        q.sql.intervals_countries,
+        f"""
+        SELECT test_table.value, count(DISTINCT test_table.canonical_id) AS count
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id FROM test_table {whereclause})
+        AND test_table.schema IN (__[POSTCOMPILE_schema_2])
+        GROUP BY test_table.value
+        ORDER BY count DESC
+        """,
+    )
+
+    assert isinstance(q.sql.countries_flat, Select)
+    assert _compare_str(
+        q.sql.countries_flat,
+        f"""
+        SELECT DISTINCT test_table.value
+        FROM test_table
+        WHERE test_table.prop_type = :prop_type_1 AND test_table.canonical_id IN
+        (SELECT DISTINCT test_table.canonical_id
+        FROM test_table {whereclause})
         """,
     )
 

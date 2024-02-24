@@ -1,18 +1,10 @@
 from pathlib import Path
 
 import orjson
-from moto import mock_s3
+from moto import mock_aws
 from nomenklatura.entity import CE, CompositeEntity
 
-from ftmq.io import (
-    SmartHandler,
-    apply_datasets,
-    make_proxy,
-    smart_read,
-    smart_read_proxies,
-    smart_write,
-    smart_write_proxies,
-)
+from ftmq.io import apply_datasets, make_proxy, smart_read_proxies, smart_write_proxies
 from ftmq.store import get_store
 from tests.conftest import setup_s3
 
@@ -55,7 +47,7 @@ def test_io_write_stdout(capsys, proxies: list[CE]):
     assert isinstance(proxy, CompositeEntity)
 
 
-@mock_s3
+@mock_aws
 def test_io_s3(proxies: list[CE]):
     setup_s3()
     uri = "s3://ftmq/entities.json"
@@ -89,27 +81,6 @@ def test_io_apply_datasets(proxies: list[CE]):
     assert success
 
 
-@mock_s3
-def test_io_generic(fixtures_path: Path):
-    setup_s3()
-    uri = "s3://ftmq/content"
-    content = "foo"
-    smart_write(uri, content.encode())
-    content = smart_read(uri)
-    assert isinstance(content, bytes)
-    assert content.decode() == "foo"
-    content = smart_read(uri, mode="r")
-    assert isinstance(content, str)
-    assert content == "foo"
-
-    # stream
-    tested = False
-    for line in smart_read(fixtures_path / "ec_meetings.ftm.json", stream=True):
-        assert isinstance(orjson.loads(line), dict)
-        tested = True
-    assert tested
-
-
 def test_io_store(tmp_path, eu_authorities):
     uri = f"leveldb://{tmp_path}/level.db"
     store = get_store(uri, dataset="eu_authorities")
@@ -128,18 +99,3 @@ def test_io_store(tmp_path, eu_authorities):
     assert res == 151
     res = [p for p in smart_read_proxies(uri, dataset="eu_authorities")]
     assert len(res) == 151
-
-
-@mock_s3
-def test_io_smart_handler(fixtures_path: Path):
-    with SmartHandler(fixtures_path / "ec_meetings.ftm.json", stream=True) as h:
-        line = h.readline()
-        assert isinstance(orjson.loads(line), dict)
-
-    setup_s3()
-    uri = "s3://ftmq/content"
-    content = b"foo"
-    with SmartHandler(uri, mode="wb") as h:
-        h.write(content)
-
-    assert smart_read(uri) == content
