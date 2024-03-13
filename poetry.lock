@@ -198,30 +198,32 @@ files = [
 
 [[package]]
 name = "anystore"
-version = "0.0.6"
+version = "0.1.0"
 description = "Store and cache things anywhere"
 optional = false
 python-versions = ">=3.11,<4"
 files = [
-    {file = "anystore-0.0.6-py3-none-any.whl", hash = "sha256:a4cb1ce8a34862da0d0019347d7e89a524210e437a66e89ec70af44b28995ea3"},
-    {file = "anystore-0.0.6.tar.gz", hash = "sha256:744a54140c65a0b628979ec8264c0a1e7b50c12123bfa23875007d717a23f05f"},
+    {file = "anystore-0.1.0-py3-none-any.whl", hash = "sha256:9ffb88a727e9053c9f43667f90692058ab290ae44c859f334f05258bfb911a8f"},
+    {file = "anystore-0.1.0.tar.gz", hash = "sha256:b5787df7b21f68535c81ab90d8265932e19a4dd7b27d9a59300b138a8fd2037b"},
 ]
 
 [package.dependencies]
 adlfs = ">2023.10,<2025"
 banal = ">=1.0.6,<2.0.0"
 cloudpickle = ">=3.0.0,<4.0.0"
+cryptography = ">=42.0.4"
 fakeredis = ">=2.21.1,<3.0.0"
 fsspec = ">2023.10,<2025"
 gcsfs = ">2023.10,<2025"
 orjson = ">=3.9.15,<4.0.0"
 pyaml = ">=23.12.0,<24.0.0"
-pydantic = ">=2.6.2,<3.0.0"
+pydantic = ">=2.6.3,<3.0.0"
 pydantic-settings = ">=2.2.1,<3.0.0"
-redis = ">=5.0.1,<6.0.0"
+pytest = ">=8.0.2,<9.0.0"
+redis = ">=5.0.2,<6.0.0"
 rich = ">=13.7.0,<14.0.0"
 s3fs = ">2023.10,<2025"
-sqlalchemy = ">=2.0.27,<3.0.0"
+sqlalchemy = ">=2.0.28,<3.0.0"
 typer = ">=0.9.0,<0.10.0"
 
 [[package]]
@@ -4273,4 +4275,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "5b4d7117ec05c55012a740985040c17d63699796023b92cec776f7067235930d"
+content-hash = "4822cf3eb94997ed51dcd3b5f83ac5d63b5a52c35014e2d47869572db761d203"
