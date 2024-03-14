@@ -190,13 +190,13 @@ def make_fingerprint(value: Any) -> str | None:
 
 
 @lru_cache(1024)
-def make_string_id(value: Any) -> str | None:
-    return make_entity_id(clean_name(value))
+def make_string_id(*values: Any) -> str | None:
+    return make_entity_id(map(clean_name, values))
 
 
 @lru_cache(1024)
-def make_fingerprint_id(value: Any) -> str | None:
-    return make_entity_id(make_fingerprint(value))
+def make_fingerprint_id(*values: Any) -> str | None:
+    return make_entity_id(map(make_fingerprint_id, values))
 
 
 @cache

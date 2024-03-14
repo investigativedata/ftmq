@@ -18,7 +18,7 @@ from ftmq.util import make_proxy
 uns = Namespace()
 
 
-def parse_uri(uri: str) -> tuple[str, str, str]:
+def parse_uri(uri: str) -> tuple[str, str | None, str | None]:
     """
     http+aleph://host.org
     http+aleph://dataset@host.org
@@ -34,7 +34,6 @@ def parse_uri(uri: str) -> tuple[str, str, str]:
         dataset, *api_key = datasets[0].split(":", 1)
         if len(api_key) == 1:
             api_key = api_key[0]
-
     return host, api_key or None, dataset
 
 
