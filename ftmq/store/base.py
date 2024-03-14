@@ -95,7 +95,7 @@ class View(nk.base.View):
         key = f"agg-{hash(query)}"
         if key in self._cache:
             return self._cache[key]
-        aggregator = query.apply_aggregations(self.entities(query))
-        res = dict(aggregator.result)
+        _ = [x for x in self.entities(query)]
+        res = dict(query.aggregator.result)
         self._cache[key] = res
         return res

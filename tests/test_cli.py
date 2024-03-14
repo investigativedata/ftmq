@@ -51,23 +51,23 @@ def test_cli(fixtures_path: Path):
     lines = _get_lines(result.output)
     assert len(lines) == 0
 
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
-    result = runner.invoke(cli, ["-i", in_uri, "-s", "Event", "--date__gte", "2022"])
+    in_uri = str(fixtures_path / "donations.ijson")
+    result = runner.invoke(cli, ["-i", in_uri, "-s", "Payment", "--date__gte", "2010"])
     assert result.exit_code == 0
     lines = _get_lines(result.output)
-    assert len(lines) == 3575
+    assert len(lines) == 49
 
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    in_uri = str(fixtures_path / "donations.ijson")
     result = runner.invoke(cli, ["-i", in_uri, "-s", "Person", "--sort", "name"])
     lines = _get_lines(result.output)
     data = orjson.loads(lines[0])
-    assert data["caption"] == "Aare Järvan"
+    assert data["caption"] == "Dr.-Ing. E. h. Martin Herrenknecht"
     result = runner.invoke(
         cli, ["-i", in_uri, "-s", "Person", "--sort", "name", "--sort-descending"]
     )
     lines = _get_lines(result.output)
     data = orjson.loads(lines[0])
-    assert data["caption"] == "Zaneta Vegnere"
+    assert data["caption"] == "Johanna Quandt"
 
 
 def test_cli_apply(fixtures_path: Path):
@@ -98,56 +98,68 @@ def test_cli_apply(fixtures_path: Path):
 
 
 def test_cli_coverage(fixtures_path: Path):
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    in_uri = str(fixtures_path / "donations.ijson")
     result = runner.invoke(cli, ["-i", in_uri, "-o", "/dev/null", "--stats-uri", "-"])
     assert result.exit_code == 0
-    assert orjson.loads(result.output) == {
+    test_result = orjson.loads(result.output)
+    test_result["coverage"]["countries"] = sorted(test_result["coverage"]["countries"])
+    test_result["things"]["countries"] = sorted(
+        test_result["things"]["countries"], key=lambda x: x["code"]
+    )
+    test_result["things"]["schemata"] = sorted(
+        test_result["things"]["schemata"], key=lambda x: x["name"]
+    )
+    assert test_result == {
         "coverage": {
-            "start": "2014-11-12",
-            "end": "2023-01-20",
+            "start": "2002-07-04",
+            "end": "2011-12-29",
             "frequency": "unknown",
-            "countries": ["eu"],
+            "countries": ["cy", "de", "gb", "lu"],
             "schedule": None,
         },
         "things": {
-            "total": 44247,
-            "countries": [{"code": "eu", "count": 103, "label": "eu"}],
+            "total": 184,
+            "countries": [
+                {"code": "cy", "count": 2, "label": "Cyprus"},
+                {"code": "de", "count": 163, "label": "Germany"},
+                {"code": "gb", "count": 3, "label": "United Kingdom"},
+                {"code": "lu", "count": 2, "label": "Luxembourg"},
+            ],
             "schemata": [
                 {
                     "name": "Address",
-                    "count": 1281,
+                    "count": 89,
                     "label": "Address",
                     "plural": "Addresses",
                 },
                 {
-                    "name": "PublicBody",
-                    "count": 103,
-                    "label": "Public body",
-                    "plural": "Public bodies",
+                    "name": "Company",
+                    "count": 56,
+                    "label": "Company",
+                    "plural": "Companies",
                 },
-                {"name": "Event", "count": 34975, "label": "Event", "plural": "Events"},
-                {"name": "Person", "count": 791, "label": "Person", "plural": "People"},
                 {
                     "name": "Organization",
-                    "count": 7097,
+                    "count": 17,
                     "label": "Organization",
                     "plural": "Organizations",
                 },
+                {"name": "Person", "count": 22, "label": "Person", "plural": "People"},
             ],
         },
         "intervals": {
-            "total": 791,
+            "total": 290,
             "countries": [],
             "schemata": [
                 {
-                    "name": "Membership",
-                    "count": 791,
-                    "label": "Membership",
-                    "plural": "Memberships",
+                    "name": "Payment",
+                    "count": 290,
+                    "label": "Payment",
+                    "plural": "Payments",
                 }
             ],
         },
-        "entity_count": 45038,
+        "entity_count": 474,
     }
 
 

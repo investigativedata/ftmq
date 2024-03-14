@@ -58,26 +58,25 @@ def test_agg_groupby(donations):
     }
 
 
-def test_agg_groupby_meta(ec_meetings):
+def test_agg_groupby_meta(donations):
     agg = Aggregator.from_dict({"count": "id", "groups": "schema"})
-    proxies = agg.apply(ec_meetings)
+    proxies = agg.apply(donations)
     _ = [x for x in proxies]
     assert agg.result == {
         "groups": {
             "schema": {
                 "count": {
                     "id": {
-                        "Address": 1281,
-                        "PublicBody": 103,
-                        "Event": 34975,
-                        "Membership": 791,
-                        "Person": 791,
-                        "Organization": 7097,
+                        "Payment": 290,
+                        "Address": 89,
+                        "Organization": 17,
+                        "Company": 56,
+                        "Person": 22,
                     }
                 }
             }
         },
-        "count": {"id": 45038},
+        "count": {"id": 474},
     }
     assert (
         sum(agg.result["groups"]["schema"]["count"]["id"].values())
@@ -85,26 +84,26 @@ def test_agg_groupby_meta(ec_meetings):
     )
 
     agg = Aggregator.from_dict({"count": "id", "groups": "year"})
-    proxies = agg.apply(ec_meetings)
+    proxies = agg.apply(donations)
     _ = [x for x in proxies]
     assert agg.result == {
         "groups": {
             "year": {
                 "count": {
                     "id": {
-                        "2014": 550,
-                        "2015": 6691,
-                        "2016": 5199,
-                        "2017": 4047,
-                        "2018": 3873,
-                        "2019": 2321,
-                        "2020": 4640,
-                        "2021": 4079,
-                        "2022": 3499,
-                        "2023": 76,
+                        "2011": 21,
+                        "2003": 20,
+                        "2004": 20,
+                        "2009": 46,
+                        "2008": 49,
+                        "2010": 28,
+                        "2007": 28,
+                        "2006": 27,
+                        "2002": 16,
+                        "2005": 35,
                     }
                 }
             }
         },
-        "count": {"id": 45038},
+        "count": {"id": 474},
     }

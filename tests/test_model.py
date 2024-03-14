@@ -7,7 +7,8 @@ from nomenklatura.dataset.resource import DataResource as NKResource
 from nomenklatura.entity import CompositeEntity
 from pydantic import ValidationError
 
-from ftmq.model import Catalog, Coverage, Dataset, Entity, Publisher, Resource
+from ftmq.model import Catalog, Dataset, Entity, Publisher, Resource
+from ftmq.model.coverage import Coverage
 from ftmq.util import make_proxy
 
 nk_catalog = NKCatalog(NKDataset, {})

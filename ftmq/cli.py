@@ -134,7 +134,7 @@ def q(
     smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
     if stats_uri:
         stats = stats.export()
-        stats = orjson.dumps(stats.dict(), option=orjson.OPT_APPEND_NEWLINE)
+        stats = orjson.dumps(stats.model_dump(), option=orjson.OPT_APPEND_NEWLINE)
         smart_write(stats_uri, stats)
     if q.aggregator:
         result = orjson.dumps(

@@ -19,7 +19,12 @@ from ftmq.filters import (
 )
 from ftmq.sql import Sql
 from ftmq.types import CEGenerator
-from ftmq.util import parse_comparator, parse_unknown_filters
+from ftmq.util import (
+    parse_comparator,
+    parse_unknown_filters,
+    prop_is_numeric,
+    to_numeric,
+)
 
 Q = TypeVar("Q", bound="Query")
 Slice = TypeVar("Slice", bound=slice)
@@ -33,9 +38,10 @@ class Sort:
     def apply(self, proxy: CE) -> tuple[str]:
         values = tuple()
         for v in self.values:
-            p_values = proxy.get(v, quiet=True)
-            if p_values is not None:
-                values = values + (tuple(p_values))
+            p_values = proxy.get(v, quiet=True) or []
+            if prop_is_numeric(proxy.schema, v):
+                p_values = map(to_numeric, p_values)
+            values = values + (tuple(p_values))
         return values
 
     def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
@@ -301,8 +307,3 @@ class Query:
             self.aggregator = self.get_aggregator()
             proxies = self.aggregator.apply(proxies)
         yield from proxies
-
-    def apply_aggregations(self, proxies: CEGenerator) -> Aggregator:
-        aggregator = self.get_aggregator()
-        [x for x in aggregator.apply(proxies)]
-        return aggregator
