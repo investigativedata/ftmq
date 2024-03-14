@@ -1,5 +1,4 @@
 import sys
-from collections import defaultdict
 from datetime import datetime
 
 import cloudpickle
@@ -96,9 +95,9 @@ def test_util_get_year():
     assert util.clean_name("  foo\n bar") == "foo bar"
     assert util.clean_name("- - . *") is None
 
-    assert util.fingerprint("Mrs. Jane Doe") == "doe jane mrs"
-    assert util.fingerprint("Mrs. Jane Mrs. Doe") == "doe jane mrs"
-    assert util.fingerprint("#") is None
-    assert util.fingerprint(" ") is None
-    assert util.fingerprint("") is None
-    assert util.fingerprint(None) is None
+    assert util.make_fingerprint("Mrs. Jane Doe") == "doe jane mrs"
+    assert util.make_fingerprint("Mrs. Jane Mrs. Doe") == "doe jane mrs"
+    assert util.make_fingerprint("#") is None
+    assert util.make_fingerprint(" ") is None
+    assert util.make_fingerprint("") is None
+    assert util.make_fingerprint(None) is None
