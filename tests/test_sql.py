@@ -188,7 +188,7 @@ def test_sql():
         q.sql.statements,
         f"""
         SELECT {fields}, anon_1.canonical_id AS canonical_id_1, anon_1.sortable_value
-        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, group_concat(test_table.value) AS sortable_value
+        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, max(test_table.value) AS sortable_value
             FROM test_table
             WHERE test_table.prop = :prop_1 AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
                 FROM test_table WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)
@@ -234,7 +234,7 @@ def test_sql():
         q.sql.statements,
         f"""
         SELECT {fields}, anon_1.canonical_id AS canonical_id_1, anon_1.sortable_value
-        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, group_concat(test_table.value) AS sortable_value
+        FROM test_table JOIN (SELECT test_table.canonical_id AS canonical_id, min(test_table.value) AS sortable_value
             FROM test_table
             WHERE test_table.prop = :prop_1 AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
                 FROM test_table WHERE (test_table.dataset = :dataset_1 OR test_table.dataset = :dataset_2)

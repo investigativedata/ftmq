@@ -4,6 +4,7 @@ from typing import Any, Generator
 
 import pycountry
 from banal import ensure_list
+from followthemoney.schema import Schema
 from followthemoney.types import registry
 from followthemoney.util import make_entity_id, sanitize_text
 from nomenklatura.dataset import Dataset
@@ -196,3 +197,11 @@ def make_string_id(value: Any) -> str | None:
 @lru_cache(1024)
 def make_fingerprint_id(value: Any) -> str | None:
     return make_entity_id(make_fingerprint(value))
+
+
+@cache
+def prop_is_numeric(schema: Schema, prop: str) -> bool:
+    prop = schema.get(prop)
+    if prop is not None:
+        return prop.type == registry.number
+    return False

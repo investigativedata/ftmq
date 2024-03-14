@@ -164,10 +164,11 @@ class Sql:
             value = self.table.c.value
             if PropertyTypesMap[prop].value == registry.number:
                 value = func.cast(self.table.c.value, NUMERIC)
+            group_func = func.min if self.q.sort.ascending else func.max
             inner = (
                 select(
                     self.table.c.canonical_id,
-                    func.group_concat(value).label("sortable_value"),
+                    group_func(value).label("sortable_value"),
                 )
                 .where(
                     and_(

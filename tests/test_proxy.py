@@ -153,6 +153,20 @@ def test_proxy_sort(proxies):
         break
     assert tested
 
+    # numeric sort
+    tested = False
+    q = Query().where(schema="Payment").order_by("amountEur")
+    for proxy in q.apply_iter(proxies):
+        assert proxy.get("amountEur") == ["50000"]
+        tested = True
+        break
+    tested = False
+    q = Query().where(schema="Payment").order_by("amountEur", ascending=False)
+    for proxy in q.apply_iter(proxies):
+        assert proxy.get("amountEur") == ["2334526"]
+        tested = True
+        break
+
 
 def test_proxy_slice(proxies):
     q = Query()[:10]

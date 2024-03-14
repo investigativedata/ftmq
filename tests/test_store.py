@@ -88,23 +88,28 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     ]
 
     # ordering
-    # q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
-    # q = q.order_by("amountEur")
-    # res = [e for e in view.entities(q)]
-    # assert len(res) == 21
-    # assert res[0].get("amountEur") == ["50001"]
-    # q = q.order_by("amountEur", ascending=False)
-    # res = [e for e in view.entities(q)]
-    # assert len(res) == 21
-    # assert res[0].get("amountEur") == ["320000"]
+    q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
+    q = q.order_by("amountEur")
+    res = [e for e in view.entities(q)]
+    assert len(res) == 21
+    assert res[0].get("amountEur") == ["50001"]
+    q = q.order_by("amountEur", ascending=False)
+    res = [e for e in view.entities(q)]
+    assert len(res) == 21
+    assert res[0].get("amountEur") == ["320000"]
 
     # slice
-    # q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
-    # q = q.order_by("amountEur")
-    # q = q[:10]
-    # res = [e for e in view.entities(q)]
-    # assert len(res) == 10
-    # assert res[0].get("payer") == ["62ad0fe6f56dbbf6fee57ce3da76e88c437024d5"]
+    q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
+    q = q.order_by("amountEur")
+    q = q[:10]
+    res = [e for e in view.entities(q)]
+    assert len(res) == 10
+    assert res[0].get("payer") == ["efccc434cdf141c7ba6f6e539bb6b42ecd97c368"]
+
+    q = Query().where(schema="Person").order_by("name")[0]
+    res = [e for e in view.entities(q)]
+    assert len(res) == 1
+    assert res[0].caption == "Dr.-Ing. E. h. Martin Herrenknecht"
 
     # aggregation
     q = Query().aggregate("max", "date").aggregate("min", "date")
@@ -119,9 +124,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
         ]
         == 10
     )
-    # assert (
-    #     sum(res["groups"]["beneficiary"]["count"]["id"].values()) == res["count"]["id"]
-    # )
+    assert len(proxies) == res["count"]["id"]
 
     q = (
         Query()
@@ -144,7 +147,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
                         "9fbaa5733790781e56eec4998aeacf5093dccbf5": 290725,
                         "9e292c150c617eec85e5479c5f039f8441569441": 175000,
                         "49d46f7e70e19bc497a17734af53ea1a00c831d6": 1221256,
-                        "4b308dc2b128377e63a4bf2e4c1b9fcd59614eee": 52000,
+                        "4b308dc2b128377e63a4bf2e4c1b9fcd59614eee": 52000,  # pytest: MAX_SQL_AGG_GROUPS=11
                     }
                 }
             }
