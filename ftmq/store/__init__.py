@@ -3,8 +3,6 @@ from pathlib import Path
 from typing import TypeVar
 from urllib.parse import urlparse
 
-import orjson
-from anystore.io import smart_stream
 from nomenklatura import Resolver
 from nomenklatura.db import get_metadata
 
@@ -15,7 +13,6 @@ from ftmq.store.base import Store, View
 from ftmq.store.memory import MemoryStore
 from ftmq.store.sql import SQLStore
 from ftmq.types import PathLike
-from ftmq.util import make_proxy
 
 S = TypeVar("S", bound=Store)
 
@@ -33,14 +30,6 @@ def get_store(
         resolver = get_resolver(resolver)
     uri = str(uri)
     parsed = urlparse(uri)
-    if parsed.scheme == "file" or uri == "-" or not parsed.scheme:
-        store = MemoryStore(catalog, dataset, resolver=resolver)
-        with store.writer() as writer:
-            for line in smart_stream(uri):
-                data = orjson.loads(line)
-                proxy = make_proxy(data)
-                writer.add_entity(proxy)
-        return store
     if parsed.scheme == "memory":
         return MemoryStore(catalog, dataset, resolver=resolver)
     if parsed.scheme == "leveldb":
