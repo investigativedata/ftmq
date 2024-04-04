@@ -12,7 +12,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
 packages = [{include = "ftmq"}]
@@ -41,7 +40,7 @@ alephclient = "^2.3.6"
 pycountry = "^23.12.11"
 urllib3 = "<2"
 nomenklatura = "^3.10.4"
-anystore = "^0.1.1"
+anystore = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.3,<9.0.0"
