@@ -1,0 +1,8 @@
+**/*
+!package.json
+!dist/index.js
+!js/*
+!js/**/*
+!tsconfig.json
+!README.md
+!VERSION

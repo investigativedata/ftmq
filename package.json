@@ -1,0 +1,35 @@
+{
+  "name": "@investigativedata/ftmq",
+  "version": "0.1.0",
+  "description": "javascript interface for ftmq",
+  "main": "js/index.ts",
+  "types": "js/index.d.ts",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "build-types": "python js/types/build.py ; node js/types/build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/investigativedata/ftmq.git"
+  },
+  "author": "Simon Wörpel <simon@investigativedata.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/investigativedata/ftmq/issues"
+  },
+  "homepage": "https://github.com/investigativedata/ftmq#readme",
+  "dependencies": {
+    "json-schema-to-typescript": "^13.1.2",
+    "query-string": "^9.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-runtime": "^6.26.0",
+    "rollup": "^4.14.0",
+    "rollup-plugin-typescript2": "^0.36.0"
+  }
+}
