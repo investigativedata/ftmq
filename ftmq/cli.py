@@ -14,6 +14,8 @@ from ftmq.query import Query
 from ftmq.store import get_store
 from ftmq.util import parse_unknown_filters
 
+log = logging.getLogger(__name__)
+
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
 def cli() -> None:
@@ -185,6 +187,36 @@ def dataset_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
     smart_write_proxies(output_uri, dataset.iterate(), serialize=True)
 
 
+@dataset.command("generate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+@click.option(
+    "--stats",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Calculate stats",
+)
+def make_dataset(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+    stats: bool | None = False,
+):
+    """
+    Convert dataset YAML specification into json and optionally calculate statistics
+    """
+    dataset = Dataset._from_uri(input_uri)
+    if stats:
+        collector = Collector()
+        statistics = collector.collect_many(dataset.iterate())
+        dataset.apply_stats(statistics)
+    smart_write(output_uri, dataset.model_dump_json().encode())
+
+
 @cli.group()
 def catalog():
     pass
@@ -200,6 +232,38 @@ def catalog():
 def catalog_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
     catalog = Catalog._from_uri(input_uri)
     smart_write_proxies(output_uri, catalog.iterate(), serialize=True)
+
+
+@catalog.command("generate")
+@click.option(
+    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
+)
+@click.option(
+    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
+)
+@click.option(
+    "--stats",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Calculate stats for each dataset",
+)
+def make_catalog(
+    input_uri: str | None = "-",
+    output_uri: str | None = "-",
+    stats: bool | None = False,
+):
+    """
+    Convert catalog YAML specification into json and fetch dataset metadata
+    """
+    catalog = Catalog._from_uri(input_uri)
+    if stats:
+        for dataset in catalog.datasets:
+            log.info(f"Generating stats for `{dataset.name}` ...")
+            collector = Collector()
+            statistics = collector.collect_many(dataset.iterate())
+            dataset.apply_stats(statistics)
+    smart_write(output_uri, catalog.model_dump_json().encode())
 
 
 @cli.group()
@@ -272,36 +336,6 @@ def store_iterate(
     """
     store = get_store(input_uri)
     smart_write_proxies(output_uri, store.iterate(), serialize=True)
-
-
-@cli.command("make-dataset")
-@click.option(
-    "-i", "--input-uri", default="-", show_default=True, help="input file or uri"
-)
-@click.option(
-    "-o", "--output-uri", default="-", show_default=True, help="output file or uri"
-)
-@click.option(
-    "--stats",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help="Calculate stats",
-)
-def make_dataset(
-    input_uri: str | None = "-",
-    output_uri: str | None = "-",
-    stats: bool | None = False,
-):
-    """
-    Convert dataset YAML specification into json and optionally calculate statistics
-    """
-    dataset = Dataset._from_uri(input_uri)
-    if stats:
-        collector = Collector()
-        statistics = collector.collect_many(dataset.iterate())
-        dataset.apply_stats(statistics)
-    smart_write(output_uri, dataset.model_dump_json().encode())
 
 
 @cli.command("aggregate")

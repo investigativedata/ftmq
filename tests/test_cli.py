@@ -6,6 +6,7 @@ from nomenklatura.entity import CompositeEntity
 
 from ftmq.cli import cli
 from ftmq.io import make_proxy
+from ftmq.model import Catalog, Dataset
 
 runner = CliRunner()
 
@@ -214,3 +215,17 @@ def test_cli_aggregation(fixtures_path: Path):
             }
         },
     }
+
+
+def test_cli_generate(fixtures_path: Path):
+    # dataset
+    uri = str(fixtures_path / "dataset.yml")
+    res = runner.invoke(cli, ["dataset", "generate", "-i", uri])
+    res = orjson.loads(res.output)
+    assert Dataset(**res)
+
+    # catalog
+    uri = str(fixtures_path / "catalog.yml")
+    res = runner.invoke(cli, ["catalog", "generate", "-i", uri])
+    res = orjson.loads(res.output)
+    assert Catalog(**res)
