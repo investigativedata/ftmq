@@ -1,14 +1,14 @@
 {
   "name": "@investigativedata/ftmq",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "javascript interface for ftmq",
-  "main": "js/index.ts",
-  "types": "js/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
+    "build": "rm -rf dist ; tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,8 +28,6 @@
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
-    "rollup": "^4.14.0",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   }
 }

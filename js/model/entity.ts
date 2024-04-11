@@ -202,3 +202,11 @@ export class Entity {
     return new Entity(model, data);
   }
 }
+
+// entity type is mostly used as a union type of the class instance or the data object
+export type TEntity = Entity | IEntityDatum;
+
+// base props interface for components
+export interface IEntityComponent {
+  entity: TEntity;
+}

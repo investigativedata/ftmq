@@ -1,6 +1,6 @@
 import queryString from "query-string";
 
-import type { IEntityDatum, ICatalog, IDataset } from "../types";
+import type { IEntityDatum, ICatalog, IDataset } from "../model";
 import type { IAggregationResult, IApiQuery, IEntitiesResult } from "./types";
 
 type ApiError = {

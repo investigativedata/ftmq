@@ -1,4 +1,4 @@
-import type { IEntityDatum, IDatasetStats } from "../types";
+import type { IEntityDatum, ICoverage } from "../model";
 
 export interface IPublicQuery {
   // visible api params in the browser
@@ -29,7 +29,7 @@ export interface IEntitiesResult {
   readonly url: string;
   readonly next_url: string | null;
   readonly prev_url: string | null;
-  readonly coverage: IDatasetStats;
+  readonly coverage: ICoverage;
   readonly entities: IEntityDatum[];
 }
 
@@ -65,6 +65,6 @@ export interface IAggregationResult {
   readonly total: number;
   readonly query: IApiQuery;
   readonly url: string;
-  readonly coverage: IDatasetStats;
+  readonly coverage: ICoverage;
   readonly aggregations: Aggregations;
 }
