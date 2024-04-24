@@ -104,8 +104,8 @@ export interface IDataset {
   readonly category?: TDatasetCategory;
   readonly publisher?: IPublisher | null;
   readonly coverage?: ICoverage | null;
-  readonly things?: ISchema[] | null;
-  readonly intervals?: ISchema[] | null;
+  readonly things?: ISchemataStats | null;
+  readonly intervals?: ISchemataStats | null;
   readonly entity_count?: number | null;
   readonly resources?: IResource[] | null;
   readonly index_url?: string | null;
