@@ -86,6 +86,8 @@ export interface IMaintainer {
   readonly name: string;
   readonly description?: string | null;
   readonly url?: string | null;
+  readonly country?: string | null;
+  readonly country_label?: string | null;
   readonly logo_url?: string | null;
 }
 
