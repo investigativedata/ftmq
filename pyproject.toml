@@ -38,7 +38,7 @@ pydantic = "^2.6.2"
 sqlalchemy = "^2.0.27"
 alephclient = "^2.3.6"
 pycountry = "^23.12.11"
-urllib3 = "<2"
+urllib3 = "<3"
 nomenklatura = "^3.10.4"
 anystore = "^0.1.2"
 
