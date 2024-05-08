@@ -86,6 +86,8 @@ export interface IMaintainer {
   readonly name: string;
   readonly description?: string | null;
   readonly url?: string | null;
+  readonly country?: string | null;
+  readonly country_label?: string | null;
   readonly logo_url?: string | null;
 }
 
@@ -102,8 +104,8 @@ export interface IDataset {
   readonly category?: TDatasetCategory;
   readonly publisher?: IPublisher | null;
   readonly coverage?: ICoverage | null;
-  readonly things?: ISchema[] | null;
-  readonly intervals?: ISchema[] | null;
+  readonly things?: ISchemataStats | null;
+  readonly intervals?: ISchemataStats | null;
   readonly entity_count?: number | null;
   readonly resources?: IResource[] | null;
   readonly index_url?: string | null;
