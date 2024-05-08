@@ -48,6 +48,8 @@ class Maintainer(BaseModel):
 
     name: str
     description: str | None = None
+    country: str | None = None
+    country_label: str | None = None
     url: HttpUrl | None = None
     logo_url: HttpUrl | None = None
 
