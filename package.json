@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/investigativedata/ftmq#readme",
   "dependencies": {
-    "json-schema-to-typescript": "^13.1.2",
     "query-string": "^9.0.0"
   },
   "devDependencies": {
