@@ -1,3 +1,4 @@
+node_modules
 .pypirc
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -44,6 +45,7 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
+coverage.lcov
 .cache
 nosetests.xml
 coverage.xml

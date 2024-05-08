@@ -1,0 +1,8 @@
+**/*
+!package.json
+!dist/index.*
+!dist/**/*
+!js/*
+!js/**/*
+!README.md
+!VERSION

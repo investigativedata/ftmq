@@ -1,4 +1,4 @@
-from typing import Any, Iterable, TypeAlias, Union
+from typing import Any, Iterable, Self, TypeAlias, TypeVar, Union
 
 from followthemoney.types import registry
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -6,21 +6,22 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from ftmq.types import CE
 from ftmq.util import make_proxy
 
-Properties: TypeAlias = dict[str, list[Union[str, "Entity"]]]
+EntityProp = TypeVar("EntityProp", bound="Entity")
+Properties: TypeAlias = dict[str, list[Union[str, EntityProp]]]
 
 
 class Entity(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     id: str = Field(..., examples=["NK-A7z...."])
-    caption: str = Field(..., examples=["John Doe"])
+    caption: str = Field(..., examples=["Jane Doe"])
     schema_: str = Field(..., examples=["LegalEntity"], alias="schema")
-    properties: Properties = Field(..., examples=[{"name": ["John Doe"]}])
+    properties: Properties = Field(..., examples=[{"name": ["Jane Doe"]}])
     datasets: list[str] = Field([], examples=[["us_ofac_sdn"]])
     referents: list[str] = Field([], examples=[["ofac-1234"]])
 
     @classmethod
-    def from_proxy(cls, entity: CE, adjacents: Iterable[CE] | None = None) -> "Entity":
+    def from_proxy(cls, entity: CE, adjacents: Iterable[CE] | None = None) -> Self:
         properties = dict(entity.properties)
         if adjacents:
             adjacents = {e.id: Entity.from_proxy(e) for e in adjacents}

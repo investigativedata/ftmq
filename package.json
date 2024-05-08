@@ -1,0 +1,32 @@
+{
+  "name": "@investigativedata/ftmq",
+  "version": "0.6.2",
+  "description": "javascript interface for ftmq",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "rm -rf dist ; tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/investigativedata/ftmq.git"
+  },
+  "author": "Simon Wörpel <simon@investigativedata.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/investigativedata/ftmq/issues"
+  },
+  "homepage": "https://github.com/investigativedata/ftmq#readme",
+  "dependencies": {
+    "query-string": "^9.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-runtime": "^6.26.0",
+    "typescript": "^5.4.5"
+  }
+}
