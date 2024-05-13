@@ -166,13 +166,13 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "alephclient"
-version = "2.3.6"
+version = "2.4.1"
 description = "Command-line client for Aleph API"
 optional = false
 python-versions = "*"
 files = [
-    {file = "alephclient-2.3.6-py2.py3-none-any.whl", hash = "sha256:9facda92111e784fad3bba86a20ef1355aa8a2e584f1e3a2d0dad2cf9aa03162"},
-    {file = "alephclient-2.3.6.tar.gz", hash = "sha256:41b0cb4494d6b8edd6e107593cb4b5542ba88ccea4d4fe0ca838e052f64c6146"},
+    {file = "alephclient-2.4.1-py2.py3-none-any.whl", hash = "sha256:eb32234216b8970d153d370cbf62734db025fe6d5e0feeacac46fdf875d25804"},
+    {file = "alephclient-2.4.1.tar.gz", hash = "sha256:b2c4dd33381f1e6d7e07f984686fe073f589b6b0f25306728a68ec96a6cbd9b9"},
 ]
 
 [package.dependencies]
@@ -183,7 +183,7 @@ requests = ">=2.21.0"
 requests-toolbelt = ">=0.9.1"
 
 [package.extras]
-dev = ["mypy", "pytest", "pytest-mock (>=1.10.0)", "wheel"]
+dev = ["mypy", "pytest", "pytest-mock (>=1.10.0)", "types-requests", "types-setuptools", "wheel"]
 
 [[package]]
 name = "annotated-types"
