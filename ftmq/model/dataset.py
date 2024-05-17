@@ -15,6 +15,7 @@ from ftmq.util import make_dataset
 
 Frequencies = Literal[tuple(Frequencies)]
 Categories = Literal[tuple(Categories)]
+ContentType = Literal["documents", "structured", "mixed"]
 
 C = TypeVar("C", bound="Catalog")
 DS = TypeVar("DS", bound="Dataset")
@@ -79,6 +80,9 @@ class Dataset(BaseModel):
     countries: list[str] | None = []
     info_url: HttpUrl | None = None
     data_url: HttpUrl | None = None
+    aleph_url: HttpUrl | None = None
+    tags: list[str] | None = []
+    content_type: ContentType | None = "structured"
 
     git_repo: AnyUrl | None = None
     uri: str | None = None

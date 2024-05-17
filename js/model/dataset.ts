@@ -34,6 +34,8 @@ export type TDatasetFrequency =
     )
   | null;
 
+export type TContentType = "documents" | "structured" | "mixed";
+
 export interface IPublisher {
   readonly name: string;
   readonly url?: string | null;
@@ -116,6 +118,8 @@ export interface IDataset {
   readonly git_repo?: string | null;
   readonly uri?: string | null;
   readonly maintainer?: IMaintainer | null;
+  readonly content_type?: TContentType | null;
+  readonly aleph_url?: string | null;
 }
 
 export interface ICatalog {
