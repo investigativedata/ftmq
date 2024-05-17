@@ -1203,6 +1203,9 @@ orjson==3.10.3 ; python_version >= "3.11" and python_version < "3.12" \
 packaging==24.0 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5 \
     --hash=sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9
+pantomime==0.6.1 ; python_version >= "3.11" and python_version < "3.12" \
+    --hash=sha256:4ea567dffc2458a174cd624061a1a0efc081c858938d55291e4825e47a4fdb0f \
+    --hash=sha256:6ff211788ecfbe2cdf79bf8617d7e2347b9d734ce3dac983cafa9673ed099789
 parso==0.8.4 ; python_version >= "3.11" and python_version < "3.12" \
     --hash=sha256:a418670a20291dacd2dddc80c377c5c3791378ee1e8d12bffc35420643d43f18 \
     --hash=sha256:eb3a7b58240fb99099a345571deecc0f9540ea5f4dd2fe14c2a99d6b281ab92d
