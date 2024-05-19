@@ -57,7 +57,7 @@ pytest-env = "^1.1.1"
 bump-pydantic = ">=0.7,<0.9"
 
 [tool.poetry.group.clickhouse.dependencies]
-ftm-columnstore = "^0.2.1"
+ftm-columnstore = "^0.3.0"
 
 [tool.poetry.group.level.dependencies]
 plyvel = "^1.5.1"
