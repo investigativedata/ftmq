@@ -313,6 +313,8 @@ class Sql:
             sql_agg_value = self.table.c.value
             if agg.func == Aggregations.count:
                 sql_agg_value = distinct(sql_agg_value)
+            elif agg.func in (Aggregations.sum, Aggregations.avg):
+                sql_agg_value = func.cast(sql_agg_value, NUMERIC)
             aggregator = sql_agg(sql_agg_value)
             qs.append(
                 select(
@@ -354,6 +356,8 @@ class Sql:
                 sql_agg = getattr(func, agg.func)
                 if agg.func == Aggregations.count:
                     sql_agg_value = distinct(sql_agg_value)
+                elif agg.func in (Aggregations.sum, Aggregations.avg):
+                    sql_agg_value = func.cast(sql_agg_value, NUMERIC)
                 aggregator = sql_agg(sql_agg_value)
 
                 inner = select(self.table.c.canonical_id.distinct()).where(

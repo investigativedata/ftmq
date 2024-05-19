@@ -252,7 +252,11 @@ def test_sql():
     q = str(q.sql.aggregations)
     assert len(q.split("UNION")) == 2
     assert "SELECT 'date', 'max', max(test_table.value) AS max" in q
-    assert "SELECT 'amount', 'sum', sum(test_table.value) AS sum" in q
+    assert "SELECT 'amount', 'sum', sum(CAST(test_table.value AS NUMERIC)) AS sum" in q
+
+    q = Query().aggregate("avg", "amount")
+    q = str(q.sql.aggregations)
+    assert "SELECT 'amount', 'avg', avg(CAST(test_table.value AS NUMERIC)) AS avg" in q
 
     q = Query().aggregate("count", "location")
     q = str(q.sql.aggregations)

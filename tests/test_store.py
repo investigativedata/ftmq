@@ -178,6 +178,10 @@ def _run_store_test(cls: Store, proxies, **kwargs):
         "sum": {"amountEur": 40589689.15},
     }
 
+    q = Query().where(dataset="donations").aggregate("avg", "amountEur")
+    res = view.aggregations(q)
+    assert res == {"avg": {"amountEur": 139964.44534482757}}
+
     # reversed
     entity_id = "783d918df9f9178400d6b3386439ab3b3679979c"
     q = Query().where(reverse=entity_id)
