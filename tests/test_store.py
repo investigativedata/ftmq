@@ -2,7 +2,11 @@ from nomenklatura.entity import CompositeEntity
 
 from ftmq.model import Catalog, Dataset
 from ftmq.query import Query
-from ftmq.store import AlephStore, LevelDBStore, MemoryStore, SQLStore, Store, get_store
+from ftmq.store import AlephStore, MemoryStore, SQLStore, Store, get_store
+from ftmq.store.level import LevelDBStore
+from ftmq.util import make_dataset
+
+# from ftmq.store.redis import RedisStore
 
 
 def _run_store_test_implicit(cls: Store, proxies, **kwargs):
@@ -17,14 +21,14 @@ def _run_store_test_implicit(cls: Store, proxies, **kwargs):
                 bulk.add_entity(proxy)
                 datasets_seen.update(proxy.datasets)
 
-    assert store.get_catalog().names == {"ec_meetings", "eu_authorities"}
+    assert store.get_catalog().names == {"donations", "eu_authorities"}
     return True
 
 
 def _run_store_test(cls: Store, proxies, **kwargs):
     # explicit catalog
     catalog = Catalog(
-        datasets=[Dataset(name="eu_authorities"), Dataset(name="ec_meetings")]
+        datasets=[Dataset(name="eu_authorities"), Dataset(name="donations")]
     )
     store = cls(catalog=catalog, **kwargs)
     with store.writer() as bulk:
@@ -44,7 +48,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
         "jurisdiction": ["eu"],
         "sourceUrl": ["https://www.asktheeu.org/en/body/satcen"],
     }
-    assert store.dataset.leaf_names == {"ec_meetings", "eu_authorities"}
+    assert store.dataset.leaf_names == {"donations", "eu_authorities"}
     tested = False
     for proxy in store.default_view().entities():
         assert isinstance(proxy, CompositeEntity)
@@ -53,7 +57,7 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     assert tested
 
     view = store.default_view()
-    ds = Dataset(name="eu_authorities").to_nk()
+    ds = make_dataset("eu_authorities")
     view = store.view(ds)
     assert len([e for e in view.entities()]) == 151
 
@@ -62,17 +66,19 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     res = [e for e in view.entities(q)]
     assert len(res) == 151
     assert "eu_authorities" in res[0].datasets
-    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
+    q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
     res = [e for e in view.entities(q)]
-    assert res[0].schema.name == "Event"
-    assert len(res) == 76
+    assert all(r.schema.name == "Payment" for r in res)
+    assert len(res) == 21
 
-    # coverage
+    # stats
     q = Query().where(dataset="eu_authorities")
-    coverage = view.coverage(q)
-    assert coverage.countries == [{"code": "eu", "label": "eu", "count": 151}]
-    assert coverage.entities == 151
-    assert coverage.schemata == [
+    stats = view.stats(q)
+    assert [c.model_dump() for c in stats.things.countries] == [
+        {"code": "eu", "label": "eu", "count": 151}
+    ]
+    assert stats.entity_count == 151
+    assert [s.model_dump() for s in stats.things.schemata] == [
         {
             "name": "PublicBody",
             "label": "Public body",
@@ -82,93 +88,113 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     ]
 
     # ordering
-    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
-    q = q.order_by("location")
+    q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
+    q = q.order_by("amountEur")
     res = [e for e in view.entities(q)]
-    assert len(res) == 76
-    assert res[0].get("location") == ["Abu Dhabi, UAE"]
-    q = q.order_by("location", ascending=False)
+    assert len(res) == 21
+    assert res[0].get("amountEur") == ["50001"]
+    q = q.order_by("amountEur", ascending=False)
     res = [e for e in view.entities(q)]
-    assert len(res) == 76
-    assert res[0].get("location") == ["virtual"]
+    assert len(res) == 21
+    assert res[0].get("amountEur") == ["320000"]
 
     # slice
-    q = Query().where(schema="Event", prop="date", value=2023, comparator="gte")
-    q = q.order_by("location")
+    q = Query().where(schema="Payment", prop="date", value=2011, comparator="gte")
+    q = q.order_by("amountEur")
     q = q[:10]
     res = [e for e in view.entities(q)]
     assert len(res) == 10
-    assert res[0].get("location") == ["Abu Dhabi, UAE"]
+    assert res[0].get("payer") == ["efccc434cdf141c7ba6f6e539bb6b42ecd97c368"]
+
+    q = Query().where(schema="Person").order_by("name")[0]
+    res = [e for e in view.entities(q)]
+    assert len(res) == 1
+    assert res[0].caption == "Dr.-Ing. E. h. Martin Herrenknecht"
 
     # aggregation
     q = Query().aggregate("max", "date").aggregate("min", "date")
     res = view.aggregations(q)
-    assert res == {"max": {"date": "2023-01-20"}, "min": {"date": "2014-11-12"}}
+    assert res == {"max": {"date": "2011-12-29"}, "min": {"date": "2002-07-04"}}
 
-    q = Query().aggregate("count", "id", groups="location")
+    q = Query().aggregate("count", "id", groups="beneficiary")
     res = view.aggregations(q)
-    assert res["groups"]["location"]["count"]["id"]["Brussels"] == 19090
+    assert (
+        res["groups"]["beneficiary"]["count"]["id"][
+            "6d03aec76fdeec8f9697d8b19954ab6fc2568bc8"
+        ]
+        == 10
+    )
+    assert len(proxies) == res["count"]["id"]
 
-    q = Query().where(dataset="ec_meetings").aggregate("count", "id", groups="schema")
+    q = (
+        Query()
+        .where(dataset="donations")
+        .aggregate("sum", "amountEur", groups="beneficiary")
+    )
     res = view.aggregations(q)
     assert res == {
         "groups": {
-            "schema": {
-                "count": {
-                    "id": {
-                        "Address": 1281,
-                        "PublicBody": 103,
-                        "Event": 34975,
-                        "Membership": 791,
-                        "Person": 791,
-                        "Organization": 7097,
+            "beneficiary": {
+                "sum": {
+                    "amountEur": {
+                        "6d03aec76fdeec8f9697d8b19954ab6fc2568bc8": 3368136.15,
+                        "783d918df9f9178400d6b3386439ab3b3679979c": 6039987,
+                        "6d8377d3938b85fa1bfd1985486f0f913c42e224": 6394282,
+                        "d10764ddf47ca220527d385fc8fbaa62114408e4": 660008,
+                        "7202347006660188aab5c1e264c4bee948478fd6": 4125977,
+                        "c326dd8021ee75fe9608f31ecb4e2e7388144102": 17231420,
+                        "542c6435219bd84c061ea407a6ab1e29b4d146d0": 1030898,
+                        "9fbaa5733790781e56eec4998aeacf5093dccbf5": 290725,
+                        "9e292c150c617eec85e5479c5f039f8441569441": 175000,
+                        "49d46f7e70e19bc497a17734af53ea1a00c831d6": 1221256,
+                        "4b308dc2b128377e63a4bf2e4c1b9fcd59614eee": 52000,  # pytest: MAX_SQL_AGG_GROUPS=11
                     }
                 }
             }
         },
-        "count": {"id": 45038},
+        "sum": {"amountEur": 40589689.15},
     }
-    q = Query().where(dataset="ec_meetings").aggregate("count", "id", groups="year")
+    q = Query().where(dataset="donations").aggregate("sum", "amountEur", groups="year")
     res = view.aggregations(q)
     assert res == {
         "groups": {
             "year": {
-                "count": {
-                    "id": {
-                        "2014": 550,
-                        "2015": 6691,
-                        "2016": 5199,
-                        "2017": 4047,
-                        "2018": 3873,
-                        "2019": 2321,
-                        "2020": 4640,
-                        "2021": 4079,
-                        "2022": 3499,
-                        "2023": 76,
+                "sum": {
+                    "amountEur": {
+                        "2011": 1953402.15,
+                        "2010": 3899002,
+                        "2009": 6451130,
+                        "2008": 6002766,
+                        "2007": 3266005,
+                        "2006": 4515084,
+                        "2005": 7278646,
+                        "2004": 2156628,
+                        "2003": 2337982,
+                        "2002": 2729044,
                     }
                 }
             }
         },
-        "count": {"id": 45038},
+        "sum": {"amountEur": 40589689.15},
     }
 
     # reversed
-    entity_id = "eu-tr-09571422185-81"
+    entity_id = "783d918df9f9178400d6b3386439ab3b3679979c"
     q = Query().where(reverse=entity_id)
     res = [p for p in view.entities(q)]
-    assert len(res) == 13
+    assert len(res) == 53
     tested = False
     for proxy in res:
-        assert entity_id in proxy.get("involved")
+        assert entity_id in proxy.get("beneficiary")
         tested = True
     assert tested
 
-    q = Query().where(reverse=entity_id, schema="Event")
-    q = q.where(prop="date", value=2022, comparator="gte")
-    res = [p for p in view.entities(q)]
-    assert len(res) == 3
+    q = Query().where(reverse=entity_id, schema="Payment")
+    q = q.where(prop="date", value=2007, comparator="gte")
+    res = [p for p in q.apply_iter(proxies)]
+    assert len(res) == 37
     q = Query().where(reverse=entity_id, schema="Person")
-    res = [p for p in view.entities(q)]
+    res = [p for p in q.apply_iter(proxies)]
     assert len(res) == 0
 
     # search
@@ -183,10 +209,10 @@ def _run_store_test(cls: Store, proxies, **kwargs):
     q = Query().where(canonical_id="eu-authorities-chafea")
     res = [p for p in view.entities(q)]
     assert len(res) == 1
-    q = Query().where(entity_id="eu-authorities-chafea", dataset="ec_meetings")
+    q = Query().where(entity_id="eu-authorities-chafea", dataset="donations")
     res = [p for p in view.entities(q)]
     assert len(res) == 0
-    q = Query().where(canonical_id="eu-authorities-chafea", dataset="ec_meetings")
+    q = Query().where(canonical_id="eu-authorities-chafea", dataset="donations")
     res = [p for p in view.entities(q)]
     assert len(res) == 0
     q = Query().where(entity_id__startswith="eu-authorities-")

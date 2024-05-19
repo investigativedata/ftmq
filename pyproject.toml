@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.4.0"
+version = "0.6.4"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -12,7 +12,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
 packages = [{include = "ftmq"}]
@@ -27,44 +26,44 @@ ftmq = "ftmq.cli:cli"
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
 banal = "^1.0.6"
-followthemoney = "^3.5.4"
-nomenklatura = "<3.5"
-orjson = "^3.9.7"
-PyICU = "^2.11"
+followthemoney = "^3.6.0"
+orjson = "^3.10.3"
+PyICU = "^2.13.1"
 click = "^8.1.7"
-click-default-group = "^1.2.2"
-cryptography = "^41.0.4"
-certifi = "^2023.7.22"
-scipy = "^1.11.3"
-pydantic = ">=1.10.0,<2.0.0"
-fsspec = "^2023.9.2"
-s3fs = "^2023.9.2"
-gcsfs = "^2023.9.2"
-adlfs = "^2023.9.0"
-sqlalchemy = "^2.0.21"
-alephclient = "^2.3.6"
-pycountry = "^22.3.5"
-fingerprints = "<1.2"
-urllib3 = "^1.26.18"
+click-default-group = "^1.2.4"
+cryptography = "^42.0.7"
+certifi = ">=2024.2.2"
+pydantic = "^2.7.1"
+sqlalchemy = "^2.0.30"
+alephclient = "^2.4.1"
+pycountry = "^23.12.11"
+urllib3 = "<3"
+nomenklatura = "^3.10.6"
+anystore = "^0.1.3"
+pantomime = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.3.2"
-pytest-cov = "^4.1.0"
-black = "^23.3.0"
+pytest = ">=7.4.3,<9.0.0"
+pytest-cov = ">=4.1,<6.0"
+black = ">=23.11,<25.0"
 isort = "^5.12.0"
-mypy = "^1.3.0"
-pre-commit = "^3.3.3"
-flake8 = "^6.0.0"
-moto = "^4.1.11"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+flake8 = ">=6.1,<8.0"
 ipdb = "^0.13.13"
 bump2version = "^1.0.1"
 cloudpickle = ">=2.2.1,<4.0.0"
-pytest-env = "^1.0.0"
-
-
+pytest-env = "^1.1.1"
+bump-pydantic = ">=0.7,<0.9"
 
 [tool.poetry.group.clickhouse.dependencies]
-ftm-columnstore = "^0.2.0"
+ftm-columnstore = "^0.2.1"
+
+[tool.poetry.group.level.dependencies]
+plyvel = "^1.5.1"
+
+[tool.poetry.group.redis.dependencies]
+redis = "^5.0.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -73,5 +72,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 env = [
     "DEBUG=1",
-    "NOMENKLATURA_STATEMENT_TABLE=test_table"
+    "NOMENKLATURA_STATEMENT_TABLE=test_table",
+    "MAX_SQL_AGG_GROUPS=11",
 ]

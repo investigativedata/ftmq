@@ -1,27 +1,18 @@
 import statistics
 from collections import defaultdict
-from functools import cache
 from typing import Any, Generator, Iterable, TypeAlias
 
+from anystore.util import clean_dict
 from banal import ensure_list
-from followthemoney.schema import Schema
 from followthemoney.types import registry
 from pydantic import BaseModel
 
 from ftmq.enums import Aggregations, Fields, Properties
 from ftmq.types import CE, CEGenerator
-from ftmq.util import clean_dict, to_numeric
+from ftmq.util import prop_is_numeric, to_numeric
 
 Value: TypeAlias = int | float | str
 Values: TypeAlias = list[Value]
-
-
-@cache
-def get_is_numeric(schema: Schema, prop: str) -> bool:
-    prop = schema.get(prop)
-    if prop is not None:
-        return prop.type == registry.number
-    return False
 
 
 class Aggregation(BaseModel):
@@ -70,7 +61,7 @@ class Aggregation(BaseModel):
             yield from proxy.get(prop, quiet=True)
 
     def collect(self, proxy: CE) -> CE:
-        is_numeric = get_is_numeric(proxy.schema, self.prop)
+        is_numeric = prop_is_numeric(proxy.schema, self.prop)
         for value in self.get_proxy_values(proxy):
             if is_numeric:
                 value = to_numeric(value)
@@ -117,9 +108,9 @@ class Aggregator(BaseModel):
         for agg in self.aggregations:
             self.result[str(agg.func)][str(agg.prop)] = agg.value
             for group in agg.group_props:
-                self.result["groups"][str(group)][str(agg.func)][
-                    str(agg.prop)
-                ] = agg.groups[group]
+                self.result["groups"][str(group)][str(agg.func)][str(agg.prop)] = (
+                    agg.groups[group]
+                )
         self.result = clean_dict(self.result)
 
     def apply(self, proxies: CEGenerator) -> CEGenerator:

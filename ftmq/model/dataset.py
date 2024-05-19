@@ -1,30 +1,27 @@
-from collections.abc import Generator
 from datetime import datetime
-from typing import Any, ForwardRef, Iterable, Literal, Optional, TypeVar
+from typing import Iterable, Literal, Self, TypeVar
 
 from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.dataset import Dataset as NKDataset
-from nomenklatura.dataset.publisher import DataPublisher as NKPublisher
-from nomenklatura.dataset.resource import DataResource as NKResource
 from normality import slugify
 from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
 
 from ftmq.enums import Categories, Frequencies
-from ftmq.model.coverage import Coverage
-from ftmq.model.mixins import BaseModel, NKModel, RemoteMixin, YamlMixin
-from ftmq.types import CEGenerator
+from ftmq.model.coverage import Coverage, DatasetStats, Schemata
+from ftmq.model.mixins import BaseModel
+from ftmq.types import CEGenerator, SDict
+from ftmq.util import make_dataset
 
 Frequencies = Literal[tuple(Frequencies)]
 Categories = Literal[tuple(Categories)]
+ContentType = Literal["documents", "structured", "mixed"]
 
 C = TypeVar("C", bound="Catalog")
 DS = TypeVar("DS", bound="Dataset")
 
 
-class Publisher(NKModel):
-    _nk_model = NKPublisher
-
+class Publisher(BaseModel):
     name: str
     url: HttpUrl
     description: str | None = None
@@ -34,9 +31,7 @@ class Publisher(NKModel):
     logo_url: HttpUrl | None = None
 
 
-class Resource(NKModel):
-    _nk_model = NKResource
-
+class Resource(BaseModel):
     name: str
     url: AnyUrl
     title: str | None = None
@@ -47,23 +42,21 @@ class Resource(NKModel):
     size: int | None = 0
 
 
-class Maintainer(BaseModel, RemoteMixin, YamlMixin):
+class Maintainer(BaseModel):
     """
     this is our own addition
     """
 
     name: str
     description: str | None = None
+    country: str | None = None
+    country_label: str | None = None
     url: HttpUrl | None = None
     logo_url: HttpUrl | None = None
 
 
-Catalog = ForwardRef("Catalog")
-
-
-class Dataset(NKModel):
-    _nk_model = NKDataset
-
+class Dataset(BaseModel):
+    # nk props
     name: str
     prefix: str | None = None
     title: str | None = None
@@ -76,34 +69,33 @@ class Dataset(NKModel):
     category: Categories | None = None
     publisher: Publisher | None = None
     coverage: Coverage | None = None
+    things: Schemata | None = None
+    intervals: Schemata | None = None
+    entity_count: int | None = 0
     resources: list[Resource] | None = []
+    index_url: AnyUrl | None = None
 
     # own addition / aleph
+    catalog: str | None = None
     countries: list[str] | None = []
     info_url: HttpUrl | None = None
     data_url: HttpUrl | None = None
+    aleph_url: HttpUrl | None = None
+    tags: list[str] | None = []
+    content_type: ContentType | None = "structured"
 
     git_repo: AnyUrl | None = None
     uri: str | None = None
     maintainer: Maintainer | None = None
-    catalog: Optional[Catalog] = None
 
     def __init__(self, **data):
-        Catalog.update_forward_refs()
-        Dataset.update_forward_refs()
-        if "include" in data:  # legacy behaviour
-            data["uri"] = data.pop("include", None)
         data["updated_at"] = data.get("updated_at") or datetime.utcnow().replace(
             microsecond=0
         )
-        data["catalog"] = data.get("catalog") or Catalog().dict()
         super().__init__(**data)
         self.prefix = self.prefix or data.get("prefix") or slugify(self.name)
         self.coverage = self.coverage or Coverage()
         self.title = self.title or self.name.title()
-
-    def to_nk(self):
-        return self._nk_model(self.catalog.to_nk(), self.dict())
 
     def iterate(self) -> CEGenerator:
         from ftmq.io import smart_read_proxies  # FIXME
@@ -112,19 +104,24 @@ class Dataset(NKModel):
             if resource.mime_type == FTM:
                 yield from smart_read_proxies(resource.url)
 
+    def apply_stats(self, stats: DatasetStats) -> None:
+        self.entity_count = stats.entity_count
+        self.coverage = stats.coverage
+        self.things = stats.things
+        self.intervals = stats.intervals
 
-Dataset.update_forward_refs()
+
+def ensure_dataset(data: SDict | Dataset) -> Dataset:
+    if isinstance(data, Dataset):
+        return data
+    return Dataset(**data)
 
 
-class Catalog(NKModel):
-    _nk_model = NKCatalog
-
-    datasets: list[Dataset] | None = []
-    updated_at: datetime | None = None
-
-    # own additions
+class Catalog(BaseModel):
     name: str | None = "default"
     title: str | None = "Catalog"
+    datasets: list[Dataset] | None = []
+    updated_at: datetime | None = None
     description: str | None = None
     maintainer: Maintainer | None = None
     publisher: Publisher | None = None
@@ -132,63 +129,42 @@ class Catalog(NKModel):
     uri: str | None = None
     logo_url: HttpUrl | None = None
     git_repo: AnyUrl | None = None
-    catalogs: list[Catalog] | None = []
 
     def __init__(self, **data):
         if "name" not in data:
             data["name"] = "Catalog"
+        data["datasets"] = [ensure_dataset(d) for d in data.get("datasets", [])]
         super().__init__(**data)
-
-    def to_nk(self):
-        return self._nk_model(NKDataset, self.dict())
 
     def get(self, name: str) -> Dataset | None:
         for dataset in self.datasets:
             if dataset.name == name:
                 return dataset
 
-    def get_datasets(self) -> Generator[Dataset, None, None]:
-        yield from self.datasets
-        for catalog in self.catalogs:
-            yield from catalog.datasets
-
     def get_scope(self) -> NKDataset:
-        # FIXME
-        catalog = self.copy()
-        for ds in catalog.datasets:
-            ds.coverage = None
-        catalog = catalog.to_nk()
+        # FIXME clarify
         return NKDataset(
-            catalog,
+            NKCatalog(
+                NKDataset, {"datasets": [make_dataset(n).to_dict() for n in self.names]}
+            ),
             {
                 "name": slugify(self.name),
                 "title": self.name.title(),
-                "children": catalog.names,
+                "children": self.names,
             },
         )
-
-    def metadata(self) -> dict[str, Any]:
-        catalog = self.copy()
-        catalog.datasets = []
-        catalog.catalogs = [c.metadata() for c in self.catalogs]
-        return catalog.dict()
-
-    @property
-    def names(self) -> set:
-        names = set()
-        for dataset in self.datasets:
-            names.add(dataset.name)
-        for catalog in self.catalogs:
-            names.update(catalog.names)
-        return names
-
-    @classmethod
-    def from_names(cls, names: Iterable[set]) -> Catalog:
-        return cls(datasets=[Dataset(name=n) for n in names])
 
     def iterate(self) -> CEGenerator:
         for dataset in self.datasets:
             yield from dataset.iterate()
 
+    @property
+    def names(self) -> set[str]:
+        names = set()
+        for dataset in self.datasets:
+            names.add(dataset.name)
+        return names
 
-Catalog.update_forward_refs()
+    @classmethod
+    def from_names(cls, names: Iterable[str]) -> Self:
+        return cls(datasets=[Dataset(name=n) for n in names])

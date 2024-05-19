@@ -30,15 +30,15 @@ PathLike: TypeAlias = str | os.PathLike[str] | Path
 DateLike: TypeAlias = date | datetime
 
 __all__ = [
-    BytesGenerator,
-    CE,
-    CEGenerator,
-    Frequencies,
-    PathLike,
-    Properties,
-    Schemata,
-    SDict,
-    SGenerator,
-    StrGenerator,
-    Value,
+    "BytesGenerator",
+    "CE",
+    "CEGenerator",
+    "Frequencies",
+    "PathLike",
+    "Properties",
+    "Schemata",
+    "SDict",
+    "SGenerator",
+    "StrGenerator",
+    "Value",
 ]

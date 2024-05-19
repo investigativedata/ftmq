@@ -2,6 +2,11 @@
 
 ## CHANGELOG
 
+### 0.5.0 (2023-11-12)
+
+- **Switch from Pydantic V1 to V2**
+- Dependency upgrades
+
 ### 0.4.0 (2023-10-19)
 
 - **Drop support for Python 3.10**

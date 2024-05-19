@@ -1,3 +1,5 @@
+all: clean install test
+
 install:
 	poetry install --with dev
 
@@ -13,7 +15,7 @@ typecheck:
 	poetry run mypy --strict ftmq
 
 test:
-	poetry run pytest -v --capture=sys --cov=ftmq --cov-report term-missing
+	poetry run pytest -v --capture=sys --cov=ftmq --cov-report lcov
 
 build:
 	poetry run build

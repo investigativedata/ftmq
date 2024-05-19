@@ -6,6 +6,7 @@ from nomenklatura.entity import CompositeEntity
 
 from ftmq.cli import cli
 from ftmq.io import make_proxy
+from ftmq.model import Catalog, Dataset
 
 runner = CliRunner()
 
@@ -51,23 +52,23 @@ def test_cli(fixtures_path: Path):
     lines = _get_lines(result.output)
     assert len(lines) == 0
 
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
-    result = runner.invoke(cli, ["-i", in_uri, "-s", "Event", "--date__gte", "2022"])
+    in_uri = str(fixtures_path / "donations.ijson")
+    result = runner.invoke(cli, ["-i", in_uri, "-s", "Payment", "--date__gte", "2010"])
     assert result.exit_code == 0
     lines = _get_lines(result.output)
-    assert len(lines) == 3575
+    assert len(lines) == 49
 
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
+    in_uri = str(fixtures_path / "donations.ijson")
     result = runner.invoke(cli, ["-i", in_uri, "-s", "Person", "--sort", "name"])
     lines = _get_lines(result.output)
     data = orjson.loads(lines[0])
-    assert data["caption"] == "Aare Järvan"
+    assert data["caption"] == "Dr.-Ing. E. h. Martin Herrenknecht"
     result = runner.invoke(
         cli, ["-i", in_uri, "-s", "Person", "--sort", "name", "--sort-descending"]
     )
     lines = _get_lines(result.output)
     data = orjson.loads(lines[0])
-    assert data["caption"] == "Zaneta Vegnere"
+    assert data["caption"] == "Johanna Quandt"
 
 
 def test_cli_apply(fixtures_path: Path):
@@ -98,57 +99,69 @@ def test_cli_apply(fixtures_path: Path):
 
 
 def test_cli_coverage(fixtures_path: Path):
-    in_uri = str(fixtures_path / "ec_meetings.ftm.json")
-    result = runner.invoke(
-        cli, ["-i", in_uri, "-o", "/dev/null", "--coverage-uri", "-"]
+    in_uri = str(fixtures_path / "donations.ijson")
+    result = runner.invoke(cli, ["-i", in_uri, "-o", "/dev/null", "--stats-uri", "-"])
+    assert result.exit_code == 0
+    test_result = orjson.loads(result.output)
+    test_result["coverage"]["countries"] = sorted(test_result["coverage"]["countries"])
+    test_result["things"]["countries"] = sorted(
+        test_result["things"]["countries"], key=lambda x: x["code"]
     )
-    assert result.exit_code == 0
-    assert orjson.loads(result.output) == {
-        "start": "2014-11-12",
-        "end": "2023-01-20",
-        "years": [2014, 2023],
-        "frequency": "unknown",
-        "schemata": [
-            {
-                "name": "Address",
-                "count": 1281,
-                "label": "Address",
-                "plural": "Addresses",
-            },
-            {
-                "name": "PublicBody",
-                "count": 103,
-                "label": "Public body",
-                "plural": "Public bodies",
-            },
-            {"name": "Event", "count": 34975, "label": "Event", "plural": "Events"},
-            {
-                "name": "Membership",
-                "count": 791,
-                "label": "Membership",
-                "plural": "Memberships",
-            },
-            {"name": "Person", "count": 791, "label": "Person", "plural": "People"},
-            {
-                "name": "Organization",
-                "count": 7097,
-                "label": "Organization",
-                "plural": "Organizations",
-            },
-        ],
-        "countries": [{"code": "eu", "count": 103, "label": "eu"}],
-        "entities": 45038,
+    test_result["things"]["schemata"] = sorted(
+        test_result["things"]["schemata"], key=lambda x: x["name"]
+    )
+    assert test_result == {
+        "coverage": {
+            "start": "2002-07-04",
+            "end": "2011-12-29",
+            "frequency": "unknown",
+            "countries": ["cy", "de", "gb", "lu"],
+            "schedule": None,
+        },
+        "things": {
+            "total": 184,
+            "countries": [
+                {"code": "cy", "count": 2, "label": "Cyprus"},
+                {"code": "de", "count": 163, "label": "Germany"},
+                {"code": "gb", "count": 3, "label": "United Kingdom"},
+                {"code": "lu", "count": 2, "label": "Luxembourg"},
+            ],
+            "schemata": [
+                {
+                    "name": "Address",
+                    "count": 89,
+                    "label": "Address",
+                    "plural": "Addresses",
+                },
+                {
+                    "name": "Company",
+                    "count": 56,
+                    "label": "Company",
+                    "plural": "Companies",
+                },
+                {
+                    "name": "Organization",
+                    "count": 17,
+                    "label": "Organization",
+                    "plural": "Organizations",
+                },
+                {"name": "Person", "count": 22, "label": "Person", "plural": "People"},
+            ],
+        },
+        "intervals": {
+            "total": 290,
+            "countries": [],
+            "schemata": [
+                {
+                    "name": "Payment",
+                    "count": 290,
+                    "label": "Payment",
+                    "plural": "Payments",
+                }
+            ],
+        },
+        "entity_count": 474,
     }
-
-
-def test_cli_io(fixtures_path: Path):
-    in_uri = str(fixtures_path / "eu_authorities.ftm.json")
-    result = runner.invoke(cli, ["io", "-i", in_uri])
-    assert result.exit_code == 0
-    lines = _get_lines(result.output)
-    assert len(lines) == 151
-    proxy = make_proxy(orjson.loads(lines[0]))
-    assert isinstance(proxy, CompositeEntity)
 
 
 def test_cli_aggregation(fixtures_path: Path):
@@ -202,3 +215,17 @@ def test_cli_aggregation(fixtures_path: Path):
             }
         },
     }
+
+
+def test_cli_generate(fixtures_path: Path):
+    # dataset
+    uri = str(fixtures_path / "dataset.yml")
+    res = runner.invoke(cli, ["dataset", "generate", "-i", uri])
+    res = orjson.loads(res.output)
+    assert Dataset(**res)
+
+    # catalog
+    uri = str(fixtures_path / "catalog.yml")
+    res = runner.invoke(cli, ["catalog", "generate", "-i", uri])
+    res = orjson.loads(res.output)
+    assert Catalog(**res)

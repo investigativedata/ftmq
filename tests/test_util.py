@@ -1,17 +1,16 @@
 import sys
-from collections import defaultdict
 from datetime import datetime
 
 import cloudpickle
 import pytest
-
-if sys.version_info >= (3, 11):
-    from enum import EnumType
-
+from followthemoney import model
 from nomenklatura.dataset import Dataset
 
 from ftmq import util
 from ftmq.enums import Comparators, StrEnum
+
+if sys.version_info >= (3, 11):
+    from enum import EnumType
 
 
 def test_util_make_dataset():
@@ -82,15 +81,6 @@ def test_util_country():
     assert util.get_country_code("Foo") is None
 
 
-def test_util_clean_dict():
-    assert util.clean_dict(defaultdict(list)) == {}
-    data = defaultdict(list)
-    data["foo"] = [1, 2, 3]
-    data["bar"]
-    assert util.clean_dict(data) == {"foo": [1, 2, 3]}
-    assert util.clean_dict("foo") is None
-
-
 def test_util_get_year():
     assert util.get_year(None) is None
     assert util.get_year("2023") == 2023
@@ -105,9 +95,14 @@ def test_util_get_year():
     assert util.clean_name("  foo\n bar") == "foo bar"
     assert util.clean_name("- - . *") is None
 
-    assert util.fingerprint("Mrs. Jane Doe") == "doe jane mrs"
-    assert util.fingerprint("Mrs. Jane Mrs. Doe") == "doe jane mrs"
-    assert util.fingerprint("#") is None
-    assert util.fingerprint(" ") is None
-    assert util.fingerprint("") is None
-    assert util.fingerprint(None) is None
+    assert util.make_fingerprint("Mrs. Jane Doe") == "doe jane mrs"
+    assert util.make_fingerprint("Mrs. Jane Mrs. Doe") == "doe jane mrs"
+    assert util.make_fingerprint("#") is None
+    assert util.make_fingerprint(" ") is None
+    assert util.make_fingerprint("") is None
+    assert util.make_fingerprint(None) is None
+
+
+def test_util_prop_is_numeric():
+    assert not util.prop_is_numeric(model.get("Person"), "name")
+    assert util.prop_is_numeric(model.get("Payment"), "amountEur")

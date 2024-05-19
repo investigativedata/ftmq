@@ -1,0 +1,4 @@
+datasets:
+  - from_uri: https://data.opensanctions.org/datasets/latest/us_ofac_sdn/index.json
+    maintainer:
+      name: OpenSanctions

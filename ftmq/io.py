@@ -1,12 +1,9 @@
-import contextlib
 import logging
-import sys
 from collections.abc import Iterable
-from typing import Any, Literal
 
 import orjson
+from anystore.io import smart_open, smart_stream
 from banal import is_listish
-from fsspec import open
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
 
@@ -17,55 +14,7 @@ from ftmq.util import get_statements, make_dataset, make_proxy
 
 log = logging.getLogger(__name__)
 
-
-@contextlib.contextmanager
-def smart_open(
-    uri: str,
-    sys_io: Literal[sys.stdin.buffer, sys.stdout.buffer] | None = sys.stdin,
-    *args,
-    **kwargs,
-):
-    is_buffer = False
-    kwargs["mode"] = kwargs.get("mode", "rb")
-    if not uri:
-        raise ValueError("Missing uri")
-    if uri != "-":
-        fh = open(uri, *args, **kwargs)
-    else:
-        fh = sys_io
-        is_buffer = True
-
-    try:
-        if is_buffer:
-            yield fh
-        else:
-            yield fh.open()
-    finally:
-        if not is_buffer:
-            fh.close()
-
-
-def _smart_stream(uri, *args, **kwargs) -> Any:
-    kwargs["mode"] = kwargs.get("mode", "rb")
-    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
-        while line := fh.readline():
-            yield line
-
-
-def smart_read(uri, *args, **kwargs) -> Any:
-    kwargs["mode"] = kwargs.get("mode", "rb")
-    stream = kwargs.pop("stream", False)
-    if stream:
-        return _smart_stream(uri, *args, **kwargs)
-
-    with smart_open(uri, sys.stdin.buffer, *args, **kwargs) as fh:
-        return fh.read()
-
-
-def smart_write(uri, content: bytes | str, *args, **kwargs) -> Any:
-    kwargs["mode"] = kwargs.get("mode", "wb")
-    with smart_open(uri, sys.stdout.buffer, *args, **kwargs) as fh:
-        fh.write(content)
+DEFAULT_MODE = "rb"
 
 
 def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
@@ -77,7 +26,7 @@ def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
 
 def smart_read_proxies(
     uri: PathLike | Iterable[PathLike],
-    mode: str | None = "rb",
+    mode: str | None = DEFAULT_MODE,
     serialize: bool | None = True,
     query: Query | None = None,
     **store_kwargs,
@@ -93,7 +42,7 @@ def smart_read_proxies(
         yield from view.entities(query)
         return
 
-    lines = smart_read(uri, stream=True)
+    lines = smart_stream(uri)
     lines = (orjson.loads(line) for line in lines)
     if serialize or query:
         q = query or Query()
@@ -127,7 +76,7 @@ def smart_write_proxies(
                     log.info("Writing proxy %d ..." % ix)
         return ix
 
-    with smart_open(uri, sys.stdout.buffer, mode=mode) as fh:
+    with smart_open(uri, mode=mode) as fh:
         for proxy in proxies:
             ix += 1
             if serialize:

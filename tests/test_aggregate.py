@@ -34,3 +34,10 @@ def test_aggregate():
         }
     )
     assert merge(p1, p2, downgrade=True).schema.name == "LegalEntity"
+
+    # higher level aggregate function
+    with pytest.raises(InvalidData):
+        next(aggregate([p1, p2]))
+
+    proxy = next(aggregate([p1, p2], downgrade=True))
+    assert proxy.schema.name == "LegalEntity"

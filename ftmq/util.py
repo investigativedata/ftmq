@@ -1,17 +1,16 @@
 import re
-from collections.abc import Generator, Iterable
 from functools import cache, lru_cache
-from typing import Any
+from typing import Any, Generator
 
 import pycountry
-from banal import clean_dict as _clean_dict
-from banal import ensure_list, is_mapping
+from banal import ensure_list
+from followthemoney.schema import Schema
 from followthemoney.types import registry
 from followthemoney.util import make_entity_id, sanitize_text
 from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
-from normality import slugify
+from normality import collapse_spaces, slugify
 
 from ftmq.enums import Comparators
 from ftmq.exceptions import ValidationError
@@ -73,7 +72,7 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
     return proxy
 
 
-def get_statements(proxy: CE, *datasets: Iterable[str]) -> SGenerator:
+def get_statements(proxy: CE, *datasets: str) -> SGenerator:
     datasets = datasets or ["default"]
     for dataset in datasets:
         # FIXME
@@ -142,21 +141,13 @@ def join_slug(
     prefix = slugify(prefix, sep=sep)
     if prefix is not None:
         texts = [prefix, *texts]
-    return sep.join(texts)[:max_len].strip(sep)
-
-
-def clean_dict(data: Any) -> dict[str, Any]:
-    """
-    strip out defaultdict and ensure str keys (for serialization)
-    """
-    if not is_mapping(data):
-        return
-    return _clean_dict(
-        {
-            str(k): clean_dict(dict(v)) or None if is_mapping(v) else v or None
-            for k, v in data.items()
-        }
-    )
+    slug = sep.join(texts)
+    if len(slug) <= max_len:
+        return slug
+    # shorten slug but ensure unique
+    ident = make_entity_id(slug)[:8]
+    slug = slug[: max_len - 9].strip(sep)
+    return f"{slug}-{ident}"
 
 
 def get_year(value: Any) -> int | None:
@@ -176,7 +167,7 @@ def clean_string(value: Any) -> str | None:
     value = sanitize_text(value)
     if value is None:
         return
-    return " ".join(value.split())
+    return collapse_spaces(value)
 
 
 @lru_cache(1024)
@@ -192,7 +183,7 @@ def clean_name(value: Any) -> str | None:
 
 
 @lru_cache(1024)
-def fingerprint(value: Any) -> str | None:
+def make_fingerprint(value: Any) -> str | None:
     """
     Create a stable but simplified string or None from input that can be used
     to generate ids (to mimic `fingerprints.generate` which is unstable for IDs
@@ -205,10 +196,18 @@ def fingerprint(value: Any) -> str | None:
 
 
 @lru_cache(1024)
-def string_id(value: Any) -> str | None:
-    return make_entity_id(clean_name(value))
+def make_string_id(*values: Any) -> str | None:
+    return make_entity_id(*map(clean_name, values))
 
 
 @lru_cache(1024)
-def fingerprint_id(value: Any) -> str | None:
-    return make_entity_id(fingerprint(value))
+def make_fingerprint_id(*values: Any) -> str | None:
+    return make_entity_id(*map(make_fingerprint, values))
+
+
+@cache
+def prop_is_numeric(schema: Schema, prop: str) -> bool:
+    prop = schema.get(prop)
+    if prop is not None:
+        return prop.type == registry.number
+    return False
