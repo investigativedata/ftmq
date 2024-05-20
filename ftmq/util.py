@@ -22,6 +22,15 @@ def make_dataset(name: str) -> Dataset:
     return Dataset.make({"name": name, "title": name})
 
 
+@cache
+def ensure_dataset(ds: str | Dataset | None = None) -> Dataset | None:
+    if not ds:
+        return
+    if isinstance(ds, str):
+        return make_dataset(ds)
+    return ds
+
+
 DefaultDataset = make_dataset("default")
 
 
