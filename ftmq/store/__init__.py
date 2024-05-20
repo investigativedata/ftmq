@@ -48,6 +48,13 @@ def get_store(
             return RedisStore(catalog, dataset, path=path, resolver=resolver)
         except ImportError:
             raise ImportError("Can not load RedisStore. Install `redis`")
+    if parsed.scheme == "clickhouse":
+        try:
+            from ftm_columnstore import get_store
+
+            return get_store(catalog, dataset, resolver=resolver)
+        except ImportError:
+            raise ImportError("Can not load ClickhouseStore. Install `ftm-columnstore`")
     if "sql" in parsed.scheme:
         get_metadata.cache_clear()
         return SQLStore(catalog, dataset, uri=uri, resolver=resolver)
