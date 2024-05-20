@@ -9,7 +9,7 @@ from ftmq.model.coverage import Collector, DatasetStats
 from ftmq.model.dataset import C, Dataset
 from ftmq.query import Q
 from ftmq.types import CE, CEGenerator
-from ftmq.util import DefaultDataset, make_dataset
+from ftmq.util import DefaultDataset, ensure_dataset, make_dataset
 
 log = logging.getLogger(__name__)
 
@@ -36,9 +36,13 @@ class Store(nk.Store):
         # return implicit catalog computed from current datasets in store
         raise NotImplementedError
 
-    def iterate(self) -> CEGenerator:
-        catalog = self.get_catalog()
-        view = self.view(catalog.get_scope())
+    def iterate(self, dataset: str | Dataset | None = None) -> CEGenerator:
+        dataset = ensure_dataset(dataset)
+        if dataset is not None:
+            view = self.view(dataset)
+        else:
+            catalog = self.get_catalog()
+            view = self.view(catalog.get_scope())
         yield from view.entities()
 
     def resolve(self, dataset: str | Dataset | None = None) -> None:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.6.4"
+version = "0.6.5"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -38,7 +38,7 @@ sqlalchemy = "^2.0.30"
 alephclient = "^2.4.1"
 pycountry = "^23.12.11"
 urllib3 = "<3"
-nomenklatura = "^3.10.6"
+nomenklatura = ">3.10,<3.11"
 anystore = "^0.1.3"
 pantomime = "^0.6.1"
 
@@ -56,11 +56,11 @@ cloudpickle = ">=2.2.1,<4.0.0"
 pytest-env = "^1.1.1"
 bump-pydantic = ">=0.7,<0.9"
 
-
+[tool.poetry.group.clickhouse.dependencies]
+ftm-columnstore = "^0.3.0"
 
 [tool.poetry.group.level.dependencies]
 plyvel = "^1.5.1"
-
 
 [tool.poetry.group.redis.dependencies]
 redis = "^5.0.1"

@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 from datetime import date
+from decimal import Decimal
 
 from anystore.util import clean_dict
 from nomenklatura import store as nk
@@ -15,8 +16,15 @@ from ftmq.model.dataset import Catalog
 from ftmq.query import Q, Query
 from ftmq.store.base import Store, View
 from ftmq.types import CEGenerator
+from ftmq.util import to_numeric
 
 MAX_SQL_AGG_GROUPS = int(os.environ.get("MAX_SQL_AGG_GROUPS", 10))
+
+
+def clean_agg_value(value: str | Decimal) -> str | float | int | None:
+    if isinstance(value, Decimal):
+        return to_numeric(value)
+    return value
 
 
 class SQLQueryView(View, nk.sql.SQLView):
@@ -58,9 +66,9 @@ class SQLQueryView(View, nk.sql.SQLView):
                 c.intervals_countries[country] = count
         stats = c.export()
         for start, end in self.store._execute(query.sql.date_range, stream=False):
-            if start is not None:
+            if start:
                 stats.coverage.start = date.fromisoformat(start)
-            if end is not None:
+            if end:
                 stats.coverage.end = date.fromisoformat(end)
             break
 
@@ -86,7 +94,7 @@ class SQLQueryView(View, nk.sql.SQLView):
         for prop, func, value in self.store._execute(
             query.sql.aggregations, stream=False
         ):
-            res[func][prop] = value
+            res[func][prop] = clean_agg_value(value)
 
         if query.sql.group_props:
             res["groups"] = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
@@ -109,7 +117,9 @@ class SQLQueryView(View, nk.sql.SQLView):
                     for agg_prop, func, value in self.store._execute(
                         query.sql.get_group_aggregations(prop, group), stream=False
                     ):
-                        res["groups"][prop][func][agg_prop][group] = value
+                        res["groups"][prop][func][agg_prop][group] = clean_agg_value(
+                            value
+                        )
         res = clean_dict(res)
         self._cache[key] = res
         return res
