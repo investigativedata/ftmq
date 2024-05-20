@@ -50,9 +50,9 @@ def get_store(
             raise ImportError("Can not load RedisStore. Install `redis`")
     if parsed.scheme == "clickhouse":
         try:
-            from ftm_columnstore import get_store
+            from ftm_columnstore import get_store as get_cstore
 
-            return get_store(catalog, dataset, resolver=resolver)
+            return get_cstore(catalog, dataset, resolver=resolver)
         except ImportError:
             raise ImportError("Can not load ClickhouseStore. Install `ftm-columnstore`")
     if "sql" in parsed.scheme:
