@@ -1106,13 +1106,13 @@ pyflakes = ">=3.2.0,<3.3.0"
 
 [[package]]
 name = "followthemoney"
-version = "3.6.0"
+version = "3.6.1"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "followthemoney-3.6.0-py2.py3-none-any.whl", hash = "sha256:4f758a3dfc8fc723253d77bf5da82742193c281c89bf0f30a5c8f44ae80ecc2f"},
-    {file = "followthemoney-3.6.0.tar.gz", hash = "sha256:5f062e5e2b7bf0d4f5bcae315e4301014c1d4983fdaeeaa65992cc89e0e2407f"},
+    {file = "followthemoney-3.6.1-py2.py3-none-any.whl", hash = "sha256:2ec1bc95f90766c49bcf529db94a5e8024a3e4bdb2a31ef2fccbea9156b7d003"},
+    {file = "followthemoney-3.6.1.tar.gz", hash = "sha256:73747c7895e9a4dec2e8960b1aa0767283a6e7e63d55cda54f75d93fabdb3885"},
 ]
 
 [package.dependencies]
