@@ -2396,13 +2396,13 @@ files = [
 
 [[package]]
 name = "nomenklatura"
-version = "3.10.6"
+version = "3.11.5"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.10.6-py3-none-any.whl", hash = "sha256:612a12735763d051e8da6fbba1c9525c539777a447eea7d8646524f3bcd50041"},
-    {file = "nomenklatura-3.10.6.tar.gz", hash = "sha256:09bb68ac28c20c8bcaee42bd12ad2c2e6f5f10a8816f3b3ab9b942e49b89b291"},
+    {file = "nomenklatura-3.11.5-py3-none-any.whl", hash = "sha256:2e28bcbe9cdd557306d9f097944112df266e0758638ced8491ab9529ca0b7693"},
+    {file = "nomenklatura-3.11.5.tar.gz", hash = "sha256:2a13636c43441d58e6f7a0e881745c338f63c0593e76b4332dfc9e6ef57b7333"},
 ]
 
 [package.dependencies]
@@ -4165,4 +4165,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "19b471091bd4412dab704aca6ea2dd6d20516da88dfac88468b6dc9b59ae45be"
+content-hash = "c7e5313989e18615f3c8503f1b73e6f34e7b2f6995141209030cbe2d6b0a75d9"
