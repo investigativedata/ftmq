@@ -2396,13 +2396,13 @@ files = [
 
 [[package]]
 name = "nomenklatura"
-version = "3.10.6"
+version = "3.12.0"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.10.6-py3-none-any.whl", hash = "sha256:612a12735763d051e8da6fbba1c9525c539777a447eea7d8646524f3bcd50041"},
-    {file = "nomenklatura-3.10.6.tar.gz", hash = "sha256:09bb68ac28c20c8bcaee42bd12ad2c2e6f5f10a8816f3b3ab9b942e49b89b291"},
+    {file = "nomenklatura-3.12.0-py3-none-any.whl", hash = "sha256:7acae9d90d94db6944c0b8c5af38dabdd87783159864074af4d8ae67fa82a492"},
+    {file = "nomenklatura-3.12.0.tar.gz", hash = "sha256:2da50ea66427050a45e23da3ca53eab3b1b05d1fa34734326ee52677d51cd91f"},
 ]
 
 [package.dependencies]
@@ -2420,9 +2420,10 @@ sqlalchemy = ">=2.0.0"
 textual = ">=0.19.0,<1.0.0"
 
 [package.extras]
-dev = ["coverage (>=4.1)", "fakeredis", "flake8 (>=2.6.0)", "lxml-stubs", "mypy", "plyvel (<2.0.0)", "pytest", "pytest-cov", "redis (>5.0.0,<6.0.0)", "requests-mock", "twine", "types-redis", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
+dev = ["coverage (>=4.1)", "fakeredis", "flake8 (>=2.6.0)", "lxml-stubs", "mypy", "plyvel (<2.0.0)", "pytest", "pytest-cov", "redis (>5.0.0,<6.0.0)", "requests-mock", "tantivy (<1.0.0)", "twine", "types-redis", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
 leveldb = ["plyvel (<2.0.0)"]
 redis = ["redis (>5.0.0,<6.0.0)"]
+tantivy = ["tantivy (<1.0.0)"]
 
 [[package]]
 name = "normality"
@@ -4165,4 +4166,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "19b471091bd4412dab704aca6ea2dd6d20516da88dfac88468b6dc9b59ae45be"
+content-hash = "e15fb2ce987fc2f6b59368801a48f3559549820e686e11285ad235c9fec7a171"
