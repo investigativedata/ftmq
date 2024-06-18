@@ -5,8 +5,8 @@ from followthemoney import model
 
 from ftmq.enums import Properties
 from ftmq.model.mixins import BaseModel
-from ftmq.types import CE, CEGenerator, DateLike, Frequencies
-from ftmq.util import get_country_name
+from ftmq.types import CE, CEGenerator, Frequencies
+from ftmq.util import get_country_name, get_year
 
 
 class Schema(BaseModel):
@@ -39,8 +39,8 @@ class Schemata(BaseModel):
 
 
 class Coverage(BaseModel):
-    start: DateLike | None = None
-    end: DateLike | None = None
+    start: str | None = None
+    end: str | None = None
     frequency: Frequencies | None = "unknown"
     countries: list[str] | None = []
     schedule: str | None = None
@@ -50,10 +50,7 @@ class Coverage(BaseModel):
         """
         Return min / max year extend
         """
-        return (
-            self.start.year if self.start else None,
-            self.end.year if self.end else None,
-        )
+        return get_year(self.start), get_year(self.end)
 
 
 class DatasetStats(BaseModel):

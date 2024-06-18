@@ -12,12 +12,10 @@ def test_coverage(fixtures_path: Path):
     for proxy in smart_read_proxies(fixtures_path / "donations.ijson"):
         c.collect(proxy)
 
-    start = date(2002, 7, 4)
-    end = date(2011, 12, 29)
     result = {
         "coverage": {
-            "start": start,
-            "end": end,
+            "start": "2002-07-04",
+            "end": "2011-12-29",
             "frequency": "unknown",
             "countries": ["cy", "de", "gb", "lu"],
             "schedule": None,

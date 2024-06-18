@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.6.6"
+version = "0.6.7"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -39,7 +39,7 @@ alephclient = "^2.4.1"
 pycountry = ">=23.12.11,<25.0.0"
 urllib3 = "<3"
 nomenklatura = ">3.10,<3.11"
-anystore = "^0.1.3"
+anystore = "^0.1.5"
 pantomime = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]

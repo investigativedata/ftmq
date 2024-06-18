@@ -1,6 +1,5 @@
 import os
 from collections import defaultdict
-from datetime import date
 from decimal import Decimal
 
 from anystore.util import clean_dict
@@ -64,16 +63,14 @@ class SQLQueryView(View, nk.sql.SQLView):
         ):
             if country is not None:
                 c.intervals_countries[country] = count
+
         stats = c.export()
         for start, end in self.store._execute(query.sql.date_range, stream=False):
             if start:
-                stats.coverage.start = date.fromisoformat(start)
+                stats.coverage.start = start
             if end:
-                stats.coverage.end = date.fromisoformat(end)
+                stats.coverage.end = end
             break
-
-        for res in self.store._execute(query.sql.countries, stream=False):
-            stats.coverage.countries.append(res)
 
         for res in self.store._execute(query.sql.count, stream=False):
             for count in res:
