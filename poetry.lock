@@ -2372,13 +2372,13 @@ files = [
 
 [[package]]
 name = "nomenklatura"
-version = "3.10.6"
+version = "3.12.1"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.10.6-py3-none-any.whl", hash = "sha256:612a12735763d051e8da6fbba1c9525c539777a447eea7d8646524f3bcd50041"},
-    {file = "nomenklatura-3.10.6.tar.gz", hash = "sha256:09bb68ac28c20c8bcaee42bd12ad2c2e6f5f10a8816f3b3ab9b942e49b89b291"},
+    {file = "nomenklatura-3.12.1-py3-none-any.whl", hash = "sha256:35dead754ad2d7d4f344e2c35762e6b57847ab3629c04f7e2208d5ff801d75d0"},
+    {file = "nomenklatura-3.12.1.tar.gz", hash = "sha256:10758ef8fd1286afa91768d17f434000503ce830f82fe88e3ecf59b449e0fd7c"},
 ]
 
 [package.dependencies]
@@ -2396,9 +2396,10 @@ sqlalchemy = ">=2.0.0"
 textual = ">=0.19.0,<1.0.0"
 
 [package.extras]
-dev = ["coverage (>=4.1)", "fakeredis", "flake8 (>=2.6.0)", "lxml-stubs", "mypy", "plyvel (<2.0.0)", "pytest", "pytest-cov", "redis (>5.0.0,<6.0.0)", "requests-mock", "twine", "types-redis", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
+dev = ["coverage (>=4.1)", "fakeredis", "flake8 (>=2.6.0)", "lxml-stubs", "mypy", "plyvel (<2.0.0)", "pytest", "pytest-cov", "redis (>5.0.0,<6.0.0)", "requests-mock", "tantivy (<1.0.0)", "twine", "types-redis", "types-requests", "types-setuptools", "wheel (>=0.29.0)"]
 leveldb = ["plyvel (<2.0.0)"]
 redis = ["redis (>5.0.0,<6.0.0)"]
+tantivy = ["tantivy (<1.0.0)"]
 
 [[package]]
 name = "normality"
@@ -3637,6 +3638,18 @@ description = "Database Abstraction Library"
 optional = false
 python-versions = ">=3.7"
 files = [
+    {file = "SQLAlchemy-2.0.31-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f68470edd70c3ac3b6cd5c2a22a8daf18415203ca1b036aaeb9b0fb6f54e8298"},
+    {file = "SQLAlchemy-2.0.31-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:2e2c38c2a4c5c634fe6c3c58a789712719fa1bf9b9d6ff5ebfce9a9e5b89c1ca"},
+    {file = "SQLAlchemy-2.0.31-cp311-cp311-win32.whl", hash = "sha256:6e2622844551945db81c26a02f27d94145b561f9d4b0c39ce7bfd2fda5776dac"},
+    {file = "SQLAlchemy-2.0.31-cp311-cp311-win_amd64.whl", hash = "sha256:ccaf1b0c90435b6e430f5dd30a5aede4764942a695552eb3a4ab74ed63c5b8d3"},
+    {file = "SQLAlchemy-2.0.31-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:3b74570d99126992d4b0f91fb87c586a574a5872651185de8297c6f90055ae42"},
+    {file = "SQLAlchemy-2.0.31-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:6f77c4f042ad493cb8595e2f503c7a4fe44cd7bd59c7582fd6d78d7e7b8ec52c"},
+    {file = "SQLAlchemy-2.0.31-cp312-cp312-win32.whl", hash = "sha256:0b0f658414ee4e4b8cbcd4a9bb0fd743c5eeb81fc858ca517217a8013d282c96"},
+    {file = "SQLAlchemy-2.0.31-cp312-cp312-win_amd64.whl", hash = "sha256:fa4b1af3e619b5b0b435e333f3967612db06351217c58bfb50cee5f003db2a5a"},
+    {file = "SQLAlchemy-2.0.31-cp37-cp37m-win32.whl", hash = "sha256:501ff052229cb79dd4c49c402f6cb03b5a40ae4771efc8bb2bfac9f6c3d3508f"},
+    {file = "SQLAlchemy-2.0.31-cp37-cp37m-win_amd64.whl", hash = "sha256:597fec37c382a5442ffd471f66ce12d07d91b281fd474289356b1a0041bdf31d"},
+    {file = "SQLAlchemy-2.0.31-cp38-cp38-win32.whl", hash = "sha256:c76c81c52e1e08f12f4b6a07af2b96b9b15ea67ccdd40ae17019f1c373faa227"},
+    {file = "SQLAlchemy-2.0.31-cp38-cp38-win_amd64.whl", hash = "sha256:4b600e9a212ed59355813becbcf282cfda5c93678e15c25a0ef896b354423238"},
     {file = "SQLAlchemy-2.0.31.tar.gz", hash = "sha256:b607489dd4a54de56984a0c7656247504bd5523d9d0ba799aef59d4add009484"},
 ]
 
@@ -4082,4 +4095,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "0721e3ab8febd6fe0f8b39ccb4bc29261f16507d2d2624f0650b98d1e54dfad2"
+content-hash = "612e9bd6e0f46758d479b1099a56a7a776d46117b4837dd61894c4da6d44381b"
