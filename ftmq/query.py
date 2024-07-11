@@ -97,6 +97,10 @@ class Query:
         """
         return bool(self.to_dict())
 
+    def __hash__(self) -> int:
+        # generate unique key of the current state
+        return hash(repr(self.to_dict()))
+
     def _chain(self, **kwargs):
         # merge current state
         new_kwargs = self.__dict__.copy()

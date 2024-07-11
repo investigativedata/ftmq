@@ -7,6 +7,7 @@ from banal import is_listish
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
 
+from ftmq.exceptions import ValidationError
 from ftmq.query import Query
 from ftmq.store import Store, get_store
 from ftmq.types import CEGenerator, SDict
@@ -49,7 +50,10 @@ def smart_read_proxies(
         proxies = (make_proxy(line) for line in lines)
         yield from q.apply_iter(proxies)
     else:
-        yield from lines
+        for line in lines:
+            if line.get("id") is None:
+                raise ValidationError("Entity has no ID.")
+            yield line
 
 
 def smart_write_proxies(

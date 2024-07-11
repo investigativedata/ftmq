@@ -17,7 +17,7 @@ def test_nk_compatibility(fixtures_path):
         proxies = True
         break
     assert proxies
-    assert ds.publisher.name == "Office of Foreign Assets Control (OFAC)"
+    assert ds.publisher.name == "Office of Foreign Assets Control"
     assert ds.maintainer.name == "OpenSanctions"
 
     catalog = Catalog._from_uri(
