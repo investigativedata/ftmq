@@ -93,9 +93,9 @@ alephclient==2.4.1 ; python_version >= "3.11" and python_version < "4" \
 annotated-types==0.7.0 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53 \
     --hash=sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89
-anystore==0.1.6 ; python_version >= "3.11" and python_version < "4" \
-    --hash=sha256:9461f4798d49161f1427e0b006f5c5ac774f95f75f3ec3e50dad2b614f7a7585 \
-    --hash=sha256:b155fb560dfd882b23a7860e41d2d8c67d828dbe833bb6212ef0b8ebc4e613d3
+anystore==0.1.7 ; python_version >= "3.11" and python_version < "4" \
+    --hash=sha256:42fc5724e3aecfabc8a487ada0502162aad72a3a7be1d55b97b3b2bc7c364865 \
+    --hash=sha256:a5468a40f359d518e584f8b491ff3e5bdcdfdb27876508af89d1b1012d2f54c8
 asttokens==2.4.1 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:051ed49c3dcae8913ea7cd08e46a606dba30b79993209636c4875bc1d637bc24 \
     --hash=sha256:b03869718ba9a6eb027e134bfdf69f38a236d681c83c160d510768af11254ba0
