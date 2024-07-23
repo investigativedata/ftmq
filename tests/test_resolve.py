@@ -27,7 +27,7 @@ def test_resolve(fixtures_path):
         },
     ]
 
-    store = get_store("memory:///", resolver=resolver)
+    store = get_store("memory:///", linker=resolver)
     with store.writer() as bulk:
         for entity in entities:
             bulk.add_entity(make_proxy(entity))

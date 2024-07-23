@@ -19,7 +19,7 @@ class Store(nk.Store):
         self,
         catalog: C | None = None,
         dataset: Dataset | str | None = None,
-        resolver: Resolver | None = None,
+        linker: Resolver | None = None,
         **kwargs,
     ) -> None:
         if dataset is not None:
@@ -30,7 +30,7 @@ class Store(nk.Store):
             dataset = catalog.get_scope()
         else:
             dataset = DefaultDataset
-        super().__init__(dataset=dataset, resolver=resolver or Resolver(), **kwargs)
+        super().__init__(dataset=dataset, linker=linker or Resolver(), **kwargs)
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
@@ -46,7 +46,7 @@ class Store(nk.Store):
         yield from view.entities()
 
     def resolve(self, dataset: str | Dataset | None = None) -> None:
-        if not self.resolver.edges:
+        if not self.linker.edges:
             return
         if dataset is not None:
             if isinstance(dataset, str):
@@ -58,8 +58,8 @@ class Store(nk.Store):
         else:
             entities = self.iterate()
         for ix, entity in enumerate(entities):
-            if entity.id in self.resolver.nodes:
-                self.update(self.resolver.get_canonical(entity.id))
+            if entity.id in self.linker.nodes:
+                self.update(self.linker.get_canonical(entity.id))
             if ix and ix % 10_000 == 0:
                 log.info("Resolving entity %d ..." % ix)
 
