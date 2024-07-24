@@ -30,7 +30,7 @@ class AlephStore(Store, _AlephStore):
         uri: str,
         dataset: Dataset | str | None = None,
         catalog: Catalog | None = None,
-        resolver: Resolver | None = None,
+        linker: Resolver | None = None,
     ) -> Self:
         host, api_key, foreign_id = parse_uri(uri)
         if dataset is None and foreign_id is not None:
@@ -39,4 +39,4 @@ class AlephStore(Store, _AlephStore):
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
 
-        return cls(catalog, dataset, resolver=resolver, host=host, api_key=api_key)
+        return cls(catalog, dataset, linker=linker, host=host, api_key=api_key)

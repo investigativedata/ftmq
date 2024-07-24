@@ -41,11 +41,11 @@ class AlephStore(Store[CE, DS]):
     def __init__(
         self,
         dataset: DS,
-        resolver: Resolver,
+        linker: Resolver,
         host: str | None = None,
         api_key: str | None = None,
     ):
-        super().__init__(dataset, resolver)
+        super().__init__(dataset, linker)
         self.host = host or HOST
         self.api_key = api_key or API_KEY
 
@@ -108,7 +108,7 @@ class AlephWriter(Writer[DS, CE]):
             return
         if len(self.batch) >= self.BATCH:
             self.flush()
-        canonical_id = self.store.resolver.get_canonical(stmt.entity_id)
+        canonical_id = self.store.linker.get_canonical(stmt.entity_id)
         stmt.canonical_id = canonical_id
         self.batch[stmt.canonical_id].add(stmt)
 

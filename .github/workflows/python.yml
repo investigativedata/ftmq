@@ -67,5 +67,4 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         parallel-finished: true
-        # carryforward: "run-3.11,run-3.12"
-        carryforward: "run-3.11"
+        carryforward: "run-3.11,run-3.12"
