@@ -1,11 +1,12 @@
-import logging
 from functools import cache
 
 from anystore import smart_stream
 from nomenklatura.entity import CompositeEntity
 from nomenklatura.resolver import Edge, Resolver
 
-log = logging.getLogger(__name__)
+from ftmq.logging import get_logger
+
+log = get_logger(__name__)
 
 
 @cache

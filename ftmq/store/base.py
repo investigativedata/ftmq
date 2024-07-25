@@ -1,17 +1,17 @@
-import logging
 from typing import Iterable
 
 from nomenklatura import store as nk
 from nomenklatura.resolver import Resolver
 
 from ftmq.aggregations import AggregatorResult
+from ftmq.logging import get_logger
 from ftmq.model.coverage import Collector, DatasetStats
 from ftmq.model.dataset import C, Dataset
 from ftmq.query import Q
 from ftmq.types import CE, CEGenerator
 from ftmq.util import DefaultDataset, ensure_dataset, make_dataset
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 class Store(nk.Store):

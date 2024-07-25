@@ -8,13 +8,14 @@ from click_default_group import DefaultGroup
 
 from ftmq.aggregate import aggregate
 from ftmq.io import apply_datasets, smart_read_proxies, smart_write_proxies
+from ftmq.logging import get_logger
 from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
 from ftmq.store import get_store
 from ftmq.util import parse_unknown_filters
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
