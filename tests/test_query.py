@@ -209,3 +209,19 @@ def test_query_ids():
 
     q = Query().where(entity_id__in=["a", "b"], dataset="foo")
     assert q.to_dict() == {"dataset": "foo", "entity_id__in": {"a", "b"}}
+
+
+def test_query_shorthands():
+    q = Query().where(dataset="foo", schema="Person", country="fr")
+    assert q.schemata_names == {"Person"}
+    assert q.dataset_names == {"foo"}
+    assert q.countries == {"fr"}
+
+    q = Query().where(
+        dataset__in=["foo", "bar"],
+        schema__in=["Person", "Company"],
+        country__in=["de", "fr"],
+    )
+    assert q.schemata_names == {"Company", "Person"}
+    assert q.dataset_names == {"foo", "bar"}
+    assert q.countries == {"de", "fr"}

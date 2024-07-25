@@ -178,6 +178,21 @@ class Query:
         return {f for f in self.filters if isinstance(f, SchemaFilter)}
 
     @property
+    def schemata_names(self) -> set[str]:
+        names = set()
+        for f in self.schemata:
+            names.update(ensure_list(f.value))
+        return names
+
+    @property
+    def countries(self) -> set[str]:
+        names = set()
+        for f in self.properties:
+            if f.key == "country":
+                names.update(ensure_list(f.value))
+        return names
+
+    @property
     def reversed(self) -> set[ReverseFilter]:
         return {f for f in self.filters if isinstance(f, ReverseFilter)}
 
