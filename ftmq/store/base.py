@@ -1,17 +1,17 @@
-import logging
 from typing import Iterable
 
 from nomenklatura import store as nk
 from nomenklatura.resolver import Resolver
 
 from ftmq.aggregations import AggregatorResult
+from ftmq.logging import get_logger
 from ftmq.model.coverage import Collector, DatasetStats
 from ftmq.model.dataset import C, Dataset
 from ftmq.query import Q
 from ftmq.types import CE, CEGenerator
 from ftmq.util import DefaultDataset, ensure_dataset, make_dataset
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 
 class Store(nk.Store):
@@ -76,10 +76,12 @@ class View(nk.base.View):
         else:
             yield from view.entities()
 
-    def get_adjacents(self, proxies: Iterable[CE]) -> set[CE]:
+    def get_adjacents(
+        self, proxies: Iterable[CE], inverted: bool | None = False
+    ) -> set[CE]:
         seen: set[CE] = set()
         for proxy in proxies:
-            for _, adjacent in self.get_adjacent(proxy):
+            for _, adjacent in self.get_adjacent(proxy, inverted=inverted):
                 if adjacent.id not in seen:
                     seen.add(adjacent)
         return seen

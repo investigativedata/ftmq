@@ -1,5 +1,4 @@
-import logging
-from collections.abc import Iterable
+from typing import Iterable
 
 import orjson
 from anystore.io import smart_open, smart_stream
@@ -8,12 +7,13 @@ from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.util import PathLike
 
 from ftmq.exceptions import ValidationError
+from ftmq.logging import get_logger
 from ftmq.query import Query
 from ftmq.store import Store, get_store
 from ftmq.types import CEGenerator, SDict
 from ftmq.util import get_statements, make_dataset, make_proxy
 
-log = logging.getLogger(__name__)
+log = get_logger(__name__)
 
 DEFAULT_MODE = "rb"
 

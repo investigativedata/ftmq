@@ -3,7 +3,7 @@ from functools import cache, lru_cache
 from typing import Any, Generator
 
 import pycountry
-from banal import ensure_list
+from banal import ensure_list, is_listish
 from followthemoney.schema import Schema
 from followthemoney.types import registry
 from followthemoney.util import make_entity_id, sanitize_text
@@ -57,7 +57,11 @@ def parse_unknown_filters(
         prop, *op = prop.split("__")
         op = op[0] if op else Comparators.eq
         if op == Comparators["in"]:
-            value = value.split(",")
+            # de,fr or ["de", "fr"]
+            if is_listish(value):
+                value = ensure_list(value)
+            else:
+                value = value.split(",")
         yield prop, value, op
 
 
