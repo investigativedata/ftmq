@@ -76,10 +76,12 @@ class View(nk.base.View):
         else:
             yield from view.entities()
 
-    def get_adjacents(self, proxies: Iterable[CE]) -> set[CE]:
+    def get_adjacents(
+        self, proxies: Iterable[CE], inverted: bool | None = False
+    ) -> set[CE]:
         seen: set[CE] = set()
         for proxy in proxies:
-            for _, adjacent in self.get_adjacent(proxy):
+            for _, adjacent in self.get_adjacent(proxy, inverted=inverted):
                 if adjacent.id not in seen:
                     seen.add(adjacent)
         return seen
