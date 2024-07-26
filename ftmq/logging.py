@@ -72,8 +72,8 @@ def configure_logging(level: int = logging.INFO) -> None:
         logger_factory=LoggerFactory(),
     )
 
-    # handler for low level logs that should be sent to STDOUT
-    out_handler = logging.StreamHandler(sys.stdout)
+    # handler for low level logs that should be sent to STDERR
+    out_handler = logging.StreamHandler(sys.stderr)
     out_handler.setLevel(level)
     out_handler.addFilter(_MaxLevelFilter(logging.WARNING))
     out_handler.setFormatter(formatter)

@@ -221,11 +221,11 @@ def test_cli_generate(fixtures_path: Path):
     # dataset
     uri = str(fixtures_path / "dataset.yml")
     res = runner.invoke(cli, ["dataset", "generate", "-i", uri])
-    res = orjson.loads(res.output)
+    res = orjson.loads(res.stdout.split("\n")[-1])  # FIXME logging
     assert Dataset(**res)
 
     # catalog
     uri = str(fixtures_path / "catalog.yml")
     res = runner.invoke(cli, ["catalog", "generate", "-i", uri])
-    res = orjson.loads(res.output)
+    res = orjson.loads(res.stdout.split("\n")[-1])  # FIXME logging
     assert Catalog(**res)
