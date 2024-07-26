@@ -1,5 +1,3 @@
-import logging
-
 import click
 import orjson
 from anystore.io import smart_write
@@ -8,7 +6,7 @@ from click_default_group import DefaultGroup
 
 from ftmq.aggregate import aggregate
 from ftmq.io import apply_datasets, smart_read_proxies, smart_write_proxies
-from ftmq.logging import get_logger
+from ftmq.logging import configure_logging, get_logger
 from ftmq.model.coverage import Collector
 from ftmq.model.dataset import Catalog, Dataset
 from ftmq.query import Query
@@ -20,7 +18,7 @@ log = get_logger(__name__)
 
 @click.group(cls=DefaultGroup, default="q", default_if_no_args=True)
 def cli() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_logging()
 
 
 @cli.command(
