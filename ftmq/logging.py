@@ -1,9 +1,11 @@
 import logging
+import os
 import sys
 from logging import Filter, LogRecord
 from typing import Any, Dict, List
 
 import structlog
+from banal import as_bool
 from structlog.contextvars import merge_contextvars
 from structlog.dev import ConsoleRenderer, set_exc_info
 from structlog.processors import (
@@ -21,8 +23,8 @@ from structlog.stdlib import (
 )
 from structlog.stdlib import get_logger as get_raw_logger
 
-LOG_JSON = False
-LOG_LEVEL = logging.INFO
+LOG_JSON = as_bool(os.environ.get("LOG_JSON"))
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "info").upper()
 
 
 def get_logger(name: str, *args, **kwargs) -> BoundLogger:
