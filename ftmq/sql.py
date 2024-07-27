@@ -147,11 +147,15 @@ class Sql:
 
     @cached_property
     def _unsorted_statements(self) -> Select:
-        return (
-            select(self.table)
-            .where(self.table.c.canonical_id.in_(self.canonical_ids))
-            .order_by(self.table.c.canonical_id)
-        )
+        where = self.clause
+        if (
+            self.q.properties
+            or self.q.reversed
+            or self.q.search_filters
+            or self.q.limit
+        ):
+            where = self.table.c.canonical_id.in_(self.canonical_ids)
+        return select(self.table).where(where).order_by(self.table.c.canonical_id)
 
     @cached_property
     def _sorted_statements(self) -> Select:
