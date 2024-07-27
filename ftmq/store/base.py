@@ -31,6 +31,9 @@ class Store(nk.Store):
         else:
             dataset = DefaultDataset
         super().__init__(dataset=dataset, linker=linker or Resolver(), **kwargs)
+        # implicit set all datasets as store scope:
+        if dataset == DefaultDataset:
+            self.dataset = self.get_catalog().get_scope()
 
     def get_catalog(self) -> C:
         # return implicit catalog computed from current datasets in store
