@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.6.11"
+version = "0.6.12"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -27,7 +27,7 @@ ftmq = "ftmq.cli:cli"
 [tool.poetry.dependencies]
 python = ">=3.11,<4"
 banal = "^1.0.6"
-followthemoney = "^3.6.3"
+followthemoney = "^3.6.4"
 orjson = "^3.10.3"
 PyICU = "^2.13.1"
 click = "^8.1.7"

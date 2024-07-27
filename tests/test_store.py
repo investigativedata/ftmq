@@ -56,6 +56,12 @@ def _run_store_test(cls: Store, proxies, **kwargs):
         break
     assert tested
 
+    # iterate
+    entities = [e for e in store.iterate()]
+    assert len(entities) == 474 + 151
+    entities = [e for e in store.iterate(dataset="eu_authorities")]
+    assert len(entities) == 151
+
     view = store.default_view()
     ds = make_dataset("eu_authorities")
     view = store.view(ds)

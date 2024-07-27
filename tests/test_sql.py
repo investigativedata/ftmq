@@ -335,6 +335,35 @@ def test_sql():
         """,
     )
 
+    # simplified if no properties, reversed or search:
+    q = Query()
+    assert _compare_str(
+        q.sql.statements,
+        """
+        SELECT test_table.id, test_table.entity_id, test_table.canonical_id,
+        test_table.prop, test_table.prop_type, test_table.schema, test_table.value,
+        test_table.original_value, test_table.dataset, test_table.lang,
+        test_table.target, test_table.external, test_table.first_seen,
+        test_table.last_seen FROM test_table ORDER BY test_table.canonical_id
+        """,
+    )
+    q = Query().where(dataset="foo", schema="Person")
+    assert _compare_str(
+        q.sql.statements,
+        """
+        SELECT test_table.id, test_table.entity_id, test_table.canonical_id,
+        test_table.prop, test_table.prop_type, test_table.schema,
+        test_table.value, test_table.original_value, test_table.dataset,
+        test_table.lang, test_table.target, test_table.external,
+        test_table.first_seen, test_table.last_seen FROM test_table WHERE
+        test_table.dataset = :dataset_1 AND test_table.schema = :schema_1 ORDER
+        BY test_table.canonical_id
+        """,
+    )
+
+    # but we need complex query if we want a limit:
+    assert "canonical_id IN" in str(q[:10].sql.statements)
+
 
 def test_sql_search_query():
     q = Query().search("agency", ["name"])
