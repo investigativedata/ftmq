@@ -2188,13 +2188,13 @@ files = [
 
 [[package]]
 name = "nomenklatura"
-version = "3.12.5"
+version = "3.13.0"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.12.5-py3-none-any.whl", hash = "sha256:25b100dc258007235c31f5837e001eda9288c69eecf405c9c17309a003a1cadd"},
-    {file = "nomenklatura-3.12.5.tar.gz", hash = "sha256:95394275b88d9dfc35ea36750440707a65f9d9bb07cbbde2ef648b28bf617e9e"},
+    {file = "nomenklatura-3.13.0-py3-none-any.whl", hash = "sha256:5972d228729a82de3ee9b264c6f89f36de06357afe597e78c0be319e223f418a"},
+    {file = "nomenklatura-3.13.0.tar.gz", hash = "sha256:58c901d76bc4a5903f87c7d51b82131d32b389476604570c3d807f57a8e4b555"},
 ]
 
 [package.dependencies]
@@ -2205,7 +2205,7 @@ jellyfish = ">=1.0.0,<2.0.0"
 lxml = ">4.0.0,<6.0.0"
 pydantic = ">2.0.0,<3.0.0"
 rich = ">=10.9.0,<14.0.0"
-rigour = ">=0.5.1,<1.0.0"
+rigour = ">=0.5.3,<1.0.0"
 scikit-learn = "1.5.0"
 shortuuid = ">=1.0.11,<2.0.0"
 sqlalchemy = ">=2.0.0"
@@ -3233,12 +3233,12 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "rigour"
-version = "0.5.2"
+version = "0.5.3"
 description = "Business data validation and normalization library."
 optional = false
 python-versions = "*"
 files = [
-    {file = "rigour-0.5.2-py2.py3-none-any.whl", hash = "sha256:4013d2a5d12f385d3f1db28a11164d352e42a08868c05044d6da97133b099b82"},
+    {file = "rigour-0.5.3-py2.py3-none-any.whl", hash = "sha256:62b509d915884532b9a4f8a9ad9755ae6804e057ee116945a2e2c849515e0aa2"},
 ]
 
 [package.dependencies]
