@@ -229,13 +229,13 @@ files = [
 
 [[package]]
 name = "anystore"
-version = "0.1.9"
+version = "0.1.10"
 description = "Store and cache things anywhere"
 optional = false
 python-versions = "<4,>=3.11"
 files = [
-    {file = "anystore-0.1.9-py3-none-any.whl", hash = "sha256:47ad3326f2478acc45acd72479c366e2ca4c8f2bc16874f2294d533d9e27df3d"},
-    {file = "anystore-0.1.9.tar.gz", hash = "sha256:ea63501ff6909247fbe0f543fbaff8239e633af64c77f5235dbabc182199a8f6"},
+    {file = "anystore-0.1.10-py3-none-any.whl", hash = "sha256:873f6b77f1567240639c4f9d5e4f0890ea8d1318548f62e12f6cab2db298e7ab"},
+    {file = "anystore-0.1.10.tar.gz", hash = "sha256:7bb974f0758d93c7656fd3311713350ec051bd19dba88fd287507083d97298d2"},
 ]
 
 [package.dependencies]
@@ -4074,4 +4074,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4"
-content-hash = "fd1afe28f3be941a3d638f9710507caf4923e3d280e49b488efb458744c2e7b6"
+content-hash = "441fafbdf07c7e106a74502bdf85ffca75650d93afa333adf4f1e4b1e6c92a68"
