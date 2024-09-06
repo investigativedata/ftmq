@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.6.13"
+version = "0.6.14"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
