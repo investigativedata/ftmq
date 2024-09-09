@@ -229,13 +229,13 @@ files = [
 
 [[package]]
 name = "anystore"
-version = "0.1.10"
+version = "0.1.11"
 description = "Store and cache things anywhere"
 optional = false
 python-versions = "<4,>=3.11"
 files = [
-    {file = "anystore-0.1.10-py3-none-any.whl", hash = "sha256:873f6b77f1567240639c4f9d5e4f0890ea8d1318548f62e12f6cab2db298e7ab"},
-    {file = "anystore-0.1.10.tar.gz", hash = "sha256:7bb974f0758d93c7656fd3311713350ec051bd19dba88fd287507083d97298d2"},
+    {file = "anystore-0.1.11-py3-none-any.whl", hash = "sha256:cfa7f710eb58ef1549e4f403067f81f228c441adead748f1252a7497a802c82b"},
+    {file = "anystore-0.1.11.tar.gz", hash = "sha256:6233a446d18133dc8cd43a12417cdca4219c12c91dcbe91aef4de5be4046d488"},
 ]
 
 [package.dependencies]
