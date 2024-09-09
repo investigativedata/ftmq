@@ -2209,13 +2209,13 @@ files = [
 
 [[package]]
 name = "nomenklatura"
-version = "3.12.5"
+version = "3.13.1"
 description = "Make record linkages in followthemoney data."
 optional = false
 python-versions = "*"
 files = [
-    {file = "nomenklatura-3.12.5-py3-none-any.whl", hash = "sha256:25b100dc258007235c31f5837e001eda9288c69eecf405c9c17309a003a1cadd"},
-    {file = "nomenklatura-3.12.5.tar.gz", hash = "sha256:95394275b88d9dfc35ea36750440707a65f9d9bb07cbbde2ef648b28bf617e9e"},
+    {file = "nomenklatura-3.13.1-py3-none-any.whl", hash = "sha256:93ea4b9ef3acfac94c62b7778d178018575fb24e2ea77a2dc960c45409dc7c54"},
+    {file = "nomenklatura-3.13.1.tar.gz", hash = "sha256:2f0936b3ef6f36b13a39e9ce8b24fc3f17c9baff17b74efe8f0baaee16b28e3d"},
 ]
 
 [package.dependencies]
@@ -2226,7 +2226,7 @@ jellyfish = ">=1.0.0,<2.0.0"
 lxml = ">4.0.0,<6.0.0"
 pydantic = ">2.0.0,<3.0.0"
 rich = ">=10.9.0,<14.0.0"
-rigour = ">=0.5.1,<1.0.0"
+rigour = ">=0.5.3,<1.0.0"
 scikit-learn = "1.5.0"
 shortuuid = ">=1.0.11,<2.0.0"
 sqlalchemy = ">=2.0.0"
@@ -4074,4 +4074,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4"
-content-hash = "441fafbdf07c7e106a74502bdf85ffca75650d93afa333adf4f1e4b1e6c92a68"
+content-hash = "8fc02a38ff88a1d7a6f329d165a6d86f840afa49f9d7b46e3a9f90c9cddea3cb"
