@@ -1,4 +1,4 @@
-FROM python:3.12-bookworm
+FROM python:3.13-bookworm
 
 RUN apt-get -qq update && apt-get -qq -y upgrade
 RUN apt-get install -qq -y pkg-config libicu-dev libleveldb-dev
