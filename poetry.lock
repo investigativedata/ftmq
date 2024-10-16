@@ -197,13 +197,13 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "alephclient"
-version = "2.5.0"
+version = "2.6.0"
 description = "Command-line client for Aleph API"
 optional = false
 python-versions = "*"
 files = [
-    {file = "alephclient-2.5.0-py2.py3-none-any.whl", hash = "sha256:7a12e4d1f5ba401aa433a55b10522d9de36b03398d7765edb666578aa0838d5f"},
-    {file = "alephclient-2.5.0.tar.gz", hash = "sha256:314990409141df2a856c9d426a9bfb72fb2a4243a9b1d326401999d7d9701967"},
+    {file = "alephclient-2.6.0-py2.py3-none-any.whl", hash = "sha256:1ced8e75b1ec9320c2eb0981b20347f0d7564b4a0ebb7884a57c29437bb1f135"},
+    {file = "alephclient-2.6.0.tar.gz", hash = "sha256:5b534f8a1d4bb1cb10c2c555438efec90c2ea213a42b31d4dc0c4a9d12950f7f"},
 ]
 
 [package.dependencies]
