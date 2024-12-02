@@ -1053,13 +1053,13 @@ pyflakes = ">=3.2.0,<3.3.0"
 
 [[package]]
 name = "followthemoney"
-version = "3.7.8"
+version = "3.7.9"
 description = ""
 optional = false
 python-versions = "*"
 files = [
-    {file = "followthemoney-3.7.8-py2.py3-none-any.whl", hash = "sha256:82039aea59ca48ba51ae0b1d08f4fd44f3e063563594faa6a46277b0b657fab8"},
-    {file = "followthemoney-3.7.8.tar.gz", hash = "sha256:749b485422d65dae831a0c990887098a5319f5cf8532c1dd9d24287c4fadf1c7"},
+    {file = "followthemoney-3.7.9-py2.py3-none-any.whl", hash = "sha256:beaf9e5fcee108b86c1e78cb3b080434ee6a70072a45dbdd6a959bb63a3b96f6"},
+    {file = "followthemoney-3.7.9.tar.gz", hash = "sha256:acf24a173e165d38a0bc55c2088f76edeee47f67170f70ef95ae6e146e4fb827"},
 ]
 
 [package.dependencies]
@@ -1079,7 +1079,7 @@ pytz = ">=2021.1"
 pyyaml = ">=5.0.0,<7.0.0"
 rdflib = ">=6.2.0,<7.2.0"
 requests = ">=2.21.0,<3.0.0"
-rigour = ">=0.7.1,<1.0.0"
+rigour = ">=0.7.2,<1.0.0"
 sqlalchemy = ">=1.4.49,<3.0.0"
 sqlalchemy2-stubs = "*"
 stringcase = ">=1.2.0,<2.0.0"
@@ -3684,12 +3684,12 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "rigour"
-version = "0.7.1"
+version = "0.7.3"
 description = "Financial crime domain data validation and normalization library."
 optional = false
 python-versions = "*"
 files = [
-    {file = "rigour-0.7.1-py2.py3-none-any.whl", hash = "sha256:8256e2672cf3244312ada7c840dd99b73bb723319d363ed1489fcb635e701bf9"},
+    {file = "rigour-0.7.3-py2.py3-none-any.whl", hash = "sha256:05f19321fc5dfc80e45c1e62d120a669532123fe9e385f49ba0b836d5f9ffede"},
 ]
 
 [package.dependencies]
