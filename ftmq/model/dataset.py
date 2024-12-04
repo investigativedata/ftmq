@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Iterable, Literal, Self, TypeVar
 
-from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.dataset import Dataset as NKDataset
 from normality import slugify
 from pantomime.types import FTM
@@ -143,16 +142,15 @@ class Catalog(BaseModel):
 
     def get_scope(self) -> NKDataset:
         # FIXME clarify
-        return NKDataset(
-            NKCatalog(
-                NKDataset, {"datasets": [make_dataset(n).to_dict() for n in self.names]}
-            ),
+        ds = NKDataset(
             {
                 "name": slugify(self.name),
                 "title": self.name.title(),
                 "children": self.names,
             },
         )
+        ds.children = {make_dataset(n) for n in self.names}
+        return ds
 
     def iterate(self) -> CEGenerator:
         for dataset in self.datasets:
