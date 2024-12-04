@@ -6,7 +6,7 @@ from followthemoney import model
 from ftmq.enums import Properties
 from ftmq.model.mixins import BaseModel
 from ftmq.types import CE, CEGenerator, Frequencies
-from ftmq.util import get_country_name, get_year
+from ftmq.util import get_country_name, get_year_from_iso
 
 
 class Schema(BaseModel):
@@ -50,7 +50,7 @@ class Coverage(BaseModel):
         """
         Return min / max year extend
         """
-        return get_year(self.start), get_year(self.end)
+        return get_year_from_iso(self.start), get_year_from_iso(self.end)
 
 
 class DatasetStats(BaseModel):

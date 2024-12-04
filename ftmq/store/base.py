@@ -15,6 +15,10 @@ log = get_logger(__name__)
 
 
 class Store(nk.Store):
+    """
+    Feature add-ons to `nomenklatura.store.Store`
+    """
+
     def __init__(
         self,
         catalog: C | None = None,
@@ -22,6 +26,15 @@ class Store(nk.Store):
         linker: Resolver | None = None,
         **kwargs,
     ) -> None:
+        """
+        Initialize a store. This should be called via
+        [`get_store`][ftmq.store.get_store]
+
+        Args:
+            catalog: A `ftmq.model.Catalog` instance to limit the scope to
+            dataset: A `ftmq.model.Dataset` instance to limit the scope to
+            linker: A `nomenklatura.Resolver` instance with linked / deduped data
+        """
         if dataset is not None:
             if isinstance(dataset, str):
                 dataset = Dataset(name=dataset)
@@ -31,15 +44,26 @@ class Store(nk.Store):
         else:
             dataset = DefaultDataset
         super().__init__(dataset=dataset, linker=linker or Resolver(), **kwargs)
-        # implicit set all datasets as store scope:
+        # implicit set all datasets as default store scope:
         if dataset == DefaultDataset:
             self.dataset = self.get_catalog().get_scope()
 
     def get_catalog(self) -> C:
-        # return implicit catalog computed from current datasets in store
+        """
+        Return implicit `Catalog` computed from current datasets in store
+        """
         raise NotImplementedError
 
     def iterate(self, dataset: str | Dataset | None = None) -> CEGenerator:
+        """
+        Iterate all the entities, optional filter for a dataset.
+
+        Args:
+            dataset: `Dataset` instance or name to limit scope to
+
+        Yields:
+            Generator of `nomenklatura.entity.CompositeEntity`
+        """
         dataset = ensure_dataset(dataset)
         if dataset is not None:
             view = self.view(dataset)
@@ -68,11 +92,25 @@ class Store(nk.Store):
 
 
 class View(nk.base.View):
+    """
+    Feature add-ons to `nomenklatura.store.base.View`
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._cache = {}
 
     def entities(self, query: Q | None = None) -> CEGenerator:
+        """
+        Get the entities of a store, optionally filtered by a
+        [`Query`][ftmq.Query] object.
+
+        Args:
+            query: The Query filter object
+
+        Yields:
+            Generator of `nomenklatura.entity.CompositeEntity`
+        """
         view = self.store.view(self.scope)
         if query:
             yield from query.apply_iter(view.entities())

@@ -8,8 +8,6 @@ It also provides a `Query` class that can be used in other libraries to work wit
 
 `ftmq` is the base layer for [investigativedata.io's](https://investigativedata.io) libraries and applications dealing with [Follow The Money](https://followthemoney.tech) data.
 
-To get familiar with the _Follow The Money_ ecosystem, you can have a look at [this pad here](https://pad.investigativedata.org/s/0qKuBEcsM#).
-
 ## Installation
 
 Minimum Python version: 3.11
@@ -38,10 +36,6 @@ for proxy in smart_read_proxies("s3://data/entities.ftm.json"):
     if q.apply(proxy):
         yield proxy
 ```
-
-## Documentation
-
-https://docs.investigraph.dev/lib/ftmq
 
 ## Support
 
