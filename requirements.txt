@@ -1245,9 +1245,9 @@ networkx==3.4.2 ; python_version >= "3.11" and python_version < "4" \
 nodeenv==1.9.1 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f \
     --hash=sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9
-nomenklatura==3.12.5 ; python_version >= "3.11" and python_version < "4" \
-    --hash=sha256:25b100dc258007235c31f5837e001eda9288c69eecf405c9c17309a003a1cadd \
-    --hash=sha256:95394275b88d9dfc35ea36750440707a65f9d9bb07cbbde2ef648b28bf617e9e
+nomenklatura==3.14.0 ; python_version >= "3.11" and python_version < "4" \
+    --hash=sha256:826131d516dfa88a87a83486b6f4e5e4fc0661a88b0344703daffaadebd93908 \
+    --hash=sha256:bdb58658d9437db717d42cc12c9abe9193f6ff2f02c660fad049b724f4ae520d
 normality==2.5.0 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:a55133e972b81c4a3bf8b6dc419f262f94a4fd6f636297046f74d35c93abe153 \
     --hash=sha256:d9f48daf32e351e88b9e372787c1da437df9d0d818aec6e2834b02102378df62
