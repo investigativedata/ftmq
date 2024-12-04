@@ -5,15 +5,16 @@ description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/investigativedata/ftmq"
+homepage = "https://docs.investigraph.dev/lib/ftmq"
 repository = "https://github.com/investigativedata/ftmq"
-documentation = "https://github.com/investigativedata/ftmq"
+documentation = "https://docs.investigraph.dev/lib/ftmq"
 classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 packages = [{include = "ftmq"}]
 
@@ -27,7 +28,7 @@ ftmq = "ftmq.cli:cli"
 [tool.poetry.dependencies]
 python = ">=3.11,<4"
 banal = "^1.0.6"
-followthemoney = "^3.6.4"
+followthemoney = "^3.7.9"
 orjson = "^3.10.3"
 PyICU = "^2.13.1"
 click = "^8.1.7"

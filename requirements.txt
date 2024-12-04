@@ -2040,9 +2040,9 @@ shellingham==1.5.4 ; python_version >= "3.11" and python_version < "4" \
 shortuuid==1.0.13 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:3bb9cf07f606260584b1df46399c0b87dd84773e7b25912b7e391e30797c5e72 \
     --hash=sha256:a482a497300b49b4953e15108a7913244e1bb0d41f9d332f5e9925dba33a3c5a
-six==1.16.0 ; python_version >= "3.11" and python_version < "4" \
-    --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
-    --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
+six==1.17.0 ; python_version >= "3.11" and python_version < "4" \
+    --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
+    --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
 sqlalchemy2-stubs==0.0.2a38 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:861d722abeb12f13eacd775a9f09379b11a5a9076f469ccd4099961b95800f9e \
     --hash=sha256:b62aa46943807287550e2033dafe07564b33b6a815fbaa3c144e396f9cc53bcb
