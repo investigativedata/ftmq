@@ -82,16 +82,19 @@ def test_util_country():
 
 
 def test_util_get_year():
-    assert util.get_year(None) is None
-    assert util.get_year("2023") == 2023
-    assert util.get_year(2020) == 2020
-    assert util.get_year(datetime.now()) >= 2023
-    assert util.get_year("2000-01") == 2000
+    assert util.get_year_from_iso(None) is None
+    assert util.get_year_from_iso("2023") == 2023
+    assert util.get_year_from_iso(2020) == 2020
+    assert util.get_year_from_iso(datetime.now()) >= 2023
+    assert util.get_year_from_iso("2000-01") == 2000
 
     assert util.clean_string(" foo\n bar") == "foo bar"
+    assert util.clean_string("foo Bar, baz") == "foo Bar, baz"
     assert util.clean_string(None) is None
     assert util.clean_string("") is None
     assert util.clean_string("  ") is None
+    assert util.clean_string(100) == "100"
+
     assert util.clean_name("  foo\n bar") == "foo bar"
     assert util.clean_name("- - . *") is None
 

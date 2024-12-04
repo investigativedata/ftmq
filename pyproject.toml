@@ -60,6 +60,11 @@ bump-pydantic = ">=0.7,<0.9"
 
 # [tool.poetry.group.clickhouse.dependencies]
 # ftm-columnstore = "^0.3.0"
+mkdocs = "^1.6.1"
+mkdocstrings-python = "^1.12.2"
+mkdocs-autorefs = "^1.2.0"
+mkdocs-material = "^9.5.47"
+mkdocs-click = "^0.8.1"
 
 [tool.poetry.group.level.dependencies]
 plyvel = "^1.5.1"

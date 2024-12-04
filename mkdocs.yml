@@ -1,0 +1,60 @@
+site_name: ftmq
+site_url: https://docs.investigraph.dev/lib/ftmq
+repo_url: https://github.com/investigativedata/ftmq
+nav:
+  - Intro: index.md
+  - Command line: cli.md
+  - query.md
+  - stores.md
+  - aggregation.md
+  - Reference:
+    - ftmq.cli: reference/cli.md
+    - ftmq.io: reference/io.md
+    - ftmq.query: reference/query.md
+    - ftmq.store: reference/store.md
+    - ftmq.util: reference/util.md
+theme:
+  name: material
+  logo: https://cdn.investigativedata.org/style/logo_basic_dark.svg
+  favicon: https://cdn.investigativedata.org/style/favicon.svg
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    # - navigation.footer
+    - toc.follow
+    - content.code.copy
+extra_css:
+  - stylesheets/extra.css
+extra:
+  social:
+    - icon: material/mail
+      link: mailto:hi@investigativedata.org
+    - icon: material/web
+      link: https://investigativedata.io
+    - icon: material/github
+      link: https://github.com/investigativedata/ftmq
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - mkdocs-click
+  - pymdownx.details
+  - admonition
+  - pymdownx.tasklist:
+      custom_checkbox: true
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_root_heading: false
+            show_object_full_path: false

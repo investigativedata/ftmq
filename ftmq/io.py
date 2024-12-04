@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Any, Iterable
 
 import orjson
 from anystore.io import smart_open, smart_stream
@@ -30,8 +30,44 @@ def smart_read_proxies(
     mode: str | None = DEFAULT_MODE,
     serialize: bool | None = True,
     query: Query | None = None,
-    **store_kwargs,
+    **store_kwargs: Any,
 ) -> CEGenerator:
+    """
+    Stream proxies from an arbitrary source
+
+    Example:
+        ```python
+        from ftmq import Query
+        from ftmq.io import smart_read_proxies
+
+        # remote file-like source
+        for proxy in smart_read_proxies("s3://data/entities.ftm.json"):
+            print(proxy.schema)
+
+        # multiple files
+        for proxy in smart_read_proxies("./1.json", "./2.json"):
+            print(proxy.schema)
+
+        # nomenklatura store
+        for proxy in smart_read_proxies("redis://localhost", dataset="default"):
+            print(proxy.schema)
+
+        # apply a query to sql storage
+        q = Query(dataset="my_dataset", schema="Person")
+        for proxy in smart_read_proxies("sqlite:///data/ftm.db", query=q):
+            print(proxy.schema)
+        ```
+
+    Args:
+        uri: File-like uri or store uri or multiple uris
+        mode: Open mode for file-like sources (default: `rb`)
+        serialize: Convert json data into `nomenklatura.entity.CompositeEntity`
+        query: Filter `Query` object
+        **store_kwargs: Pass through configuration to statement store
+
+    Yields:
+        A stream of `nomenklatura.entity.CompositeEntity`
+    """
     if is_listish(uri):
         for u in uri:
             yield from smart_read_proxies(u, mode, serialize, query)
@@ -51,7 +87,7 @@ def smart_read_proxies(
         yield from q.apply_iter(proxies)
     else:
         for line in lines:
-            if line.get("id") is None:
+            if not line.get("id"):
                 raise ValidationError("Entity has no ID.")
             yield line
 
@@ -61,10 +97,36 @@ def smart_write_proxies(
     proxies: Iterable[CE | SDict],
     mode: str | None = "wb",
     serialize: bool | None = False,
-    **store_kwargs,
+    **store_kwargs: Any,
 ) -> int:
+    """
+    Write a stream of proxies (or data dicts) to an arbitrary target.
+
+    Example:
+        ```python
+        from ftmq.io import smart_write_proxies
+
+        proxies = [...]
+
+        # to a remote cloud storage
+        smart_write_proxies("s3://data/entities.ftm.json", proxies)
+
+        # to a redis statement store
+        smart_write_proxies("redis://localhost", proxies, dataset="my_dataset")
+        ```
+
+    Args:
+        uri: File-like uri or store uri
+        proxies: Iterable of proxy data
+        mode: Open mode for file-like targets (default: `wb`)
+        serialize: Convert `nomenklatura.entity.CompositeEntity` input to dict
+        **store_kwargs: Pass through configuration to statement store
+
+    Returns:
+        Number of written proxies
+    """
     ix = 0
-    if proxies is None:  # FIXME how could this happen
+    if not proxies:
         return ix
 
     store = smart_get_store(uri, **store_kwargs)
@@ -92,6 +154,17 @@ def smart_write_proxies(
 def apply_datasets(
     proxies: Iterable[CE], *datasets: Iterable[str], replace: bool | None = False
 ) -> CEGenerator:
+    """
+    Apply datasets to a stream of proxies
+
+    Args:
+        proxies: Iterable of `nomenklatura.entity.CompositeEntity`
+        *datasets: One or more dataset names to apply
+        replace: Drop any other existing datasets
+
+    Yields:
+        The proxy stream with the datasets applied
+    """
     for proxy in proxies:
         if datasets:
             if not replace:

@@ -79,8 +79,21 @@ class Query:
         self.sort = sort
         self.slice = slice
 
-    def __getitem__(self, value: Any) -> Any:
-        # slicing
+    def __getitem__(self, value: Any) -> Q:
+        """
+        Implement list-like slicing. No negative values allowed.
+
+        Examples:
+            >>> q[1]
+            # 2nd element (0-index)
+            >>> q[:10]
+            # first 10 elements
+            >>> q[10:20]
+            # next 10 elements
+
+        Returns:
+            The updated `Query` instance
+        """
         if isinstance(value, int):
             if value < 0:
                 raise ValidationError(f"Invalid slicing: `{value}`")
@@ -93,12 +106,20 @@ class Query:
 
     def __bool__(self) -> bool:
         """
-        Detect if we have anything to do
+        Detect if any filter, ordering or slicing is defined
+
+        Examples:
+            >>> bool(Query())
+            False
+            >>> bool(Query().where(dataset="my_dataset"))
+            True
         """
         return bool(self.to_dict())
 
     def __hash__(self) -> int:
-        # generate unique key of the current state
+        """
+        Generate a unique key of the current state, useful for caching
+        """
         return hash(repr(self.to_dict()))
 
     def _chain(self, **kwargs):
@@ -136,14 +157,23 @@ class Query:
 
     @property
     def lookups(self) -> dict[str, Any]:
+        """
+        The current filter lookups as dictionary
+        """
         return self._get_lookups(self.filters)
 
     @property
     def search_lookups(self) -> dict[str, Any]:
+        """
+        The current search lookups as dictionary
+        """
         return self._get_lookups(self.search_filters)
 
     @property
     def limit(self) -> int | None:
+        """
+        The current limit (inferred from a slice)
+        """
         if self.slice is None:
             return None
         if self.slice.start and self.slice.stop:
@@ -152,22 +182,37 @@ class Query:
 
     @property
     def offset(self) -> int | None:
+        """
+        The current offset (inferred from a slice)
+        """
         return self.slice.start if self.slice else None
 
     @property
     def sql(self) -> Sql:
+        """
+        An object of this query used for sql interfaces
+        """
         return Sql(self)
 
     @property
     def ids(self) -> set[IdFilter]:
+        """
+        The current id filters
+        """
         return {f for f in self.filters if isinstance(f, IdFilter)}
 
     @property
     def datasets(self) -> set[DatasetFilter]:
+        """
+        The current dataset filters
+        """
         return {f for f in self.filters if isinstance(f, DatasetFilter)}
 
     @property
     def dataset_names(self) -> set[str]:
+        """
+        The names of the current filtered datasets
+        """
         names = set()
         for f in self.datasets:
             names.update(ensure_list(f.value))
@@ -175,10 +220,16 @@ class Query:
 
     @property
     def schemata(self) -> set[SchemaFilter]:
+        """
+        The current schema filters
+        """
         return {f for f in self.filters if isinstance(f, SchemaFilter)}
 
     @property
     def schemata_names(self) -> set[str]:
+        """
+        The names of the current filtered schemas
+        """
         names = set()
         for f in self.schemata:
             names.update(ensure_list(f.value))
@@ -186,6 +237,9 @@ class Query:
 
     @property
     def countries(self) -> set[str]:
+        """
+        The current filtered countries
+        """
         names = set()
         for f in self.properties:
             if f.key == "country":
@@ -194,10 +248,16 @@ class Query:
 
     @property
     def reversed(self) -> set[ReverseFilter]:
+        """
+        The current reverse lookup filters
+        """
         return {f for f in self.filters if isinstance(f, ReverseFilter)}
 
     @property
     def properties(self) -> set[PropertyFilter]:
+        """
+        The current property lookup filters
+        """
         return {f for f in self.filters if isinstance(f, PropertyFilter)}
 
     def discard(self, f_cls: F) -> None:
@@ -207,6 +267,21 @@ class Query:
                 self.filters.discard(f)
 
     def to_dict(self) -> dict[str, Any]:
+        """
+        Dictionary representation of the current object
+
+        Example:
+            ```python
+            q = Query().where(dataset__in=["d1", "d2"])
+            assert q.to_dict() == {"dataset__in": {"d1", "d2"}}
+            q = q.where(schema="Event").where(schema__in=["Person", "Organization"])
+            assert q.to_dict() == {
+                    "dataset__in": {"d1", "d2"},
+                    "schema": "Event",
+                    "schema__in": {"Organization", "Person"},
+                }
+            ```
+        """
         data = self.lookups
         search_data = self.search_lookups
         if search_data:
@@ -221,6 +296,30 @@ class Query:
         return data
 
     def where(self, **lookup: Any) -> Q:
+        """
+        Add another lookup to the current `Query` instance.
+
+        Example:
+            ```python
+            q = Query().where(dataset="my_dataset")
+            q = q.where(schema="Payment")
+            q = q.where(date__gte="2024-10", date__lt="2024-11")
+            q = q.order_by("amountEur", ascending=False)
+            ```
+
+        Args:
+            **lookup: A dataset lookup `dataset="my_dataset"`
+            **lookup: A schema lookup `schema="Person"`
+            **lookup: `include_descendants=True`: Include schema descendants for
+                given schema lookup
+            **lookup: `include_matchable=True`: Include matchable schema for
+                given schema lookup
+            **lookup: A property=value lookup (with optional comparators):
+                `name__startswith="Ja"`
+
+        Returns:
+            The updated `Query` instance
+        """
         include_descendants = lookup.pop("include_descendants", False)
         include_matchable = lookup.pop("include_matchable", False)
         prop = lookup.pop("prop", None)
@@ -254,7 +353,7 @@ class Query:
             if not meta:
                 properties[key] = value
 
-        # parse arbitrary `date_gte=2023` stuff
+        # parse arbitrary `date__gte=2023` stuff
         for key, val in properties.items():
             for prop, value, comparator in parse_unknown_filters((key, val)):
                 f = PropertyFilter(prop, value, comparator)
@@ -274,6 +373,16 @@ class Query:
         return self._chain()
 
     def order_by(self, *values: Iterable[str], ascending: bool | None = True) -> Q:
+        """
+        Add or update the current sorting.
+
+        Args:
+            *values: Fields to order by
+            ascending: Ascending or descending
+
+        Returns:
+            The updated `Query` instance.
+        """
         self.sort = Sort(values=values, ascending=ascending)
         return self._chain()
 
@@ -303,13 +412,28 @@ class Query:
         return any(f.apply(proxy) for f in self.search_filters)
 
     def apply(self, proxy: CE) -> bool:
+        """
+        Test if a proxy matches the current `Query` instance.
+        """
         if self.apply_filter(proxy):
             return self.apply_search(proxy)
         return False
 
     def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
         """
-        apply a `Query` to a generator of proxies and return a generator of filtered proxies
+        Apply the current `Query` instance to a generator of proxies and return
+        a generator of filtered proxies
+
+        Example:
+            ```python
+            proxies = [...]
+            q = Query().where(dataset="my_dataset", schema="Company")
+            for proxy in q.apply_iter(proxies):
+                assert proxy.schema.name == "Company"
+            ```
+
+        Yields:
+            A generator of `nomenklatura.entity.CompositeEntity`
         """
         if not self:
             yield from proxies

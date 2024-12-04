@@ -24,6 +24,36 @@ def get_store(
     dataset: Dataset | str | None = None,
     linker: Resolver | str | None = None,
 ) -> Store:
+    """
+    Get an initialized [Store][ftmq.store.base.Store]. The backend is inferred
+    by the scheme of the store uri.
+
+    Example:
+        ```python
+        from ftmq.store import get_store
+
+        # an in-memory store:
+        get_store("memory://")
+
+        # a leveldb store:
+        get_store("leveldb:///var/lib/data")
+
+        # a redis (or kvrocks) store:
+        get_store("redis://localhost")
+
+        # a sqlite store
+        get_store("sqlite:///data/followthemoney.db")
+        ```
+
+    Args:
+        uri: The store backend uri
+        catalog: A `ftmq.model.Catalog` instance to limit the scope to
+        dataset: A `ftmq.model.Dataset` instance to limit the scope to
+        linker: A `nomenklatura.Resolver` instance with linked / deduped data
+
+    Returns:
+        The initialized store. This is a cached object.
+    """
     if isinstance(dataset, str):
         dataset = Dataset(name=dataset)
     if isinstance(linker, (str, Path)):
