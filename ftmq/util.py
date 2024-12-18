@@ -485,3 +485,10 @@ def get_featured_proxy(proxy: CE) -> CE:
     for prop in proxy.schema.featured:
         featured.add(prop, proxy.get(prop))
     return featured
+
+
+def must_str(value: Any) -> str:
+    value = clean_string(value)
+    if not value:
+        raise ValueError(f"Value invalid: `{value}`")
+    return value

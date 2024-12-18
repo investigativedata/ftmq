@@ -4,7 +4,6 @@ RUN apt-get -qq update && apt-get -qq -y upgrade
 RUN apt-get install -qq -y pkg-config libicu-dev libleveldb-dev
 RUN apt-get -qq -y autoremove && apt-get clean
 
-RUN pip install --no-cache-dir -q -U pip setuptools
 RUN pip install --no-cache-dir -q --no-binary=:pyicu: pyicu
 
 COPY ftmq /src/ftmq

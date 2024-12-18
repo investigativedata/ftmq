@@ -11,8 +11,6 @@ from ftmq.model import Catalog, Dataset, Entity, Publisher, Resource
 from ftmq.model.coverage import Coverage
 from ftmq.util import make_proxy
 
-nk_catalog = NKCatalog(NKDataset, {})
-
 
 def test_model_publisher():
     p = Publisher(name="Test", url="https://example.org/")
@@ -41,8 +39,8 @@ def test_model_dataset():
     d = Dataset(name="test-dataset")
     assert d.title == "Test-Dataset"
     assert d.prefix == "test-dataset"
-    assert d.name == NKDataset(nk_catalog, d.model_dump()).name
-    assert d.title == NKDataset(nk_catalog, d.model_dump()).title
+    assert d.name == NKDataset(d.model_dump()).name
+    assert d.title == NKDataset(d.model_dump()).title
 
     d = Dataset(name="test-dataset", prefix="td")
     assert d.prefix == "td"
@@ -68,7 +66,7 @@ def test_model_catalog_full(fixtures_path):
 
     catalog = Catalog(datasets=[Dataset(name="test")])
     assert isinstance(catalog.datasets[0], Dataset)
-    assert NKDataset(nk_catalog, catalog.datasets[0].model_dump())
+    assert NKDataset(catalog.datasets[0].model_dump())
     assert NKCatalog(NKDataset, catalog.model_dump())
     assert len(catalog.names) == 1
     assert isinstance(catalog.names, set)
