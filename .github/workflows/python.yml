@@ -26,7 +26,7 @@ jobs:
     - name: Install poetry
       run: curl -sSL https://install.python-poetry.org | python3 -
     - name: Install leveldb
-      run: sudo apt-get install libleveldb1v5 libleveldb-dev
+      run: sudo apt-get install pkg-config libleveldb-dev
     - name: Configure poetry
       run: poetry config virtualenvs.in-project true
     - name: set PY
