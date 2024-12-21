@@ -3,8 +3,8 @@ from typing import Iterable, Literal, Self, TypeVar
 
 from nomenklatura.dataset.dataset import Dataset as NKDataset
 from normality import slugify
-from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
+from rigour.mime.types import FTM
 
 from ftmq.enums import Categories, Frequencies
 from ftmq.model.coverage import Coverage, DatasetStats, Schemata
