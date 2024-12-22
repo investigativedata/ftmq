@@ -79,6 +79,7 @@ def test_util_country():
     assert util.get_country_code("Deutschland") == "de"
     assert util.get_country_code("Berlin, Deutschland") == "de"
     assert util.get_country_code("Foo") is None
+    assert util.get_country_code("uk") == "gb"
 
 
 def test_util_get_year():
