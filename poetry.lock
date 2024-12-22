@@ -215,13 +215,13 @@ files = [
 
 [[package]]
 name = "anystore"
-version = "0.2.0"
+version = "0.2.1"
 description = "Store and cache things anywhere"
 optional = false
 python-versions = "<4,>=3.11"
 files = [
-    {file = "anystore-0.2.0-py3-none-any.whl", hash = "sha256:495e1ea440e54f47dd9fc0b96f14accf9b0d72424d18a8277b541e31d2d2a05c"},
-    {file = "anystore-0.2.0.tar.gz", hash = "sha256:e09615453163351958b91ed67339055984ab859c53c822fe41d86c9a816be3be"},
+    {file = "anystore-0.2.1-py3-none-any.whl", hash = "sha256:0bde6c33a009572c659ba147b97c4d33e131c666e98eb27dfa39b2437eaefd47"},
+    {file = "anystore-0.2.1.tar.gz", hash = "sha256:acafef84bd6bcac3f0f86dd0cb252346d37b8fd0f1d1bc6046bd1f9a78471d18"},
 ]
 
 [package.dependencies]
@@ -241,7 +241,7 @@ s3fs = ">2023.10,<2025"
 shortuuid = ">=1.0.13,<2.0.0"
 sshfs = ">=2024.9.0,<2025.0.0"
 structlog = ">=24.4.0,<25.0.0"
-typer = ">=0.9,<0.15"
+typer = ">=0.9,<0.16"
 
 [[package]]
 name = "asttokens"
@@ -4689,4 +4689,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4"
-content-hash = "820c56d66f91d7f8f14e54dbee7934c8e8a3e7caaa9bbc1563c9216cac5bb403"
+content-hash = "50b6ac486c2da913304f87dcc7e5b1e921aa4bc3b8f5d5ff72778f0e827b6a7e"

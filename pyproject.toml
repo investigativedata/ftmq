@@ -40,7 +40,7 @@ alephclient = "^2.4.1"
 pycountry = ">=23.12.11,<25.0.0"
 urllib3 = "<3"
 nomenklatura = "^3.14.0"
-anystore = "^0.2.0"
+anystore = "^0.2.1"
 structlog = "^24.4.0"
 rigour = "^0.8.2"
 
@@ -57,14 +57,14 @@ bump2version = "^1.0.1"
 cloudpickle = ">=2.2.1,<4.0.0"
 pytest-env = "^1.1.1"
 bump-pydantic = ">=0.7,<0.9"
-
-# [tool.poetry.group.clickhouse.dependencies]
-# ftm-columnstore = "^0.3.0"
 mkdocs = "^1.6.1"
 mkdocstrings-python = "^1.12.2"
 mkdocs-autorefs = "^1.2.0"
 mkdocs-material = "^9.5.47"
 mkdocs-click = "^0.8.1"
+
+# [tool.poetry.group.clickhouse.dependencies]
+# ftm-columnstore = "^0.3.0"
 
 [tool.poetry.group.level.dependencies]
 plyvel = "^1.5.1"
