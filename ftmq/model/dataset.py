@@ -82,6 +82,7 @@ class Dataset(BaseModel):
     aleph_url: HttpUrl | None = None
     tags: list[str] | None = []
     content_type: ContentType | None = "structured"
+    total_file_size: int | None = 0
 
     git_repo: AnyUrl | None = None
     uri: str | None = None
