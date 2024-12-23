@@ -5,6 +5,7 @@ import cloudpickle
 import pytest
 from followthemoney import model
 from nomenklatura.dataset import Dataset
+from nomenklatura.entity import CompositeEntity
 
 from ftmq import util
 from ftmq.enums import Comparators, StrEnum
@@ -110,3 +111,14 @@ def test_util_get_year():
 def test_util_prop_is_numeric():
     assert not util.prop_is_numeric(model.get("Person"), "name")
     assert util.prop_is_numeric(model.get("Payment"), "amountEur")
+
+
+def test_util_ensure_proxy():
+    data = {
+        "id": "org",
+        "schema": "LegalEntity",
+        "properties": {"name": ["Test"]},
+    }
+    assert isinstance(util.ensure_proxy(data), CompositeEntity)
+    assert isinstance(util.ensure_proxy(model.get_proxy(data)), CompositeEntity)
+    assert isinstance(util.ensure_proxy(util.make_proxy(data)), CompositeEntity)

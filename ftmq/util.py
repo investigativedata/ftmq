@@ -4,6 +4,7 @@ from typing import Any, Generator
 
 import pycountry
 from banal import ensure_list, is_listish
+from followthemoney.proxy import E, EntityProxy
 from followthemoney.schema import Schema
 from followthemoney.types import registry
 from followthemoney.util import make_entity_id, sanitize_text
@@ -93,6 +94,14 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
         statements = get_statements(proxy, *datasets)
         return CompositeEntity.from_statements(dataset, statements)
     return proxy
+
+
+def ensure_proxy(data: dict[str, Any] | CE | E) -> CompositeEntity:
+    if isinstance(data, CompositeEntity):
+        return data
+    if isinstance(data, EntityProxy):
+        data = data.to_full_dict()
+    return make_proxy(data)
 
 
 def get_statements(proxy: CE, *datasets: str) -> SGenerator:
