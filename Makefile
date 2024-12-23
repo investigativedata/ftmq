@@ -1,7 +1,7 @@
 all: clean install test
 
 install:
-	poetry install --with dev
+	poetry install --with dev --all-extras
 
 lint:
 	poetry run flake8 ftmq --count --select=E9,F63,F7,F82 --show-source --statistics

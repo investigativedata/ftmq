@@ -43,6 +43,15 @@ nomenklatura = "^3.14.0"
 anystore = "^0.2.1"
 structlog = "^24.4.0"
 rigour = "^0.8.2"
+redis = {version = "^5.2.1", optional = true}
+plyvel = {version = "^1.5.1", optional = true}
+sqlalchemy = {version = "^2.0.36", optional = true}
+fakeredis = {version = "^2.26.2", optional = true}
+
+[tool.poetry.extras]
+sql = ["sqlalchemy"]
+redis = ["redis", "fakeredis"]
+level = ["plyvel"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.3,<9.0.0"
@@ -65,16 +74,6 @@ mkdocs-click = "^0.8.1"
 
 # [tool.poetry.group.clickhouse.dependencies]
 # ftm-columnstore = "^0.3.0"
-
-[tool.poetry.group.level.dependencies]
-plyvel = "^1.5.1"
-
-[tool.poetry.group.redis.dependencies]
-redis = "^5.0.1"
-
-
-[tool.poetry.group.sql.dependencies]
-sqlalchemy = "^2.0.36"
 
 [build-system]
 requires = ["poetry-core"]
