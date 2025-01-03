@@ -1,13 +1,14 @@
-from typing import Any, Iterable, Self, TypeAlias, TypeVar, Union
+from typing import Any, Iterable, Self, Sequence, TypeAlias, TypeVar, Union
 
 from followthemoney.types import registry
+from nomenklatura.publish.names import pick_caption
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ftmq.types import CE
-from ftmq.util import make_proxy
+from ftmq.util import make_proxy, must_str
 
 EntityProp = TypeVar("EntityProp", bound="Entity")
-Properties: TypeAlias = dict[str, list[Union[str, EntityProp]]]
+Properties: TypeAlias = dict[str, Sequence[Union[str, EntityProp]]]
 
 
 class Entity(BaseModel):
@@ -24,14 +25,16 @@ class Entity(BaseModel):
     def from_proxy(cls, entity: CE, adjacents: Iterable[CE] | None = None) -> Self:
         properties = dict(entity.properties)
         if adjacents:
-            adjacents = {e.id: Entity.from_proxy(e) for e in adjacents}
+            adjacents_: dict[str, Entity] = {
+                must_str(e.id): Entity.from_proxy(e) for e in adjacents
+            }
             for prop in entity.iterprops():
                 if prop.type == registry.entity:
                     properties[prop.name] = [
-                        adjacents.get(i, i) for i in entity.get(prop)
+                        adjacents_.get(i, i) for i in entity.get(prop)
                     ]
         return cls(
-            id=entity.id,
+            id=must_str(entity.id),
             caption=entity.caption,
             schema=entity.schema.name,
             properties=properties,
@@ -46,6 +49,5 @@ class Entity(BaseModel):
     @classmethod
     def get_caption(cls, data: Any) -> Any:
         if data.get("caption") is None:
-            proxy = make_proxy(data)
-            data["caption"] = proxy.caption
+            data["caption"] = pick_caption(make_proxy(data))
         return data

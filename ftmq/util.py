@@ -4,6 +4,7 @@ from typing import Any, Generator
 
 import pycountry
 from banal import ensure_list, is_listish
+from followthemoney.proxy import E, EntityProxy
 from followthemoney.schema import Schema
 from followthemoney.types import registry
 from followthemoney.util import make_entity_id, sanitize_text
@@ -95,6 +96,14 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
     return proxy
 
 
+def ensure_proxy(data: dict[str, Any] | CE | E) -> CompositeEntity:
+    if isinstance(data, CompositeEntity):
+        return data
+    if isinstance(data, EntityProxy):
+        data = data.to_full_dict()
+    return make_proxy(data)
+
+
 def get_statements(proxy: CE, *datasets: str) -> SGenerator:
     """
     Get statements from a `nomenklatura.entity.CompositeEntity` with multiple
@@ -119,7 +128,7 @@ def get_statements(proxy: CE, *datasets: str) -> SGenerator:
 
 
 @cache
-def get_country_name(alpha2: str) -> str:
+def get_country_name(code: str) -> str:
     """
     Get the (english) country name for the given 2-letter iso code via
     [pycountry](https://pypi.org/project/pycountry/)
@@ -129,6 +138,8 @@ def get_country_name(alpha2: str) -> str:
         "Germany"
         >>> get_country_name("xx")
         "xx"
+        >>> get_country_name("gb") == get_country_name("uk")
+        True  # United Kingdom
 
     Args:
         alpha2: Two-letter iso code, case insensitive
@@ -136,14 +147,16 @@ def get_country_name(alpha2: str) -> str:
     Returns:
         Either the country name for a valid code or the code as fallback.
     """
-    alpha2 = alpha2.lower()
+    code_clean = get_country_code(code)
+    if code_clean is None:
+        code_clean = code.lower()
     try:
-        country = pycountry.countries.get(alpha_2=alpha2)
+        country = pycountry.countries.get(alpha_2=code_clean)
         if country is not None:
             return country.name
     except (LookupError, AttributeError):
-        return alpha2
-    return alpha2
+        return code
+    return code_clean
 
 
 @lru_cache(1024)
@@ -485,3 +498,10 @@ def get_featured_proxy(proxy: CE) -> CE:
     for prop in proxy.schema.featured:
         featured.add(prop, proxy.get(prop))
     return featured
+
+
+def must_str(value: Any) -> str:
+    value = clean_string(value)
+    if not value:
+        raise ValueError(f"Value invalid: `{value}`")
+    return value

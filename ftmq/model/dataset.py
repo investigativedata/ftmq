@@ -1,11 +1,10 @@
 from datetime import datetime
 from typing import Iterable, Literal, Self, TypeVar
 
-from nomenklatura.dataset.catalog import DataCatalog as NKCatalog
 from nomenklatura.dataset.dataset import Dataset as NKDataset
 from normality import slugify
-from pantomime.types import FTM
 from pydantic import AnyUrl, HttpUrl
+from rigour.mime.types import FTM
 
 from ftmq.enums import Categories, Frequencies
 from ftmq.model.coverage import Coverage, DatasetStats, Schemata
@@ -83,6 +82,7 @@ class Dataset(BaseModel):
     aleph_url: HttpUrl | None = None
     tags: list[str] | None = []
     content_type: ContentType | None = "structured"
+    total_file_size: int | None = 0
 
     git_repo: AnyUrl | None = None
     uri: str | None = None
@@ -143,16 +143,15 @@ class Catalog(BaseModel):
 
     def get_scope(self) -> NKDataset:
         # FIXME clarify
-        return NKDataset(
-            NKCatalog(
-                NKDataset, {"datasets": [make_dataset(n).to_dict() for n in self.names]}
-            ),
+        ds = NKDataset(
             {
                 "name": slugify(self.name),
                 "title": self.name.title(),
                 "children": self.names,
             },
         )
+        ds.children = {make_dataset(n) for n in self.names}
+        return ds
 
     def iterate(self) -> CEGenerator:
         for dataset in self.datasets:

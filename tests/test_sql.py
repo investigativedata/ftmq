@@ -335,7 +335,7 @@ def test_sql():
         """,
     )
 
-    # simplified if no properties, reversed or search:
+    # simplified if no properties or reversed
     q = Query()
     assert _compare_str(
         q.sql.statements,
@@ -363,32 +363,6 @@ def test_sql():
 
     # but we need complex query if we want a limit:
     assert "canonical_id IN" in str(q[:10].sql.statements)
-
-
-def test_sql_search_query():
-    q = Query().search("agency", ["name"])
-    assert _compare_str(
-        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
-        """
-        SELECT DISTINCT test_table.canonical_id
-        FROM test_table
-        WHERE test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
-        FROM test_table
-        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
-        """,
-    )
-
-    q = Query().where(dataset="foo", date__gte=2023).search("agency", ["name"])
-    assert _compare_str(
-        str(q.sql.canonical_ids.compile(compile_kwargs={"literal_binds": True})),
-        """
-        SELECT DISTINCT test_table.canonical_id
-        FROM test_table
-        WHERE test_table.dataset = 'foo' AND test_table.prop = 'date' AND test_table.value >= '2023' AND test_table.canonical_id IN (SELECT DISTINCT test_table.canonical_id
-        FROM test_table
-        WHERE test_table.prop = 'name' AND lower(test_table.value) LIKE lower('%agency%'))
-        """,
-    )
 
 
 def test_sql_ids():

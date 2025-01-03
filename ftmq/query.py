@@ -6,7 +6,7 @@ from banal import ensure_list, is_listish, is_mapping
 from nomenklatura.entity import CE
 
 from ftmq.aggregations import Aggregation, Aggregator
-from ftmq.enums import Aggregations, Comparators, Properties
+from ftmq.enums import Aggregations, Properties
 from ftmq.exceptions import ValidationError
 from ftmq.filters import (
     FILTERS,
@@ -56,24 +56,15 @@ class Sort:
 
 
 class Query:
-    DEFAULT_SEARCH_PROPS = (
-        Properties["name"],
-        Properties["firstName"],
-        Properties["middleName"],
-        Properties["lastName"],
-    )
-
     def __init__(
         self,
         filters: Iterable[F] | None = None,
-        search_filters: Iterable[F] | None = None,
         aggregations: Iterable[Aggregation] | None = None,
         aggregator: Aggregator | None = None,
         sort: Sort | None = None,
         slice: Slice | None = None,
     ):
         self.filters = set(ensure_list(filters))
-        self.search_filters = set(ensure_list(search_filters))
         self.aggregations = set(ensure_list(aggregations))
         self.aggregator = aggregator
         self.sort = sort
@@ -161,13 +152,6 @@ class Query:
         The current filter lookups as dictionary
         """
         return self._get_lookups(self.filters)
-
-    @property
-    def search_lookups(self) -> dict[str, Any]:
-        """
-        The current search lookups as dictionary
-        """
-        return self._get_lookups(self.search_filters)
 
     @property
     def limit(self) -> int | None:
@@ -283,9 +267,6 @@ class Query:
             ```
         """
         data = self.lookups
-        search_data = self.search_lookups
-        if search_data:
-            data["search"] = search_data
         if self.sort:
             data["order_by"] = self.sort.serialize()
         if self.slice:
@@ -364,14 +345,6 @@ class Query:
 
         return self._chain()
 
-    def search(self, q: str, props: Iterable[Properties | str] = None) -> Q:
-        # reset existing search
-        self.search_filters: set[F] = set()
-        props = props or self.DEFAULT_SEARCH_PROPS
-        for prop in props:
-            self.search_filters.add(PropertyFilter(prop, q, Comparators.ilike))
-        return self._chain()
-
     def order_by(self, *values: Iterable[str], ascending: bool | None = True) -> Q:
         """
         Add or update the current sorting.
@@ -401,23 +374,13 @@ class Query:
     def get_aggregator(self) -> Aggregator:
         return Aggregator(aggregations=self.aggregations)
 
-    def apply_filter(self, proxy: CE) -> bool:
-        if not self.filters:
-            return True
-        return all(f.apply(proxy) for f in self.filters)
-
-    def apply_search(self, proxy: CE) -> bool:
-        if not self.search_filters:
-            return True
-        return any(f.apply(proxy) for f in self.search_filters)
-
     def apply(self, proxy: CE) -> bool:
         """
         Test if a proxy matches the current `Query` instance.
         """
-        if self.apply_filter(proxy):
-            return self.apply_search(proxy)
-        return False
+        if not self.filters:
+            return True
+        return all(f.apply(proxy) for f in self.filters)
 
     def apply_iter(self, proxies: CEGenerator) -> CEGenerator:
         """

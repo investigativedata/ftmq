@@ -118,25 +118,8 @@ class Sql:
         return and_(*clauses)
 
     @cached_property
-    def search_clause(self) -> BooleanClauseList | None:
-        if not self.q.search_filters:
-            return
-        return or_(
-            and_(
-                self.table.c.prop == f.key,
-                self.get_expression(self.table.c.value, f),
-            )
-            for f in self.q.search_filters
-        )
-
-    @cached_property
     def canonical_ids(self) -> Select:
         q = select(self.table.c.canonical_id.distinct()).where(self.clause)
-        if self.q.search_filters:
-            search_ids = select(self.table.c.canonical_id.distinct()).where(
-                self.search_clause
-            )
-            q = q.where(self.table.c.canonical_id.in_(search_ids))
         if self.q.sort is None:
             q = q.limit(self.q.limit).offset(self.q.offset)
         return q
@@ -148,12 +131,7 @@ class Sql:
     @cached_property
     def _unsorted_statements(self) -> Select:
         where = self.clause
-        if (
-            self.q.properties
-            or self.q.reversed
-            or self.q.search_filters
-            or self.q.limit
-        ):
+        if self.q.properties or self.q.reversed or self.q.limit:
             where = self.table.c.canonical_id.in_(self.canonical_ids)
         return select(self.table).where(where).order_by(self.table.c.canonical_id)
 

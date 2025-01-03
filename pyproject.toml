@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftmq"
-version = "0.7.0"
+version = "0.7.1"
 description = "followthemoney query dsl and io helpers"
 authors = ["Simon Wörpel <simon.woerpel@pm.me>"]
 license = "MIT"
@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-packages = [{include = "ftmq"}]
+packages = [{ include = "ftmq" }]
 
 [tool.poetry.scripts]
 ftmq = "ftmq.cli:cli"
@@ -28,7 +28,7 @@ ftmq = "ftmq.cli:cli"
 [tool.poetry.dependencies]
 python = ">=3.11,<4"
 banal = "^1.0.6"
-followthemoney = "^3.7.9"
+followthemoney = "^3.7.12"
 orjson = "^3.10.3"
 PyICU = "^2.13.1"
 click = "^8.1.7"
@@ -36,14 +36,22 @@ click-default-group = "^1.2.4"
 cryptography = ">=42.0.7,<45.0.0"
 certifi = ">=2024.2.2"
 pydantic = "^2.8.2"
-sqlalchemy = "^2.0.31"
 alephclient = "^2.4.1"
 pycountry = ">=23.12.11,<25.0.0"
 urllib3 = "<3"
-nomenklatura = "<3.13"
-anystore = "^0.2.0"
-pantomime = "^0.6.1"
+nomenklatura = "^3.14.0"
+anystore = "^0.2.2"
 structlog = "^24.4.0"
+rigour = "^0.8.2"
+redis = {version = "^5.2.1", optional = true}
+plyvel = {version = "^1.5.1", optional = true}
+sqlalchemy = {version = "^2.0.36", optional = true}
+fakeredis = {version = "^2.26.2", optional = true}
+
+[tool.poetry.extras]
+sql = ["sqlalchemy"]
+redis = ["redis", "fakeredis"]
+level = ["plyvel"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.3,<9.0.0"
@@ -58,20 +66,14 @@ bump2version = "^1.0.1"
 cloudpickle = ">=2.2.1,<4.0.0"
 pytest-env = "^1.1.1"
 bump-pydantic = ">=0.7,<0.9"
-
-# [tool.poetry.group.clickhouse.dependencies]
-# ftm-columnstore = "^0.3.0"
 mkdocs = "^1.6.1"
 mkdocstrings-python = "^1.12.2"
 mkdocs-autorefs = "^1.2.0"
 mkdocs-material = "^9.5.47"
 mkdocs-click = "^0.8.1"
 
-[tool.poetry.group.level.dependencies]
-plyvel = "^1.5.1"
-
-[tool.poetry.group.redis.dependencies]
-redis = "^5.0.1"
+# [tool.poetry.group.clickhouse.dependencies]
+# ftm-columnstore = "^0.3.0"
 
 [build-system]
 requires = ["poetry-core"]
