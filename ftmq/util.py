@@ -11,11 +11,12 @@ from followthemoney.util import make_entity_id, sanitize_text
 from nomenklatura.dataset import Dataset
 from nomenklatura.entity import CE, CompositeEntity
 from nomenklatura.statement import Statement
+from nomenklatura.stream import StreamEntity
 from normality import collapse_spaces, slugify
 
 from ftmq.enums import Comparators
 from ftmq.exceptions import ValidationError
-from ftmq.types import SGenerator
+from ftmq.types import SE, SGenerator
 
 
 @cache
@@ -96,10 +97,10 @@ def make_proxy(data: dict[str, Any], dataset: str | Dataset | None = None) -> CE
     return proxy
 
 
-def ensure_proxy(data: dict[str, Any] | CE | E) -> CompositeEntity:
+def ensure_proxy(data: dict[str, Any] | CE | E | SE) -> CompositeEntity:
     if isinstance(data, CompositeEntity):
         return data
-    if isinstance(data, EntityProxy):
+    if isinstance(data, (EntityProxy, StreamEntity)):
         data = data.to_full_dict()
     return make_proxy(data)
 

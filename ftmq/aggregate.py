@@ -10,7 +10,7 @@ from followthemoney.exc import InvalidData
 from followthemoney.schema import Schema
 
 from ftmq.enums import Schemata
-from ftmq.types import CE, CEGenerator
+from ftmq.types import CEGenerator, Proxy
 from ftmq.util import make_proxy
 
 SCHEMATA: dict[Schemata, int] = {s: len(model.get(s).extends) for s in Schemata}
@@ -33,7 +33,7 @@ def common_ancestor(s1: Schema, s2: Schema) -> Schema:
     raise InvalidData(f"No common ancestors: {s1}, {s2}")
 
 
-def merge(p1: CE, p2: CE, downgrade: bool | None = False) -> CE:
+def merge(p1: Proxy, p2: Proxy, downgrade: bool | None = False) -> Proxy:
     try:
         p1 = p1.merge(p2)
         p1.schema = model.common_schema(p1.schema, p2.schema)
@@ -54,8 +54,8 @@ def merge(p1: CE, p2: CE, downgrade: bool | None = False) -> CE:
         raise e
 
 
-def aggregate(proxies: Iterable[CE], downgrade: bool | None = False) -> CEGenerator:
-    buffer: dict[str, CE] = {}
+def aggregate(proxies: Iterable[Proxy], downgrade: bool | None = False) -> CEGenerator:
+    buffer: dict[str, Proxy] = {}
     for proxy in proxies:
         if proxy.id in buffer:
             buffer[proxy.id] = merge(buffer[proxy.id], proxy, downgrade)

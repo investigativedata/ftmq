@@ -1,25 +1,32 @@
 import os
 from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Literal, TypeAlias
+from typing import Literal, TypeAlias, TypeVar
 
+from anystore.types import SDict
 from nomenklatura.entity import CE
 from nomenklatura.statement.statement import S
+from nomenklatura.stream import StreamEntity
 
 from ftmq import enums
-
-# a string-keyed dict
-SDict: TypeAlias = dict[str, Any]
 
 # property multi-value
 Value: TypeAlias = list[str]
 
-# composite entity generator
+SE = TypeVar("SE", bound=StreamEntity)
+Proxy: TypeAlias = SE | CE
+
+# entity generators
 CEGenerator: TypeAlias = Generator[CE, None, None]
+SEGenerator: TypeAlias = Generator[SE, None, None]
+ProxyGenerator: TypeAlias = Generator[Proxy, None, None]
+
+# statement generator
 SGenerator: TypeAlias = Generator[S, None, None]
 
 StrGenerator: TypeAlias = Generator[str, None, None]
 BytesGenerator: TypeAlias = Generator[bytes, None, None]
+SDictGenerator: TypeAlias = Generator[SDict, None, None]
 
 Schemata: TypeAlias = Literal[tuple(s.name for s in enums.Schemata)]
 Properties: TypeAlias = Literal[tuple(p.name for p in enums.Properties)]
@@ -30,13 +37,18 @@ PathLike: TypeAlias = str | os.PathLike[str] | Path
 __all__ = [
     "BytesGenerator",
     "CE",
+    "SE",
+    "Proxy",
     "CEGenerator",
+    "SEGenerator",
+    "ProxyGenerator",
     "Frequencies",
     "PathLike",
     "Properties",
     "Schemata",
     "SDict",
     "SGenerator",
+    "SDictGenerator",
     "StrGenerator",
     "Value",
 ]

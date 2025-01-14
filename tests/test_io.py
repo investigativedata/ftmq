@@ -18,13 +18,13 @@ def test_io_read(fixtures_path: Path):
     # read from an iterable of uris
     uri = fixtures_path / "eu_authorities.ftm.json"
     uris = [uri, uri]
-    proxies = smart_read_proxies(uris, serialize=False)
+    proxies = smart_read_proxies(uris)
     assert len([p for p in proxies]) == 302
 
 
 def test_io_write(tmp_path: Path, proxies: list[CE]):
     path = tmp_path / "proxies.json"
-    res = smart_write_proxies(path, proxies[:99], serialize=True)
+    res = smart_write_proxies(path, proxies[:99])
     assert res == 99
     success = False
     for proxy in smart_read_proxies(path):
@@ -35,7 +35,7 @@ def test_io_write(tmp_path: Path, proxies: list[CE]):
 
 
 def test_io_write_stdout(capsys, proxies: list[CE]):
-    res = smart_write_proxies("-", proxies[:5], serialize=True)
+    res = smart_write_proxies("-", proxies[:5])
     assert res == 5
     captured = capsys.readouterr()
     proxy = None
