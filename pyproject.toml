@@ -15,7 +15,7 @@ classifiers = [
 ]
 requires-python = ">=3.11,<4"
 dependencies = [
-    "anystore (>=0.2.2,<0.3.0)",
+    "anystore @ git+https://github.com/investigativedata/anystore.git@develop",
     "nomenklatura (>=3.14.0,<4.0.0)",
     "click (>=8.1.8,<9.0.0)",
     "click-default-group (>=1.2.4,<2.0.0)",
@@ -59,6 +59,9 @@ mkdocs-autorefs = "^1.2.0"
 mkdocs-material = "^9.5.47"
 mkdocs-click = "^0.8.1"
 
+
+[tool.poetry.dependencies]
+anystore = {develop = true}
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
