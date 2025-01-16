@@ -52,3 +52,13 @@ In 2023, development of `ftmq` was supported by [Media Tech Lab Bayern batch #3]
 <a href="https://www.media-lab.de/en/programs/media-tech-lab">
     <img src="https://raw.githubusercontent.com/media-tech-lab/.github/main/assets/mtl-powered-by.png" width="240" title="Media Tech Lab powered by logo">
 </a>
+
+## License and Copyright
+
+`ftmq`, (C) 2022-2025 investigativedata.io
+
+`ftmq` is licensed under the AGPLv3 or later license.
+
+Prior to version 0.8.0, `ftmq` was released under the MIT license.
+
+see [NOTICE](./NOTICE) and [LICENSE](./LICENSE)
