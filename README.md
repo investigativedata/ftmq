@@ -55,7 +55,8 @@ In 2023, development of `ftmq` was supported by [Media Tech Lab Bayern batch #3]
 
 ## License and Copyright
 
-`ftmq`, (C) 2022-2025 investigativedata.io
+`ftmq`, (C) 2023 Simon Wörpel
+`ftmq`, (C) 2024-2025 investigativedata.io
 
 `ftmq` is licensed under the AGPLv3 or later license.
 
