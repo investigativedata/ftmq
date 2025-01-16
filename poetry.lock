@@ -203,13 +203,15 @@ files = [
 
 [[package]]
 name = "anystore"
-version = "0.2.2"
+version = "0.3.0"
 description = "Store and cache things anywhere"
 optional = false
-python-versions = ">=3.11,<4"
+python-versions = "<4,>=3.11"
 groups = ["main"]
-files = []
-develop = true
+files = [
+    {file = "anystore-0.3.0-py3-none-any.whl", hash = "sha256:c1bda0191805967ea250446b458a306ccf7b5f2cb8c50eb09bb1bf281fde27ee"},
+    {file = "anystore-0.3.0.tar.gz", hash = "sha256:5aa9e624025800d7af296f9d3d29c810413b10b103563a502d0b2ef713e18166"},
+]
 
 [package.dependencies]
 banal = ">=1.0.6,<2.0.0"
@@ -227,12 +229,6 @@ typer = ">=0.15.1,<0.16.0"
 [package.extras]
 redis = ["fakeredis (>=2.26.2,<3.0.0)", "redis (>=5.2.1,<6.0.0)"]
 sql = ["sqlalchemy (>=2.0.36,<3.0.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/investigativedata/anystore.git"
-reference = "develop"
-resolved_reference = "9a8037b6dcf36688fec90cf0c74cbd5bfe4bee77"
 
 [[package]]
 name = "asttokens"
@@ -4232,4 +4228,4 @@ sql = ["sqlalchemy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4"
-content-hash = "599edc0855c0c55c984441f92c0c54a5d047357447ea382be0255b085abbc50b"
+content-hash = "f69a65db04c7c16bfae45ccdcdb9fb60d23167183e9d6eea329b8d916b86fce5"
