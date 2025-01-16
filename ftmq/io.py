@@ -1,24 +1,24 @@
 from typing import Any, Iterable
 
 import orjson
-from anystore.io import smart_open, smart_stream
+from anystore.io import Uri, smart_open, smart_stream
 from banal import is_listish
+from followthemoney import model
 from nomenklatura.entity import CE, CompositeEntity
-from nomenklatura.util import PathLike
+from nomenklatura.stream import StreamEntity
 
-from ftmq.exceptions import ValidationError
 from ftmq.logging import get_logger
 from ftmq.query import Query
 from ftmq.store import Store, get_store
-from ftmq.types import CEGenerator, SDict
-from ftmq.util import get_statements, make_dataset, make_proxy
+from ftmq.types import CEGenerator, Proxy, SEGenerator
+from ftmq.util import ensure_proxy, get_statements, make_dataset, make_proxy
 
 log = get_logger(__name__)
 
 DEFAULT_MODE = "rb"
 
 
-def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
+def smart_get_store(uri: Uri, **kwargs) -> Store | None:
     try:
         return get_store(uri, **kwargs)
     except NotImplementedError:
@@ -26,9 +26,8 @@ def smart_get_store(uri: PathLike, **kwargs) -> Store | None:
 
 
 def smart_read_proxies(
-    uri: PathLike | Iterable[PathLike],
+    uri: Uri | Iterable[Uri],
     mode: str | None = DEFAULT_MODE,
-    serialize: bool | None = True,
     query: Query | None = None,
     **store_kwargs: Any,
 ) -> CEGenerator:
@@ -61,7 +60,6 @@ def smart_read_proxies(
     Args:
         uri: File-like uri or store uri or multiple uris
         mode: Open mode for file-like sources (default: `rb`)
-        serialize: Convert json data into `nomenklatura.entity.CompositeEntity`
         query: Filter `Query` object
         **store_kwargs: Pass through configuration to statement store
 
@@ -70,7 +68,7 @@ def smart_read_proxies(
     """
     if is_listish(uri):
         for u in uri:
-            yield from smart_read_proxies(u, mode, serialize, query)
+            yield from smart_read_proxies(u, mode, query)
         return
 
     store = smart_get_store(uri, **store_kwargs)
@@ -79,24 +77,40 @@ def smart_read_proxies(
         yield from view.entities(query)
         return
 
+    q = query or Query()
     lines = smart_stream(uri)
     lines = (orjson.loads(line) for line in lines)
-    if serialize or query:
-        q = query or Query()
-        proxies = (make_proxy(line) for line in lines)
-        yield from q.apply_iter(proxies)
-    else:
-        for line in lines:
-            if not line.get("id"):
-                raise ValidationError("Entity has no ID.")
-            yield line
+    proxies = (make_proxy(line) for line in lines)
+    yield from q.apply_iter(proxies)
+
+
+def smart_stream_proxies(
+    uri: Uri | Iterable[Uri], mode: str | None = DEFAULT_MODE
+) -> SEGenerator:
+    """
+    Stream `nomenklatura.stream.StreamEntity` from fs-like uris.
+
+    Args:
+        uri: File-like uri or multiple uris
+        mode: Open mode for file-like sources (default: `rb`)
+
+    Yields:
+        A stream of `nomenklatura.stream.StreamEntity`
+    """
+    if is_listish(uri):
+        for u in uri:
+            yield from smart_stream_proxies(u, mode)
+        return
+
+    for line in smart_stream(uri, mode):
+        data = orjson.loads(line)
+        yield StreamEntity.from_dict(model, data)
 
 
 def smart_write_proxies(
-    uri: PathLike,
-    proxies: Iterable[CE | SDict],
+    uri: Uri,
+    proxies: Iterable[Proxy],
     mode: str | None = "wb",
-    serialize: bool | None = False,
     **store_kwargs: Any,
 ) -> int:
     """
@@ -119,7 +133,6 @@ def smart_write_proxies(
         uri: File-like uri or store uri
         proxies: Iterable of proxy data
         mode: Open mode for file-like targets (default: `wb`)
-        serialize: Convert `nomenklatura.entity.CompositeEntity` input to dict
         **store_kwargs: Pass through configuration to statement store
 
     Returns:
@@ -131,6 +144,7 @@ def smart_write_proxies(
 
     store = smart_get_store(uri, **store_kwargs)
     if store is not None:
+        proxies = (ensure_proxy(p) for p in proxies)
         dataset = store_kwargs.get("dataset")
         if dataset is not None:
             proxies = apply_datasets(proxies, dataset, replace=True)
@@ -145,9 +159,8 @@ def smart_write_proxies(
     with smart_open(uri, mode=mode) as fh:
         for proxy in proxies:
             ix += 1
-            if serialize:
-                proxy = proxy.to_dict()
-            fh.write(orjson.dumps(proxy, option=orjson.OPT_APPEND_NEWLINE))
+            data = proxy.to_dict()
+            fh.write(orjson.dumps(data, option=orjson.OPT_APPEND_NEWLINE))
     return ix
 
 

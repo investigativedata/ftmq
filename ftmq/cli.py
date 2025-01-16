@@ -132,7 +132,7 @@ def q(
     if stats_uri:
         stats = Collector()
         proxies = stats.apply(proxies)
-    smart_write_proxies(output_uri, proxies, serialize=True, dataset=store_dataset)
+    smart_write_proxies(output_uri, proxies, dataset=store_dataset)
     if stats_uri:
         stats = stats.export()
         stats = orjson.dumps(stats.model_dump(), option=orjson.OPT_APPEND_NEWLINE)
@@ -166,7 +166,7 @@ def apply(
     proxies = smart_read_proxies(input_uri)
     if dataset:
         proxies = apply_datasets(proxies, *dataset, replace=replace_dataset)
-    smart_write_proxies(output_uri, proxies, serialize=True)
+    smart_write_proxies(output_uri, proxies)
 
 
 @cli.group()
@@ -183,7 +183,7 @@ def dataset():
 )
 def dataset_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
     dataset = Dataset._from_uri(input_uri)
-    smart_write_proxies(output_uri, dataset.iterate(), serialize=True)
+    smart_write_proxies(output_uri, dataset.iterate())
 
 
 @dataset.command("generate")
@@ -230,7 +230,7 @@ def catalog():
 )
 def catalog_iterate(input_uri: str | None = "-", output_uri: str | None = "-"):
     catalog = Catalog._from_uri(input_uri)
-    smart_write_proxies(output_uri, catalog.iterate(), serialize=True)
+    smart_write_proxies(output_uri, catalog.iterate())
 
 
 @catalog.command("generate")
@@ -316,7 +316,7 @@ def store_resolve(
     store = get_store(input_uri, resolver=resolver_uri)
     store.resolve()
     if output_uri:
-        smart_write_proxies(output_uri, store.iterate(), serialize=True)
+        smart_write_proxies(output_uri, store.iterate())
 
 
 @store.command("iterate")
@@ -334,7 +334,7 @@ def store_iterate(
     Iterate all entities from in to out
     """
     store = get_store(input_uri)
-    smart_write_proxies(output_uri, store.iterate(), serialize=True)
+    smart_write_proxies(output_uri, store.iterate())
 
 
 @cli.command("aggregate")
@@ -355,4 +355,4 @@ def cli_aggregate(
     parent schema (as opposed to standard `ftm aggregate`)
     """
     proxies = aggregate(smart_read_proxies(input_uri), downgrade=downgrade)
-    smart_write_proxies(output_uri, proxies, serialize=True)
+    smart_write_proxies(output_uri, proxies)

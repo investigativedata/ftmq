@@ -1,6 +1,6 @@
 {
   "name": "@investigativedata/ftmq",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "javascript interface for ftmq",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/investigativedata/ftmq#readme",
   "dependencies": {
-    "query-string": "^9.0.0"
+    "query-string": "^9.1.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
