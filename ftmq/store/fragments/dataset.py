@@ -17,7 +17,9 @@ from sqlalchemy import (
     UniqueConstraint,
     distinct,
     func,
+    literal,
     select,
+    tablesample,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import OperationalError
@@ -357,12 +359,18 @@ class Fragments(object):
             last_id = entity_ids[-1]
 
     def get_id_ranges(
-        self, batch_size=10_000, schema=None, since=None, until=None, origin=None
+        self,
+        batch_size=10_000,
+        schema=None,
+        since=None,
+        until=None,
+        origin=None,
+        after: str | None = None,
     ) -> Generator[IdRange, None, None]:
         """Yield the ranges of `get_sorted_id_batches` without fetching the ids,
         e.g. as small parallel job payloads for `fragments(id_range=...)`. The
-        filters decide where ranges end; a range holds every id between."""
-        after = None
+        filters decide where ranges end; a range holds every id between. Ranges
+        start past the id `after`, e.g. to resume."""
         while True:
             stmt = self._sorted_ids(after, schema, since, until, origin)
             try:
@@ -378,6 +386,52 @@ class Fragments(object):
                 return
             yield IdRange(after, last)
             after = last
+
+    def get_sampled_id_ranges(
+        self,
+        batch_size: int = 10_000,
+        samples: int = 20,
+        seed: int | None = None,
+        after: str | None = None,
+    ) -> Generator[IdRange, None, None]:
+        """Yield id ranges of about `batch_size` fragments, bounded by every
+        `samples`-th id of a block sample instead of a walk over all ids
+        (postgres only, else `get_id_ranges`). The first and last range are
+        unbounded, so the ranges cover every id, or every id past `after`.
+        `seed` repeats a sample."""
+        if not self.store.is_postgres:
+            yield from self.get_id_ranges(batch_size, after=after)
+            return
+        every = min(samples, batch_size)
+        percent = 100 * every / batch_size
+        repeatable = None if seed is None else literal(seed)
+        sample = tablesample(self.table, func.system(percent), "sample", repeatable)
+        rn = func.row_number().over(order_by=sample.c.id).label("rn")
+        sampled = select(sample.c.id, rn)
+        empty = select(self.table.c.id).limit(1)
+        if after is not None:
+            sampled = sampled.where(sample.c.id > after)
+            empty = empty.where(self.table.c.id > after)
+        sampled = sampled.subquery()
+        # sorted by postgres, as `fragments(id_range=...)` compares in its collation
+        stmt = (
+            select(sampled.c.id)
+            .where(sampled.c.rn % every == 0)
+            .distinct()
+            .order_by(sampled.c.id)
+        )
+        try:
+            with self.store.engine.connect() as conn:
+                bounds = list(conn.scalars(stmt))
+                if not bounds and conn.scalar(empty) is None:
+                    return
+        except Exception:
+            self.reset()
+            raise
+        for last in bounds:
+            yield IdRange(after, last)
+            after = last
+        yield IdRange(after, None)
 
     def get_sorted_ids(
         self, batch_size=10_000, schema=None, since=None, until=None, origin=None
