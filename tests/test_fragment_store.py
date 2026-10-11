@@ -105,9 +105,61 @@ def test_fragment_store_postgres():
     # filters decide where a range ends, it holds every id up to there
     assert list(dataset.get_id_ranges(origin="test_o")) == [IdRange(None, "key3")]
 
+    # `samples` >= `batch_size` samples the whole table: every 2nd fragment
+    ranges = list(dataset.get_sampled_id_ranges(batch_size=2))
+    assert ranges == [
+        IdRange(None, "key1"),
+        IdRange("key1", "key3"),
+        IdRange("key3", None),
+    ]
+    ids = [f["id"] for r in ranges for f in dataset.fragments(id_range=r)]
+    assert ids == ["key1", "key1", "key2", "key3"]
+    # resume past an id
+    assert list(dataset.get_id_ranges(batch_size=2, after="key1")) == [
+        IdRange("key1", "key3")
+    ]
+    assert list(dataset.get_sampled_id_ranges(batch_size=2, after="key1")) == [
+        IdRange("key1", "key3"),
+        IdRange("key3", None),
+    ]
+    assert list(dataset.get_sampled_id_ranges(after="key3")) == []
+
     entity = dataset.get("key3")
     assert entity.context.get("origin") == "test_o"
     assert entity.to_dict()["origin"] == "test_o"
+
+    dataset.drop()
+    dataset.store.close()
+
+
+def test_fragment_store_sampled_id_ranges_postgres():
+    uri = os.environ.get("TESTING_FRAGMENTS_PSQL_URI")
+    if not uri:
+        print("Skipping psql test (no `TESTING_FRAGMENTS_PSQL_URI` env)")
+        return
+
+    dataset = get_fragments("test_sampled_id_ranges", database_uri=uri)
+    assert list(dataset.get_sampled_id_ranges()) == []
+
+    expected = [f"id{i:05d}" for i in range(10_000)]
+    bulk = dataset.bulk()
+    for entity_id in expected:
+        bulk.put({"id": entity_id, "schema": "Person", "properties": {}})
+    bulk.flush()
+
+    ranges = list(dataset.get_sampled_id_ranges(batch_size=1_000, samples=100, seed=1))
+    assert len(ranges) > 1
+    assert ranges[0].after is None
+    assert ranges[-1].last is None
+    ids = [f["id"] for r in ranges for f in dataset.fragments(id_range=r)]
+    assert len(ids) == len(set(ids))
+    assert sorted(ids) == expected
+
+    ranges = dataset.get_sampled_id_ranges(
+        batch_size=1_000, samples=100, seed=1, after="id04999"
+    )
+    ids = [f["id"] for r in ranges for f in dataset.fragments(id_range=r)]
+    assert sorted(ids) == expected[5_000:]
 
     dataset.drop()
     dataset.store.close()
@@ -167,6 +219,11 @@ def test_fragment_store_sqlite():
     assert list(dataset.get_id_ranges(batch_size=3)) == [IdRange(None, "key3")]
     # filters decide where a range ends, it holds every id up to there
     assert list(dataset.get_id_ranges(origin="test_o")) == [IdRange(None, "key3")]
+    # no table sample in sqlite: the exact ranges
+    assert list(dataset.get_sampled_id_ranges(batch_size=2)) == ranges
+    assert list(dataset.get_sampled_id_ranges(batch_size=2, after="key1")) == [
+        IdRange("key1", "key3")
+    ]
 
     entity = dataset.get("key3")
     assert entity.context.get("origin") == "test_o"
