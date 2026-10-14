@@ -47,6 +47,7 @@ log = get_logger(__name__)
 
 Z_ORDER = ["canonical_id", "prop"]  # don't add more columns here
 TARGET_SIZE = 50 * 10_485_760  # 500 MB
+STATS_TRUNCATE_LENGTH = 1024  # bytes of string min/max kept in footers and delta stats
 PARTITION_BY = ["dataset", "bucket", "origin"]
 BUCKET_MENTION = "mention"  # abstract schema
 BUCKET_PAGE = "page"  # abstract schema
@@ -88,6 +89,7 @@ WRITER_SMALL = WriterProperties(
     data_page_size_limit=2 * 1024 * 1024,
     dictionary_page_size_limit=1 * 1024 * 1024,
     max_row_group_size=1_000_000,
+    statistics_truncate_length=STATS_TRUNCATE_LENGTH,
     column_properties={**_COMMON_COLUMNS, "value": _STATS_BLOOM},
 )
 WRITER_LARGE = WriterProperties(
@@ -96,6 +98,7 @@ WRITER_LARGE = WriterProperties(
     data_page_size_limit=16 * 1024 * 1024,
     dictionary_page_size_limit=1 * 1024 * 1024,
     max_row_group_size=10_000,
+    statistics_truncate_length=STATS_TRUNCATE_LENGTH,
     column_properties={**_COMMON_COLUMNS, "value": _STATS_NO_DICT},
 )
 
